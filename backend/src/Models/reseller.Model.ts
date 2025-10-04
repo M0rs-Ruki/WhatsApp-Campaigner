@@ -40,7 +40,7 @@ const resellerSchema = new Schema<IReseller>({
   timestamps: true 
 });
 
-const Reseller = model<IReseller>('User', resellerSchema);
+const Reseller = model<IReseller>('Reseller', resellerSchema);
 
 export default Reseller;
 
