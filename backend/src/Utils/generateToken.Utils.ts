@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 dotenv.config({ path: "./.env"});
 
 interface UserPayload {
-    _id: mongoose.Types.ObjectId | string;
+    _id: any;
     email: string;
     role: string;
 }

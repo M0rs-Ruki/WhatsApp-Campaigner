@@ -1,8 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import User from '../Models/user.Model.js';
 import type { IUser } from '../Models/user.Model.js';
+
+const { JsonWebTokenError, TokenExpiredError } = jwt;
 
 interface DecodedJwtPayload {
   id: string;
@@ -33,7 +34,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
         req.user = user;
         next();
         
-    } catch (error) {
+    } catch (error: any) {
         if (error instanceof TokenExpiredError) {
             return res.status(401).json({ success: false, message: "Access denied. Token has expired." });
         }

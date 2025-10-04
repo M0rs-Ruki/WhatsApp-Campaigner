@@ -2,7 +2,7 @@
     "watch": ["src"],
     "ext": "ts,js,json",
     "ignore": ["dist"],
-    "exec": "node --enable-source-maps --loader ts-node/esm src/app.ts",
+    "exec": "npm run build && node dist/app.js",
     "env": {
       "NODE_ENV": "development"
     }

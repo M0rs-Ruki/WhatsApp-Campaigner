@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import User from '../Models/user.Model.js';
-import { IUser } from '../Models/user.Model.js';
+import type { IUser } from '../Models/user.Model.js';
 import generateToken from '../Utils/generateToken.Utils.js';
 import { hashPassword, comparePassword } from '../Utils/hashPassword.Utils.js';
 
