@@ -1,11 +1,18 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
+export enum UserRole {
+  USER = 'user',
+  RESELLER = 'reseller',
+  ADMIN = 'admin',
+}
+
 export interface IUser extends Document {
   companyName: string;
   email: string;
   image: string;
   number: number;
   password: string;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +29,7 @@ const userSchema = new Schema<IUser>({
     unique: true,
     lowercase: true,
     trim: true,
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address'],
   },
   image: {
     type: String,
@@ -35,6 +43,12 @@ const userSchema = new Schema<IUser>({
   password: {
     type: String,
     required: [true, 'Password is required'],
+    select: false,
+  },
+  role: {
+    type: String,
+    enum: Object.values(UserRole),
+    default: UserRole.USER,
   },
 }, {
   timestamps: true 

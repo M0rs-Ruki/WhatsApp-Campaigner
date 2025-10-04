@@ -1,196 +1,189 @@
-import type { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response } from 'express';
 import User from '../Models/user.Model.js';
-import Reseller from '../Models/reseller.Model.js';
-import Admin from '../Models/admin.Model.js';
+import { IUser } from '../Models/user.Model.js';
+import generateToken from '../Utils/generateToken.Utils.js';
+import { hashPassword, comparePassword } from '../Utils/hashPassword.Utils.js';
 
-// Register a new user
-export const register = async (req: Request, res: Response) => {
+/**
+ * Define expected request body types
+ */
+interface RegistrationBody {
+    companyName: string;
+    email: string;
+    password: string;
+    image: string;
+    number: string;
+}
+
+interface LoginBody {
+    email: string;
+    password: string;
+}
+
+/**
+ * Handles new user registration.
+ */
+export const Registration = async (
+    req: Request<unknown, unknown, RegistrationBody>,
+    res: Response
+): Promise<Response> => {
     try {
-        const { companyName, email, password, image, number, userType } = req.body;
+        const { companyName, email, password, image, number } = req.body;
 
-        // Validate required fields
-        if (!companyName || !email || !password || !image || !number || !userType) {
+        // Basic validation
+        if (!companyName || !email || !password || !image || !number) {
             return res.status(400).json({
                 success: false,
-                message: "All fields are required"
+                message: 'All fields are required.',
             });
         }
 
         // Check if user already exists
-        const existingUser = await User.findOne({ email }) ||
-                            await Reseller.findOne({ email }) ||
-                            await Admin.findOne({ email });
-
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
-                message: "User already exists with this email"
+                message: 'An account with this email already exists.',
             });
         }
 
-        // Create user based on type
-        let newUser: any;
-        switch (userType.toLowerCase()) {
-            case 'user':
-                newUser = await User.create({ companyName, email, password, image, number });
-                break;
-            case 'reseller':
-                newUser = await Reseller.create({ companyName, email, password, image, number });
-                break;
-            case 'admin':
-                newUser = await Admin.create({ companyName, email, password, image, number });
-                break;
-            default:
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid user type. Must be 'user', 'reseller', or 'admin'"
-                });
-        }
+        // Hash Password
+        const hashedPassword = await hashPassword(password);
 
-        // Generate JWT token
-        const token = jwt.sign(
-            { id: newUser._id.toString(), email: newUser.email },
-            process.env.JWT_SECRET!,
-            { expiresIn: '7d' }
-        );
+        // Create a new User document
+        const newUser: IUser = new User({
+            companyName,
+            email,
+            password: hashedPassword,
+            number,
+            image,
+        });
 
-        // Set cookie
-        res.cookie('token', token, {
+        await newUser.save();
+
+        // Generate token
+        const token = generateToken(newUser);
+
+        // Cookie options
+        const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+            sameSite: 'strict' as const,
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        };
 
-        res.status(201).json({
+        res.cookie('token', token, cookieOptions);
+
+        // Prepare safe user object
+        const userForResponse = {
+            _id: newUser._id,
+            companyName: newUser.companyName,
+            email: newUser.email,
+            image: newUser.image,
+            role: newUser.role,
+        };
+
+        return res.status(201).json({
             success: true,
-            message: "User registered successfully",
-            user: {
-                id: newUser._id,
-                companyName: newUser.companyName,
-                email: newUser.email,
-                image: newUser.image,
-                number: newUser.number,
-                userType
-            }
+            message: 'User registered successfully.',
+            user: userForResponse,
         });
-
-    } catch (error) {
-        console.error('Registration error:', error);
-        res.status(500).json({
+    } catch (error: unknown) {
+        console.error('Error in Registration controller:', error);
+        return res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: 'An internal server error occurred.',
         });
     }
 };
 
-// Login user
-export const login = async (req: Request, res: Response) => {
+/**
+ * Handles user login.
+ */
+export const Login = async (
+    req: Request<unknown, unknown, LoginBody>,
+    res: Response
+): Promise<Response> => {
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
-                message: "Email and password are required"
+                message: 'Email and password are required.',
             });
         }
 
-        // Find user in any collection
-        let user: any = await User.findOne({ email }).select('+password');
-        let userType = 'user';
-
+        const user = await User.findOne({ email }).select('+password');
         if (!user) {
-            user = await Reseller.findOne({ email }).select('+password');
-            userType = 'reseller';
-        }
-
-        if (!user) {
-            user = await Admin.findOne({ email }).select('+password');
-            userType = 'admin';
-        }
-
-        if (!user || user.password !== password) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email or password"
+                message: 'Invalid email or password.',
             });
         }
 
-        // Generate JWT token
-        const token = jwt.sign(
-            { id: user._id.toString(), email: user.email },
-            process.env.JWT_SECRET!,
-            { expiresIn: '7d' }
-        );
+        const isPasswordCorrect = await comparePassword(password, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password.',
+            });
+        }
 
-        // Set cookie
-        res.cookie('token', token, {
+        const token = generateToken(user);
+
+        const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+            sameSite: 'strict' as const,
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        };
 
-        res.status(200).json({
+        res.cookie('token', token, cookieOptions);
+
+        const userForResponse = {
+            _id: user._id,
+            companyName: user.companyName,
+            email: user.email,
+            image: user.image,
+            role: user.role,
+        };
+
+        return res.status(200).json({
             success: true,
-            message: "Login successful",
-            user: {
-                id: user._id,
-                companyName: user.companyName,
-                email: user.email,
-                image: user.image,
-                number: user.number,
-                userType
-            }
+            message: 'Logged in successfully.',
+            user: userForResponse,
         });
-
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
+    } catch (error: unknown) {
+        console.error('Error in Login controller:', error);
+        return res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: 'An internal server error occurred.',
         });
     }
 };
 
-// Logout user
-export const logout = async (req: Request, res: Response) => {
+/**
+ * Handles user logout.
+ */
+export const Logout = (req: Request, res: Response): Response => {
     try {
-        res.clearCookie('token');
-        res.status(200).json({
-            success: true,
-            message: "Logout successful"
+        res.cookie('token', '', {
+            httpOnly: true,
+            expires: new Date(0),
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict' as const,
         });
-    } catch (error) {
-        console.error('Logout error:', error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
-    }
-};
 
-// Get current user profile
-export const getProfile = async (req: Request, res: Response) => {
-    try {
-        if (!req.user) {
-            return res.status(401).json({
-                success: false,
-                message: "User not authenticated"
-            });
-        }
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            user: req.user
+            message: 'Logged out successfully.',
         });
-    } catch (error) {
-        console.error('Get profile error:', error);
-        res.status(500).json({
+    } catch (error: unknown) {
+        console.error('Error in Logout controller:', error);
+        return res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: 'An internal server error occurred.',
         });
     }
 };

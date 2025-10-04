@@ -2,11 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import User from '../Models/user.Model.js';
-import Reseller from '../Models/reseller.Model.js';
-import Admin from '../Models/admin.Model.js';
 import type { IUser } from '../Models/user.Model.js';
-import type { IReseller } from '../Models/reseller.Model.js';
-import type { IAdmin } from '../Models/admin.Model.js';
 
 interface DecodedJwtPayload {
   id: string;
@@ -30,13 +26,6 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
         let user: any = null;
         
         user = await User.findById(decoded.id).select("-password");
-        if (!user) {
-            user = await Reseller.findById(decoded.id).select("-password");
-        }
-        if (!user) {
-            user = await Admin.findById(decoded.id).select("-password");
-        }
-
         if (!user) {
             return res.status(401).json({ success: false, message: "Authorization failed: User not found." });
         }
