@@ -2,10 +2,14 @@
   "name": "whatsapp_campaigner",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "nodemon",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean"
   },
   "author": "Anup Pradhan (Mors)",
   "license": "ISC",
@@ -20,6 +24,7 @@
     "@types/express": "^5.0.3",
     "@types/node": "^24.6.2",
     "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }
