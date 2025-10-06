@@ -28,7 +28,10 @@ export const Registration = async (
     res: Response
 ): Promise<Response> => {
     try {
-        const { companyName, email, password, image, number } = req.body;
+        const { companyName, email, password, number } = req.body;
+
+        // Get uploaded file from multer
+        const image = req.file?.path || '';
 
         // Basic validation
         if (!companyName || !email || !password || !image || !number) {
@@ -50,13 +53,13 @@ export const Registration = async (
         // Hash Password
         const hashedPassword = await hashPassword(password);
 
-        // Create a new User document
+        // Create a new User document with file path
         const newUser: IUser = new User({
             companyName,
             email,
             password: hashedPassword,
             number,
-            image,
+            image, 
         });
 
         await newUser.save();
@@ -69,7 +72,7 @@ export const Registration = async (
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict' as const,
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            maxAge: 30 * 24 * 60 * 60 * 1000,
         };
 
         res.cookie('token', token, cookieOptions);
