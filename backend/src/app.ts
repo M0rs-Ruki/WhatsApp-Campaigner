@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import connectDB from './DB/connect.DB.js';
-import authRoutes from './Routes/auth.Routes.js';
+
 
 dotenv.config({ path: './.env' });
 const PORT: number = parseInt(process.env.PORT || '3000', 10);
@@ -28,6 +28,8 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
     res.send('WhatsApp Campaigner API - Server is running!');
 });
+
+import authRoutes from './Routes/auth.Routes.js';
 
 // API Routes
 app.use('/api/auth', authRoutes);

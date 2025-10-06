@@ -1,9 +1,9 @@
 {
-    "watch": ["src"],
-    "ext": "ts,js,json",
-    "ignore": ["dist"],
-    "exec": "npm run build && node dist/app.js",
-    "env": {
-      "NODE_ENV": "development"
-    }
+  "watch": ["src"],
+  "ext": "ts,js,json",
+  "ignore": ["dist"],
+  "exec": "node --import tsx src/app.ts",
+  "env": {
+    "NODE_ENV": "development"
   }
+}
