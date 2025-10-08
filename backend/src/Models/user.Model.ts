@@ -8,16 +8,22 @@ export enum UserRole {
 
 export interface IUser extends Document {
   companyName: string;
+  uID: string;
   email: string;
   image: string;
   number: number;
   password: string;
   role: UserRole;
+  balance: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>({
+  uID: {
+    type: String,
+    unique: true,
+  },
   companyName: {
     type: String,
     required: [true, 'Company name is required'],
@@ -44,6 +50,10 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: [true, 'Password is required'],
     select: false,
+  },
+  balance: {
+    type: Number,
+    default: 0,
   },
   role: {
     type: String,

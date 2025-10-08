@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import connectDB from './DB/connect.DB.js';
-import multerErrorHandler from './Middlewares/multerError.Middleware.js';
+import multerErrorHandler from './Utils/multerError.Utils.js';
 
 
 
@@ -33,9 +33,12 @@ app.get('/', (req, res) => {
 });
 
 import authRoutes from './Routes/auth.Routes.js';
+import userRoutes from './Routes/user.routes.js';
+
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 // --- Database Connection and Server Initialization ---
 const startServer = async () => {
