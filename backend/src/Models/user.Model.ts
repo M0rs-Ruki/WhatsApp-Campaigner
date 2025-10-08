@@ -14,7 +14,7 @@ export enum UserStatus {
 
 export interface IUser extends Document {
   companyName: string;
-  uID: string;
+  userID: mongoose.Types.ObjectId;  // Reference to creator User
   email: string;
   image: string;
   number: number;
@@ -28,9 +28,9 @@ export interface IUser extends Document {
 }
 
 const userSchema = new Schema<IUser>({
-  uID: {
-    type: String,
-    unique: true,
+  userID: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
   },
   companyName: {
     type: String,
@@ -61,6 +61,7 @@ const userSchema = new Schema<IUser>({
   },
   balance: {
     type: Number,
+    default: 0,
   },
   role: {
     type: String,

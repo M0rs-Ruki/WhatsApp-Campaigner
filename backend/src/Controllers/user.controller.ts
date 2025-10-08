@@ -57,7 +57,7 @@ const createUser = async (req: Request, res: Response) => {
             number,
             image,
             balance,
-            uID: creatorId,
+            userID: creatorId,
             role: role || UserRole.USER,
             status: UserStatus.ACTIVE,
         });

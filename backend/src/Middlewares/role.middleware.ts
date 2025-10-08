@@ -19,4 +19,4 @@ const hasAuthority = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-export { hasAuthority };
+export default hasAuthority;

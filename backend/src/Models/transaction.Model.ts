@@ -5,6 +5,9 @@ export interface ITransaction extends Document {
   type: "credit" | "debit";
   amount: number;
   balanceAfter: number;
+  balanceBefore: number;
+  status: "success" | "failed";
+  failureReason?: string;
   description?: string;
   transactionDate: Date;
 }
@@ -23,7 +26,15 @@ const transactionSchema = new Schema<ITransaction>({
   },
   amount: { type: Number, required: true },
   balanceAfter: { type: Number, required: true },
-  description: String,
+  balanceBefore: { type: Number, required: true },
+  status: {
+    type: String,
+    enum: ["success", "failed"],
+    required: true,
+    default: "success"
+  },
+  failureReason: { type: String },
+  description: { type: String },
   transactionDate: { type: Date, default: Date.now, index: true }
 });
 

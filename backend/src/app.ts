@@ -34,11 +34,13 @@ app.get('/', (req, res) => {
 
 import authRoutes from './Routes/auth.Routes.js';
 import userRoutes from './Routes/user.routes.js';
+import transactionRoutes from './Routes/transaction.Routes.js';
 
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/transaction', transactionRoutes);
 
 // --- Database Connection and Server Initialization ---
 const startServer = async () => {
