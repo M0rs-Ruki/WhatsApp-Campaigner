@@ -61,7 +61,6 @@ const userSchema = new Schema<IUser>({
   },
   balance: {
     type: Number,
-    default: 0,
   },
   role: {
     type: String,

@@ -13,6 +13,8 @@ interface RegistrationBody {
     password: string;
     image: string;
     number: string;
+    role: string;
+    balance: number;
 }
 
 interface LoginBody {
@@ -28,13 +30,13 @@ export const Registration = async (
     res: Response
 ): Promise<Response> => {
     try {
-        const { companyName, email, password, number } = req.body;
+        const { companyName, email, password, number, role, balance } = req.body;
 
         // Get uploaded file from multer
         const image = req.file?.path || '';
 
         // Basic validation
-        if (!companyName || !email || !password || !image || !number) {
+        if (!companyName || !email || !password || !image || !number || !role || !balance) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required.',
@@ -59,7 +61,9 @@ export const Registration = async (
             email,
             password: hashedPassword,
             number,
-            image, 
+            image,
+            balance,
+            role,
         });
 
         await newUser.save();
@@ -84,6 +88,8 @@ export const Registration = async (
             email: newUser.email,
             image: newUser.image,
             role: newUser.role,
+            balance: newUser.balance,
+            number: newUser.number,
         };
 
         return res.status(201).json({

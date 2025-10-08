@@ -1,26 +1,22 @@
-// src/middleware/role.Middleware.ts
 import { Request, Response, NextFunction } from 'express';
+import { UserRole } from '../Models/user.Model.js';
 
-const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({ message: 'Forbidden: Admin access required' });
+const hasAuthority = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ 
+      success: false,
+      message: 'Authentication required' 
+    });
   }
-  next();
+
+  if (req.user.role === UserRole.ADMIN || req.user.role === UserRole.RESELLER) {
+    return next();
+  }
+
+  return res.status(403).json({ 
+    success: false,
+    message: 'You don\'t have the authority to perform this action' 
+  });
 };
 
-const isReseller = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user?.role !== 'reseller') {
-    return res.status(403).json({ message: 'Forbidden: Reseller access required' });
-  }
-  next();
-};
-
-const isUser = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user?.role !== 'user') {
-    return res.status(403).json({ message: 'Forbidden: User access required' });
-  }
-  next();
-};
-
-
-export { isAdmin, isReseller, isUser };
+export { hasAuthority };

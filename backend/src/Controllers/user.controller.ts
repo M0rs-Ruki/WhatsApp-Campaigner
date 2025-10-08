@@ -90,7 +90,7 @@ const createUser = async (req: Request, res: Response) => {
 // DELETE USER (Soft Delete)
 const deleteUser = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.id;
+        const userId = req.params.userId;
         if (!req.user) {
             return res.status(401).json({
                 success: false,
@@ -193,7 +193,7 @@ const freezeUser = async (req: Request, res: Response) => {
 // UNFREEZE/ACTIVATE USER
 const unfreezeUser = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.id;
+        const userId = req.params.userId;
         if (!req.user) {
             return res.status(401).json({
                 success: false,
