@@ -23,7 +23,10 @@
     /* Interop */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+
+    /* 👇 Add this line */
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": ["src"]
 }
