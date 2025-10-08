@@ -6,8 +6,14 @@ import { hashPassword } from '../Utils/hashPassword.Utils.js';
 const createUser = async (req: Request, res: Response) => {
     try {
         const { companyName, email, password, number, role, balance} = req.body;
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
         const image = req.file?.path || '';
-        const creatorId = req.user._id;
+        const creatorId = req.user!._id;
 
 
         if (!companyName || !email || !password || !number || !role || !balance || !image) {
@@ -18,15 +24,15 @@ const createUser = async (req: Request, res: Response) => {
         }
 
         const existingUser = await User.findOne({email});
-        if (!existingUser) {
+        if (existingUser) {
             return res.status(409).json({
                 success: false,
                 message: 'An account with this email already exists.',
             });
         }
 
-        const numberExists = await User.findOne({number});
-        if (!numberExists) {
+        const numberExists = await User.findOne({ number });
+        if (numberExists) {
             return res.status(409).json({
                 success: false,
                 message: 'An account with this number already exists.',
@@ -85,7 +91,13 @@ const createUser = async (req: Request, res: Response) => {
 const deleteUser = async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
-        const adminId = req.user._id;
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+        const adminId = req.user!._id;
 
         const admin = await User.findById(adminId);
         if (!admin || admin.role !== UserRole.ADMIN && admin.role !== UserRole.RESELLER) {
@@ -127,7 +139,13 @@ const deleteUser = async (req: Request, res: Response) => {
 const freezeUser = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
-        const adminId = req.user._id;
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+        const adminId = req.user!._id;
 
         const admin = await User.findById(adminId);
         if (!admin || admin.role !== UserRole.ADMIN && admin.role !== UserRole.RESELLER) {
@@ -176,7 +194,13 @@ const freezeUser = async (req: Request, res: Response) => {
 const unfreezeUser = async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
-        const adminId = req.user._id;
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+        const adminId = req.user!._id;
 
         const admin = await User.findById(adminId);
         if (!admin || admin.role !== UserRole.ADMIN && admin.role !== UserRole.RESELLER) {

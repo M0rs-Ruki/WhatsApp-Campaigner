@@ -3,6 +3,12 @@ import User, { UserStatus } from '../Models/user.Model.js';
 
 const checkUserStatus = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found in request.',
+            });
+        }
         const userId = req.user._id;
 
         const user = await User.findById(userId);
