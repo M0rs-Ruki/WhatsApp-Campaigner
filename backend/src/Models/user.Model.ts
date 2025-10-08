@@ -6,6 +6,12 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  DELETED = 'deleted',
+}
+
 export interface IUser extends Document {
   companyName: string;
   uID: string;
@@ -15,6 +21,8 @@ export interface IUser extends Document {
   password: string;
   role: UserRole;
   balance: number;
+  status: UserStatus;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,6 +68,15 @@ const userSchema = new Schema<IUser>({
     enum: Object.values(UserRole),
     default: UserRole.USER,
   },
+  status: {
+    type: String,
+    enum: Object.values(UserStatus),
+    default: UserStatus.ACTIVE,
+  },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
 }, {
   timestamps: true 
 });
@@ -67,4 +84,3 @@ const userSchema = new Schema<IUser>({
 const User = model<IUser>('User', userSchema);
 
 export default User;
-
