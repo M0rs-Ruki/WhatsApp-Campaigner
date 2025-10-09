@@ -22,7 +22,7 @@ interface CreateCampaignBody {
  * @access  Private (add auth middleware later)
  */
 
-export const createCampaign = async (
+const createCampaign = async (
     req: Request<unknown, unknown, CreateCampaignBody>,
     res: Response,
     next: NextFunction
@@ -149,3 +149,5 @@ export const createCampaign = async (
         });
     }
 };
+
+export default createCampaign;

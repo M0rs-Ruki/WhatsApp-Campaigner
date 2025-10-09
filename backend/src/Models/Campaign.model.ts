@@ -43,149 +43,175 @@ export interface ICampaign extends Document {
   updatedAt: Date;
 }
 
-const campaignSchema = new Schema({
-  campaignName: {
-    type: Schema.Types.String,
-    required: [true, 'Campaign name is required'],
-    trim: true,
-    minlength: [3, 'Campaign name must be at least 3 characters long'],
-    maxlength: [100, 'Campaign name cannot exceed 100 characters']
-  },
-  message: {
-    type: Schema.Types.String,
-    required: [true, 'Message is required'],
-    trim: true,
-    minlength: [1, 'Message cannot be empty'],
-    maxlength: [1000, 'Message cannot exceed 1000 characters']
-  },
-  phoneButton: {
-    type: {
-      text: {
-        type: Schema.Types.String,
-        required: true,
-        trim: true,
-        maxlength: 20
-      },
-      number: {
-        type: Schema.Types.String,
-        required: true,
-        trim: true,
-        validate: {
-          validator: function(v: string) {
-            return /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(v);
-          },
-          message: 'Please provide a valid phone number'
-        }
-      }
-    },
-    required: false,
-    _id: false
-  },
-  linkButton: {
-    type: {
-      text: {
-        type: Schema.Types.String,
-        required: true,
-        trim: true,
-        maxlength: 20
-      },
-      url: {
-        type: Schema.Types.String,
-        required: true,
-        trim: true,
-        validate: {
-          validator: function(v: string) {
-            return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
-          },
-          message: 'Please provide a valid URL'
-        }
-      }
-    },
-    required: false,
-    _id: false
-  },
-  media: {
-    type: {
-      type: {
-        type: Schema.Types.String,
-        enum: Object.values(MediaType),
-        required: true
-      },
-      url: {
-        type: Schema.Types.String,
-        required: true,
-        trim: true
-      },
-      filename: {
-        type: Schema.Types.String,
-        required: true
-      },
-      size: {
-        type: Schema.Types.Number,
-        required: true,
-        max: [5242880, 'File size cannot exceed 5MB']
-      },
-      mimeType: {
-        type: Schema.Types.String,
-        required: true,
-        validate: {
-          validator: function(v: string) {
-            const allowedTypes = [
-              'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-              'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo',
-              'application/pdf'
-            ];
-            return allowedTypes.includes(v);
-          },
-          message: 'Invalid file type. Only images, videos, and PDFs are allowed'
-        }
-      }
-    },
-    required: false,
-    _id: false
-  },
-  mobileNumberEntryType: {
-    type: Schema.Types.String,
-    enum: Object.values(MobileNumberEntryType),
-    required: [true, 'Mobile number entry type is required'],
-    default: MobileNumberEntryType.MANUAL
-  },
-  mobileNumbers: {
-    type: [Schema.Types.String],
-    required: [true, 'At least one mobile number is required'],
-    validate: {
-      validator: function(v: string[]) {
-        return v && v.length > 0;
-      },
-      message: 'At least one mobile number is required'
-    }
-  },
-  countryCode: {
-    type: Schema.Types.String,
-    required: [true, 'Country code is required'],
-    trim: true,
-    validate: {
-      validator: function(v: string) {
-        return /^\+\d{1,4}$/.test(v);
-      },
-      message: 'Please provide a valid country code (e.g., +91)'
-    }
-  },
-  numberCount: {
-    type: Schema.Types.Number,
-    default: 0
-  }
-}, {
-  timestamps: true
-});
+/* -------------------- Sub-Schemas -------------------- */
 
-campaignSchema.pre('save', function(next) {
-  if (this.mobileNumbers && Array.isArray(this.mobileNumbers)) {
+// 📞 Phone Button Subschema
+const PhoneButtonSchema = new Schema<IPhoneButton>(
+  {
+    text: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 20
+    },
+    number: {
+      type: String,
+      required: true,
+      trim: true,
+      validate: {
+        validator: (v: string) =>
+          /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/.test(v),
+        message: 'Please provide a valid phone number'
+      }
+    }
+  },
+  { _id: false }
+);
+
+// 🔗 Link Button Subschema
+const LinkButtonSchema = new Schema<ILinkButton>(
+  {
+    text: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 20
+    },
+    url: {
+      type: String,
+      required: true,
+      trim: true,
+      validate: {
+        validator: (v: string) =>
+          /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?$/.test(v),
+        message: 'Please provide a valid URL'
+      }
+    }
+  },
+  { _id: false }
+);
+
+// 🖼 Media Subschema
+const MediaSchema = new Schema<IMedia>(
+  {
+    type: {
+      type: String,
+      enum: Object.values(MediaType),
+      required: true
+    },
+    url: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    filename: {
+      type: String,
+      required: true
+    },
+    size: {
+      type: Number,
+      required: true,
+      max: [5242880, 'File size cannot exceed 5MB']
+    },
+    mimeType: {
+      type: String,
+      required: true,
+      validate: {
+        validator: (v: string) => {
+          const allowedTypes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'video/mp4',
+            'video/mpeg',
+            'video/quicktime',
+            'video/x-msvideo',
+            'application/pdf'
+          ];
+          return allowedTypes.includes(v);
+        },
+        message: 'Invalid file type. Only images, videos, and PDFs are allowed'
+      }
+    }
+  },
+  { _id: false }
+);
+
+/* -------------------- Main Schema -------------------- */
+
+const campaignSchema = new Schema<ICampaign>(
+  {
+    campaignName: {
+      type: String,
+      required: [true, 'Campaign name is required'],
+      trim: true,
+      minlength: [3, 'Campaign name must be at least 3 characters long'],
+      maxlength: [100, 'Campaign name cannot exceed 100 characters']
+    },
+    message: {
+      type: String,
+      required: [true, 'Message is required'],
+      trim: true,
+      minlength: [1, 'Message cannot be empty'],
+      maxlength: [1000, 'Message cannot exceed 1000 characters']
+    },
+    phoneButton: {
+      type: PhoneButtonSchema,
+      required: false
+    },
+    linkButton: {
+      type: LinkButtonSchema,
+      required: false
+    },
+    media: {
+      type: MediaSchema,
+      required: false
+    },
+    mobileNumberEntryType: {
+      type: String,
+      enum: Object.values(MobileNumberEntryType),
+      required: [true, 'Mobile number entry type is required'],
+      default: MobileNumberEntryType.MANUAL
+    },
+    mobileNumbers: {
+      type: [String],
+      required: [true, 'At least one mobile number is required'],
+      validate: {
+        validator: (v: string[]) => Array.isArray(v) && v.length > 0,
+        message: 'At least one mobile number is required'
+      }
+    },
+    countryCode: {
+      type: String,
+      required: [true, 'Country code is required'],
+      trim: true,
+      validate: {
+        validator: (v: string) => /^\+\d{1,4}$/.test(v),
+        message: 'Please provide a valid country code (e.g., +91)'
+      }
+    },
+    numberCount: {
+      type: Number,
+      default: 0
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+/* -------------------- Middleware -------------------- */
+
+campaignSchema.pre('save', function (next) {
+  if (Array.isArray(this.mobileNumbers)) {
     this.numberCount = this.mobileNumbers.length;
   }
   next();
 });
 
+/* -------------------- Model -------------------- */
 
 const Campaign: Model<ICampaign> = mongoose.model<ICampaign>('Campaign', campaignSchema);
 

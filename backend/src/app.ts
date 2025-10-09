@@ -33,6 +33,7 @@ import authRoutes from './Routes/auth.Routes.js';
 import userRoutes from './Routes/user.routes.js';
 import transactionRoutes from './Routes/transaction.Routes.js';
 import newsRoutes from './Routes/news.Routes.js';
+import campaignRoutes from './Routes/campaign.routes.js';
 
 
 // API Routes
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/transaction', transactionRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/campaigns', campaignRoutes);
 
 // --- Database Connection and Server Initialization ---
 const startServer = async () => {
