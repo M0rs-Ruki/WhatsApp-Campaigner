@@ -3,19 +3,21 @@ import { UserRole } from '../Models/user.Model.js';
 
 const hasAuthority = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: false,
-      message: 'Authentication required' 
+      message: 'Authentication required',
     });
   }
 
+
   if (req.user.role === UserRole.ADMIN || req.user.role === UserRole.RESELLER) {
-    return next();
+    next();
+    return;
   }
 
-  return res.status(403).json({ 
+  res.status(403).json({
     success: false,
-    message: 'You don\'t have the authority to perform this action' 
+    message: "You don't have the authority to perform this action",
   });
 };
 

@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 
 dotenv.config({ path: "./.env"});
 
