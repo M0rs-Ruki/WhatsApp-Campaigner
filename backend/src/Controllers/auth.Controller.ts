@@ -36,7 +36,7 @@ export const Registration = async (
         const image = req.file?.path || '';
 
         // Basic validation
-        if (!companyName || !email || !password || !image || !number || !role || !balance) {
+        if (!companyName || !email || !password || !image || !number || !role) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required.',

@@ -27,20 +27,19 @@ app.use(express.static('public'));
 app.use(multerErrorHandler);
 app.use(cookieParser());
 
-// --- Routes ---
-app.get('/', (req, res) => {
-    res.send('WhatsApp Campaigner API - Server is running!');
-});
 
+// Routes
 import authRoutes from './Routes/auth.Routes.js';
 import userRoutes from './Routes/user.routes.js';
 import transactionRoutes from './Routes/transaction.Routes.js';
+import newsRoutes from './Routes/news.Routes.js';
 
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/transaction', transactionRoutes);
+app.use('/api/news', newsRoutes);
 
 // --- Database Connection and Server Initialization ---
 const startServer = async () => {
