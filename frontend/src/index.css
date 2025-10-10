@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+/* React Quill Custom Styles */
+.ql-toolbar {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: none !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.8) !important;
+    border-radius: 12px 12px 0 0 !important;
+  }
+  
+  .ql-container {
+    border: none !important;
+    font-size: 16px !important;
+    min-height: 150px !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 0 0 12px 12px !important;
+  }
+  
+  .ql-editor {
+    min-height: 150px !important;
+    color: black !important;
+  }
+  
+  .ql-editor.ql-blank::before {
+    color: #6b7280 !important;
+    font-style: normal !important;
+  }
+  
+  .ql-toolbar button:hover,
+  .ql-toolbar button:focus {
+    color: #22c55e !important;
+  }
+  
+  .ql-toolbar button.ql-active {
+    color: #16a34a !important;
+  }
+  
+  .ql-stroke {
+    stroke: black !important;
+  }
+  
+  .ql-fill {
+    fill: black !important;
+  }
+  
+  .ql-toolbar button:hover .ql-stroke,
+  .ql-toolbar button:focus .ql-stroke {
+    stroke: #22c55e !important;
+  }
+  
+  .ql-toolbar button:hover .ql-fill,
+  .ql-toolbar button:focus .ql-fill {
+    fill: #22c55e !important;
+  }
+  

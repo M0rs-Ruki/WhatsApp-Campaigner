@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import SendWhatsapp from './pages/SendWhatsapp';
 
 // Dashboard Pages
 const Dashboard = () => (
@@ -23,7 +24,6 @@ const Dashboard = () => (
   </div>
 );
 
-const SendWhatsapp = () => <div><h2 className="text-2xl font-bold text-black">Send WhatsApp Messages</h2></div>;
 const Credits = () => <div><h2 className="text-2xl font-bold text-black">Credits Management</h2></div>;
 const ManageReseller = () => <div><h2 className="text-2xl font-bold text-black">Manage Resellers</h2></div>;
 const ManageUsers = () => <div><h2 className="text-2xl font-bold text-black">Manage Users</h2></div>;
