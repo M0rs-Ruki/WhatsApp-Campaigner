@@ -159,15 +159,12 @@ const campaignSchema = new Schema<ICampaign>(
     },
     phoneButton: {
       type: PhoneButtonSchema,
-      required: false
     },
     linkButton: {
       type: LinkButtonSchema,
-      required: false
     },
     media: {
       type: MediaSchema,
-      required: false
     },
     mobileNumberEntryType: {
       type: String,

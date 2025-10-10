@@ -24,7 +24,7 @@ const SendWhatsapp = () => {
     phoneButtonNumber: '',
     linkButtonText: '',
     linkButtonUrl: '',
-    mobileNumberEntryType: 'Manual Entry',
+    mobileNumberEntryType: 'manual',
     mobileNumbers: '',
     countryCode: '+91',
     numberCount: ''
@@ -47,11 +47,13 @@ const SendWhatsapp = () => {
   };
 
   const formats = [
-    'bold', 'italic',
-    'list', 'bullet',
-    'blockquote',
-    'link'
+    "bold",
+    "italic",
+    "list", 
+    "blockquote",
+    "link",
   ];
+  
 
   // Handle text input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -152,7 +154,7 @@ const SendWhatsapp = () => {
       const response = await fetch(`${API_URL}/api/campaigns`, {
         method: 'POST',
         body: submitData,
-        // Don't set Content-Type header - browser will set it automatically with boundary
+        credentials: "include",
       });
 
       const result = await response.json();
@@ -167,7 +169,7 @@ const SendWhatsapp = () => {
           phoneButtonNumber: '',
           linkButtonText: '',
           linkButtonUrl: '',
-          mobileNumberEntryType: 'Manual Entry',
+          mobileNumberEntryType: 'manual',
           mobileNumbers: '',
           countryCode: '+91',
           numberCount: ''

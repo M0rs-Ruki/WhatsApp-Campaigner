@@ -20,8 +20,9 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.cookies.token;
         if (!token) {
-            return res.status(401).json({ success: false, message: "Access denied. No token provided." });
+            return res.status(401).json({ success: false, message: `"Access denied. No token provided."` });
         }
+        
         const decoded = jwt.verify(token, secret) as DecodedJwtPayload;
 
         let user: any = null;
