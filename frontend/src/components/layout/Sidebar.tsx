@@ -1,9 +1,9 @@
-import { useState } from 'react';
+
+import { Link, useLocation } from 'react-router-dom';
 
 interface MenuItem {
   label: string;
   path: string;
-  icon?: string;
 }
 
 interface MenuSection {
@@ -12,12 +12,13 @@ interface MenuSection {
 }
 
 const Sidebar = () => {
-  const [activeItem, setActiveItem] = useState('/dashboard');
+  const location = useLocation();
+  const activeItem = location.pathname;
 
   const menuSections: MenuSection[] = [
     {
       items: [
-        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Dashboard', path: '/home' },
         { label: 'Send Whatsapp', path: '/send-whatsapp' },
         { label: 'Credits', path: '/credits' },
       ]
@@ -48,11 +49,11 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r-4 border-black p-4">
+    <aside className="w-64 min-h-screen bg-white/20 backdrop-blur-xl border-r border-white/30 p-4">
       
-      {/* Logo/Brand */}
-      <div className="mb-8 p-4 bg-yellow-300 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-        <h1 className="text-2xl font-black">WhatsApp Campaign</h1>
+      {/* Logo/Brand with Glass Effect */}
+      <div className="mb-8 p-4 bg-green-500/30 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg">
+        <h1 className="text-xl font-bold text-black">WhatsApp Campaign</h1>
       </div>
 
       {/* Navigation Sections */}
@@ -62,29 +63,27 @@ const Sidebar = () => {
             
             {/* Section Title */}
             {section.title && (
-              <h2 className="text-xs font-bold text-gray-600 mb-2 px-2">
+              <h2 className="text-xs font-bold text-black mb-3 px-2 uppercase tracking-wider opacity-70">
                 {section.title}
               </h2>
             )}
 
             {/* Menu Items */}
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {section.items.map((item) => (
                 <li key={item.path}>
-                  <a
-                    href={item.path}
-                    onClick={() => setActiveItem(item.path)}
+                  <Link
+                    to={item.path}
                     className={`
-                      block px-4 py-3 font-bold border-2 border-black
-                      transition-all duration-200
+                      block px-4 py-3 font-semibold text-black rounded-xl transition-all duration-300
                       ${activeItem === item.path
-                        ? 'bg-blue-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] translate-x-0'
-                        : 'bg-white hover:bg-pink-300 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px]'
+                        ? 'bg-green-500/40 backdrop-blur-md border border-white/50 shadow-lg'
+                        : 'bg-white/10 backdrop-blur-sm border border-transparent hover:bg-white/30 hover:backdrop-blur-md hover:border-white/40 hover:shadow-md'
                       }
                     `}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

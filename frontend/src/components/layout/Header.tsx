@@ -1,28 +1,41 @@
+import { useNavigate } from 'react-router-dom';
+
 const Header = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+  };
+
   return (
-    <header className="w-full bg-white border-b-4 border-black">
+    <header className="w-full bg-white/30 backdrop-blur-xl border-b border-white/30 sticky top-0 z-50">
       <div className="flex items-center justify-between px-6 py-4">
         
         {/* Page Title */}
         <div>
-          <h1 className="text-3xl font-black">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-black">Dashboard</h1>
         </div>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-4">
           
           {/* Credits Display */}
-          <div className="px-4 py-2 bg-green-300 border-3 border-black font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+          <div className="px-5 py-2 bg-green-500/30 backdrop-blur-md rounded-xl border border-white/40 font-bold text-black shadow-lg">
             Credits: <span className="text-xl">1,250</span>
           </div>
 
-          {/* User Profile */}
-          <button className="px-6 py-2 bg-yellow-300 border-3 border-black font-bold hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
+          {/* User Profile Button */}
+          <button className="px-6 py-2 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 font-semibold text-black hover:bg-white/60 hover:shadow-lg transition-all">
             Profile
           </button>
 
           {/* Logout Button */}
-          <button className="px-6 py-2 bg-red-400 border-3 border-black font-bold hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
+          <button 
+            onClick={handleLogout}
+            className="px-6 py-2 bg-green-500/40 backdrop-blur-md rounded-xl border border-white/50 font-semibold text-black hover:bg-green-500/60 hover:shadow-lg transition-all"
+          >
             Logout
           </button>
         </div>
