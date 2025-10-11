@@ -151,4 +151,29 @@ const dashboard = async (req: Request, res: Response) => {
 };
 
 
+const transaction = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                companyName: user.companyName,
+            }
+        });
+
+
+    } catch (error) {
+        
+    }
+}
+
+
 export { businessDetails, dashboard };

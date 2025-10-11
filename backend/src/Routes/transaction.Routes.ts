@@ -5,13 +5,11 @@ import hasAuthority from '../Middlewares/role.middleware.js';
 import {
   creditBalance,
   debitBalance,
-  getTransactionHistory
 } from '../Controllers/transaction.Controller.js';
 
 const router = express.Router();
 
 router.post('/credit', isLoggedIn, hasAuthority, upload.none(), creditBalance);
 router.post('/debit', isLoggedIn, hasAuthority, upload.none(), debitBalance);
-router.get('/history/:userId', isLoggedIn, getTransactionHistory);
 
 export default router;

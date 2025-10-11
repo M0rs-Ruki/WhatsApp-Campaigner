@@ -15,7 +15,7 @@ export enum UserStatus {
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   companyName: string;
-  userID: mongoose.Types.ObjectId;  // Reference to creator User
+  userID: mongoose.Types.ObjectId;
   email: string;
   image: string;
   number: number;
@@ -23,8 +23,9 @@ export interface IUser extends Document {
   role: UserRole;
   allReseller: mongoose.Types.ObjectId[];
   allUsers: mongoose.Types.ObjectId[];
+  allCampaign: mongoose.Types.ObjectId[];
+  allTransaction: mongoose.Types.ObjectId[];
   totalCampaigns: number;
-  allCampaign: mongoose.Types.ObjectId[];  // Reference to all Campaigns
   balance: number;
   status: UserStatus;
   deletedAt?: Date;
@@ -88,6 +89,10 @@ const userSchema = new Schema<IUser>({
   allCampaign: [{
     type: Schema.Types.ObjectId,
     ref: 'Campaign',
+  }],
+  allTransaction: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Transaction',
   }],
   status: {
     type: String,

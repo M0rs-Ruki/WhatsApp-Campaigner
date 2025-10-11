@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  creditBalanceService,
-  debitBalanceService,
-  getTransactionHistoryService
-} from "../Utils/transaction.Utlis.js";
+import { creditBalanceService } from "../Utils/transaction.Utlis.js";
 
 export const creditBalance = async (
   req: Request,
@@ -11,12 +7,22 @@ export const creditBalance = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { userId, amount, description } = req.body;
+    const { receiverId, amount } = req.body;
+    const senderId = req.user?._id || req.user?.id;
 
-    if (!userId || !amount) {
+    // Validation
+    if (!senderId) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required"
+      });
+      return;
+    }
+
+    if (!receiverId || !amount) {
       res.status(400).json({
         success: false,
-        message: "userId and amount are required"
+        message: "receiverId and amount are required"
       });
       return;
     }
@@ -29,66 +35,31 @@ export const creditBalance = async (
       return;
     }
 
+    // Call service
     const result = await creditBalanceService(
-      userId,
-      parseFloat(amount),
-      description
+      senderId,
+      receiverId,
+      parseFloat(amount)
     );
 
     res.status(200).json({
       success: true,
       message: "Balance credited successfully",
       data: {
-        balance: result.user.balance,
-        transaction: result.transaction
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const debitBalance = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { userId, amount, description } = req.body;
-
-    if (!userId || !amount) {
-      res.status(400).json({
-        success: false,
-        message: "userId and amount are required"
-      });
-      return;
-    }
-
-    if (amount <= 0) {
-      res.status(400).json({
-        success: false,
-        message: "Amount must be greater than 0"
-      });
-      return;
-    }
-
-    const result = await debitBalanceService(
-      userId,
-      parseFloat(amount),
-      description
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Balance debited successfully",
-      data: {
-        balance: result.user.balance,
-        transaction: result.transaction
+        senderBalance: result.sender.balance,
+        receiverBalance: result.receiver.balance,
+        transaction: {
+          id: result.transaction._id,
+          amount: result.transaction.amount,
+          type: result.transaction.type,
+          status: result.transaction.status,
+          date: result.transaction.transactionDate
+        }
       }
     });
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === "User not found") {
+      if (error.message === "Sender not found" || error.message === "Receiver not found") {
         res.status(404).json({
           success: false,
           message: error.message
@@ -102,27 +73,26 @@ export const debitBalance = async (
         });
         return;
       }
+      if (error.message === "Only admin or reseller can credit balance") {
+        res.status(403).json({
+          success: false,
+          message: error.message
+        });
+        return;
+      }
     }
     next(error);
   }
 };
 
-export const getTransactionHistory = async (
+export const debitBalance = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const { userId } = req.params;
-    const limit = parseInt(req.query.limit as string) || 50;
-
-    const transactions = await getTransactionHistoryService(userId, limit);
-
-    res.status(200).json({
-      success: true,
-      data: transactions
-    });
-  } catch (error) {
-    next(error);
-  }
+  // Will implement later
+  res.status(501).json({
+    success: false,
+    message: "Debit functionality not implemented yet"
+  });
 };

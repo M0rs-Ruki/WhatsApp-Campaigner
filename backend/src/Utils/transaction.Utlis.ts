@@ -1,191 +1,108 @@
 import mongoose, { ClientSession } from "mongoose";
 import User, { IUser } from "../Models/user.Model.js";
 import Transaction, { ITransaction } from "../Models/transaction.Model.js";
+import { UserRole } from "../Models/user.Model.js";
 
-interface TransactionResult {
-  user: IUser;
+
+interface CreditBalanceResult {
+  sender: IUser;
+  receiver: IUser;
   transaction: ITransaction;
 }
 
 export const creditBalanceService = async (
-  id: string,
-  amount: number,
-  description?: string
-): Promise<TransactionResult> => {
+  senderId: string,
+  receiverId: string,
+  amount: number
+): Promise<CreditBalanceResult> => {
   const session: ClientSession = await mongoose.startSession();
   session.startTransaction();
 
-  let balanceBefore = 0;
-  let transactionLog: ITransaction | null = null;
-
   try {
-    const user = await User.findById(id).session(session);
-    
-    if (!user) {
-      // Log failed transaction - outside session
-      transactionLog = await Transaction.create({
-        userId: id,
-        type: "credit",
-        amount,
-        balanceBefore: 0,
-        balanceAfter: 0,
-        status: "failed",
-        failureReason: "User not found",
-        description: description || "Credit transaction"
-      });
-      
-      throw new Error("User not found");
+    // Find sender and receiver
+    const sender = await User.findById(senderId).session(session);
+    const receiver = await User.findById(receiverId).session(session);
+
+    if (!sender) {
+      throw new Error("Sender not found");
     }
 
-    balanceBefore = user.balance;
-    user.balance += amount;
-    const newBalance = user.balance;
-    await user.save({ session });
+    if (!receiver) {
+      throw new Error("Receiver not found");
+    }
 
-    // Create successful transaction log - inside session
-    const transaction = await Transaction.create([{
-      userId: user._id,
+    // Check if sender has authority (admin or reseller)
+    if (sender.role !== UserRole.ADMIN && sender.role !== UserRole.RESELLER) {
+      throw new Error("Only admin or reseller can credit balance");
+    }
+
+    // Check if reseller has enough balance
+    if (sender.role === UserRole.RESELLER) {
+      if (sender.balance < amount) {
+        throw new Error("Insufficient balance");
+      }
+      // Deduct from reseller
+      sender.balance -= amount;
+    }
+    // Admin has unlimited balance, no deduction needed
+
+    // Store receiver's balance before transaction
+    const receiverBalanceBefore = receiver.balance;
+
+    // Credit to receiver
+    receiver.balance += amount;
+    const receiverBalanceAfter = receiver.balance;
+
+    // Create transaction record
+    const transactionDoc = await Transaction.create([{
+      senderId: sender._id,
+      receiverId: receiver._id,
       type: "credit",
       amount,
-      balanceBefore,
-      balanceAfter: newBalance,
-      status: "success",
-      description: description || "Credit transaction"
+      balanceBefore: receiverBalanceBefore,
+      balanceAfter: receiverBalanceAfter,
+      status: "success"
     }], { session });
 
+    const transaction = transactionDoc[0];
+
+    // Push transaction ID to both sender's and receiver's allTransaction arrays
+    sender.allTransaction.push(transaction._id as mongoose.Types.ObjectId);
+    receiver.allTransaction.push(transaction._id as mongoose.Types.ObjectId);
+
+    // Save both users
+    await sender.save({ session });
+    await receiver.save({ session });
+
+    // Commit transaction
     await session.commitTransaction();
-    
+
     return {
-      user,
-      transaction: transaction[0]
+      sender,
+      receiver,
+      transaction
     };
   } catch (error) {
     await session.abortTransaction();
     
-    // If transaction log wasn't created yet, create it now
-    if (!transactionLog) {
-      transactionLog = await Transaction.create({
-        userId: id,
+    // Log failed transaction (outside session)
+    try {
+      await Transaction.create({
+        senderId: senderId,
+        receiverId: receiverId,
         type: "credit",
-        amount,
-        balanceBefore,
-        balanceAfter: balanceBefore,
-        status: "failed",
-        failureReason: error instanceof Error ? error.message : "Unknown error",
-        description: description || "Credit transaction"
-      });
-    }
-    
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-};
-
-export const debitBalanceService = async (
-  id: string,
-  amount: number,
-  description?: string
-): Promise<TransactionResult> => {
-  const session: ClientSession = await mongoose.startSession();
-  session.startTransaction();
-
-  let balanceBefore = 0;
-  let transactionLog: ITransaction | null = null;
-
-  try {
-    const user = await User.findById(id).session(session);
-    
-    if (!user) {
-      // Log failed transaction
-      transactionLog = await Transaction.create({
-        userId: id,
-        type: "debit",
         amount,
         balanceBefore: 0,
         balanceAfter: 0,
-        status: "failed",
-        failureReason: "User not found",
-        description: description || "Debit transaction"
+        status: "failed"
       });
-      
-      throw new Error("User not found");
-    }
-
-    balanceBefore = user.balance;
-
-    if (user.balance < amount) {
-      // Log failed transaction
-      transactionLog = await Transaction.create({
-        userId: user._id,
-        type: "debit",
-        amount,
-        balanceBefore,
-        balanceAfter: balanceBefore,
-        status: "failed",
-        failureReason: "Insufficient balance",
-        description: description || "Debit transaction"
-      });
-      
-      throw new Error("Insufficient balance");
-    }
-
-    user.balance -= amount;
-    const newBalance = user.balance;
-    await user.save({ session });
-
-    // Create successful transaction log - inside session
-    const transaction = await Transaction.create([{
-      userId: user._id,
-      type: "debit",
-      amount,
-      balanceBefore,
-      balanceAfter: newBalance,
-      status: "success",
-      description: description || "Debit transaction"
-    }], { session });
-
-    await session.commitTransaction();
-    
-    return {
-      user,
-      transaction: transaction[0]
-    };
-  } catch (error) {
-    await session.abortTransaction();
-    
-    // If transaction log wasn't created yet, create it now
-    if (!transactionLog) {
-      transactionLog = await Transaction.create({
-        userId: id,
-        type: "debit",
-        amount,
-        balanceBefore,
-        balanceAfter: balanceBefore,
-        status: "failed",
-        failureReason: error instanceof Error ? error.message : "Unknown error",
-        description: description || "Debit transaction"
-      });
+    } catch (logError) {
+      // If logging fails, just continue with throwing the original error
+      console.error("Failed to log transaction:", logError);
     }
     
     throw error;
   } finally {
     await session.endSession();
   }
-};
-
-export const getTransactionHistoryService = async (
-  userId: string,
-  limit: number = 50,
-  includeFailedTransactions: boolean = true
-): Promise<ITransaction[]> => {
-  const filter: any = { userId };
-  
-  if (!includeFailedTransactions) {
-    filter.status = "success";
-  }
-  
-  return await Transaction.find(filter)
-    .sort({ transactionDate: -1 })
-    .limit(limit);
 };
