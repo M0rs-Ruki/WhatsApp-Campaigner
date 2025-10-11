@@ -2,10 +2,10 @@
 import express from 'express';
 import upload from '../Utils/upload.Utils.js';
 import isLoggedIn from '../Middlewares/isLoggedIn.Middleware.js';
-import { createUser, deleteUser, freezeUser, unfreezeUser } from '../Controllers/user.controller.js';
+import { createUser, deleteUser, freezeUser, unfreezeUser, updateUser } from '../Controllers/user.controller.js';
 import checkUserStatus from '../Middlewares/checkUserStatus.middleware.js';
 import hasAuthority from '../Middlewares/role.middleware.js';
-import verifyUser from '../Middlewares/auth.Middleware.js';
+// import verifyUser from '../Middlewares/auth.Middleware.js';
 
 
 
@@ -16,6 +16,7 @@ router.post('/create', isLoggedIn, hasAuthority, upload.single('image'), createU
 router.delete('/delete/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), deleteUser);
 router.put('/freeze/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), freezeUser);
 router.put('/unfreeze/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), unfreezeUser);
+router.put('/update/:userId', isLoggedIn, hasAuthority, upload.none(), updateUser);
 
 
 

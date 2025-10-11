@@ -4,22 +4,24 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    const token = localStorage.getItem('token');
     const API_URL = import.meta.env.VITE_API_URL;
 
     try {
+      // Call backend logout to clear cookie
       await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
+        credentials: 'include', // Important: Include cookies in request
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
         },
       });
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
-      localStorage.removeItem('token');
+      // Clear localStorage
       localStorage.removeItem('user');
+      
+      // Redirect to login
       navigate('/');
     }
   };

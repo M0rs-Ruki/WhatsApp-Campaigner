@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import User, { UserRole, UserStatus } from '../Models/user.Model.js';
+import { IUser } from '../Models/user.Model.js';
 import { hashPassword } from '../Utils/hashPassword.Utils.js';
 
 // Create User
@@ -236,5 +237,94 @@ const unfreezeUser = async (req: Request, res: Response) => {
     }
 };
 
+// declare global {
+//     namespace Express {
+//       interface Request {
+//         user?: IUser;
+//       }
+//     }
+//   }
+  
+// UPDATE USER
+const updateUser = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const authenticatedUser = req.user as IUser;
 
-export { createUser, deleteUser, freezeUser, unfreezeUser };
+        if (!authenticatedUser) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+
+
+        const isOwner = authenticatedUser._id.toString() === userId;
+        const isAdminOrReseller = authenticatedUser.role === UserRole.ADMIN || authenticatedUser.role === UserRole.RESELLER;
+
+        if (!isOwner && !isAdminOrReseller) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to update this user.',
+            });
+        }
+
+        const updateFields: { [key: string]: any } = {};
+        if (req.body.companyName) updateFields.companyName = req.body.companyName;
+        if (req.body.email) updateFields.email = req.body.email;
+        if (req.body.number) updateFields.number = req.body.number;
+
+        // If no fields to update were provided, return an error.
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No update information provided.',
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: `User not found.${userId}`,
+            });
+        }
+
+
+        return res.status(200).json({
+            success: true,
+            message: 'User updated successfully',
+            data: {
+                id: updatedUser._id,
+                companyName: updatedUser.companyName,
+                email: updatedUser.email,
+                number: updatedUser.number,
+                role: updatedUser.role,
+            },
+        });
+
+    } catch (error: any) { // Use 'any' to check for error properties like 'code'
+        // Handle specific DB errors like a duplicate email
+        if (error.code === 11000) {
+            return res.status(409).json({ // 409 Conflict
+                success: false,
+                message: 'This email is already in use.',
+            });
+        }
+        
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        res.status(500).json({
+            success: false,
+            message: 'Error updating user',
+            error: errorMessage,
+        });
+    }
+};
+
+
+export { createUser, deleteUser, freezeUser, unfreezeUser, updateUser };

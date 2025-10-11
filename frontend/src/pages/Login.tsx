@@ -24,9 +24,8 @@ const Login = () => {
     }
 
     try {
-      // TODO: Replace with your actual API call
-      const API_URL = import.meta.env.VITE_API_URL;
-      
+  
+      const API_URL = import.meta.env.VITE_API_URL;    
 
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
@@ -38,14 +37,6 @@ const Login = () => {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // // Debug: Log the response to see structure
-        // console.log('Login response:', data);
-          
-        // Store token - MUST be saved!
-        if (data.token) {
-          localStorage.setItem('token', data.token);
-        }
         
         // Store user info
         if (data.user) {

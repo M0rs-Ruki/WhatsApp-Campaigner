@@ -28,5 +28,5 @@
     /* 👇 Add this line */
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src"]
+  "include": ["src/**/*"]
 }

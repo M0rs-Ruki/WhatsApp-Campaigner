@@ -13,6 +13,7 @@ export enum UserStatus {
 }
 
 export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
   companyName: string;
   userID: mongoose.Types.ObjectId;  // Reference to creator User
   email: string;
