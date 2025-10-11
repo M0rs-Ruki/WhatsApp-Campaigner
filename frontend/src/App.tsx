@@ -5,12 +5,12 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import SendWhatsapp from './pages/SendWhatsapp';
 import ManageBusinessPage from './pages/ManageBusiness';
 import DashboardPage from './pages/Dashboard';
+import CreditReportsPage from './pages/CreditReports';
 
 
 
 
 const AddCredits = () => <div><h2 className="text-2xl font-bold text-black">Add Credits</h2></div>;
-const Credits = () => <div><h2 className="text-2xl font-bold text-black">Credits Management</h2></div>;
 const ManageReseller = () => <div><h2 className="text-2xl font-bold text-black">Manage Resellers</h2></div>;
 const ManageUsers = () => <div><h2 className="text-2xl font-bold text-black">Manage Users</h2></div>;
 const CreditReports = () => <div><h2 className="text-2xl font-bold text-black">Credit Reports</h2></div>;
@@ -56,7 +56,7 @@ function App() {
           element={
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><Credits /></DashboardLayout>
+                <DashboardLayout><CreditReportsPage /></DashboardLayout>
               </div>
             </ProtectedRoute>
           }

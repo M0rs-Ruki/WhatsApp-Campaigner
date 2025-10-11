@@ -39,9 +39,9 @@ const Header = () => {
         <div className="flex items-center gap-4">
           
           {/* Credits Display */}
-          <div className="px-5 py-2 bg-green-500/30 backdrop-blur-md rounded-xl border border-white/40 font-bold text-black shadow-lg">
+          {/* <div className="px-5 py-2 bg-green-500/30 backdrop-blur-md rounded-xl border border-white/40 font-bold text-black shadow-lg">
             Credits: <span className="text-xl">1,250</span>
-          </div>
+          </div> */}
 
           {/* User Profile Button */}
           <button 

@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { IUser } from '../Models/user.Model.js';
 import mongoose from 'mongoose';
 import Campaign from '../Models/Campaign.model.js';
+import Transaction from '../Models/transaction.Model.js';
+import User from '../Models/user.Model.js';
 
 
 
@@ -161,18 +163,85 @@ const transaction = async (req: Request, res: Response) => {
             });
         }
 
+        const userId = user._id;
+
+        // Get current user for balance
+        const currentUser = await User.findById(userId).select('balance companyName');
+        
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Fetch last 100 transactions for this user
+        const transactions = await Transaction.find({
+            $or: [
+                { receiverId: userId },
+                { senderId: userId }
+            ]
+        })
+            .sort({ transactionDate: -1 }) // Most recent first
+            .limit(100)
+            .populate('senderId', 'companyName') // Get sender's company name
+            .populate('campaignId', 'campaignName') // Get campaign name
+            .lean();
+
+        // Format transactions for frontend
+        const formattedTransactions = transactions.map((transaction: any) => {
+            const isCredit = transaction.type === 'credit';
+            const isDebit = transaction.type === 'debit';
+
+            // userOrCampaign: sender name (credit) or campaign name (debit)
+            let userOrCampaign = '';
+            if (isCredit && transaction.senderId) {
+                userOrCampaign = transaction.senderId.companyName || 'Unknown User';
+            } else if (isDebit && transaction.campaignId) {
+                userOrCampaign = transaction.campaignId.campaignName || 'Unknown Campaign';
+            } else {
+                userOrCampaign = isCredit ? 'Credit Transaction' : 'Debit Transaction';
+            }
+
+            // createdBy: sender name (credit) or current user's name (debit)
+            let createdBy = '';
+            if (isCredit && transaction.senderId) {
+                createdBy = transaction.senderId.companyName || 'Unknown User';
+            } else if (isDebit) {
+                createdBy = currentUser.companyName;
+            }
+
+            return {
+                transactionId: transaction._id,
+                userOrCampaign,
+                amount: transaction.amount,
+                type: transaction.type,
+                createdBy,
+                createdAt: transaction.transactionDate,
+                status: transaction.status,
+                balanceBefore: transaction.balanceBefore,
+                balanceAfter: transaction.balanceAfter
+            };
+        });
+
         return res.status(200).json({
             success: true,
             data: {
-                allTransaction: user.allTransaction,
+                currentBalance: currentUser.balance,
+                totalTransactions: formattedTransactions.length,
+                transactions: formattedTransactions
             }
         });
 
-
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error('Error in transaction controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in transaction controller.',
+        });
     }
 }
+
 
 
 export { businessDetails, dashboard, transaction };
