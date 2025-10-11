@@ -84,15 +84,3 @@ export const creditBalance = async (
     next(error);
   }
 };
-
-export const debitBalance = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  // Will implement later
-  res.status(501).json({
-    success: false,
-    message: "Debit functionality not implemented yet"
-  });
-};

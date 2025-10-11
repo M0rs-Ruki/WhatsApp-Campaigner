@@ -1,8 +1,6 @@
 import mongoose, { ClientSession } from "mongoose";
-import User, { IUser } from "../Models/user.Model.js";
+import User, { IUser, UserRole } from "../Models/user.Model.js";
 import Transaction, { ITransaction } from "../Models/transaction.Model.js";
-import { UserRole } from "../Models/user.Model.js";
-
 
 interface CreditBalanceResult {
   sender: IUser;
@@ -10,6 +8,13 @@ interface CreditBalanceResult {
   transaction: ITransaction;
 }
 
+interface DebitForCampaignResult {
+  user: IUser;
+  transaction: ITransaction;
+  actualNumbersProcessed: number;
+}
+
+// Credit Balance Service (existing)
 export const creditBalanceService = async (
   senderId: string,
   receiverId: string,
@@ -19,7 +24,6 @@ export const creditBalanceService = async (
   session.startTransaction();
 
   try {
-    // Find sender and receiver
     const sender = await User.findById(senderId).session(session);
     const receiver = await User.findById(receiverId).session(session);
 
@@ -31,29 +35,21 @@ export const creditBalanceService = async (
       throw new Error("Receiver not found");
     }
 
-    // Check if sender has authority (admin or reseller)
     if (sender.role !== UserRole.ADMIN && sender.role !== UserRole.RESELLER) {
       throw new Error("Only admin or reseller can credit balance");
     }
 
-    // Check if reseller has enough balance
     if (sender.role === UserRole.RESELLER) {
       if (sender.balance < amount) {
         throw new Error("Insufficient balance");
       }
-      // Deduct from reseller
       sender.balance -= amount;
     }
-    // Admin has unlimited balance, no deduction needed
 
-    // Store receiver's balance before transaction
     const receiverBalanceBefore = receiver.balance;
-
-    // Credit to receiver
     receiver.balance += amount;
     const receiverBalanceAfter = receiver.balance;
 
-    // Create transaction record
     const transactionDoc = await Transaction.create([{
       senderId: sender._id,
       receiverId: receiver._id,
@@ -66,15 +62,12 @@ export const creditBalanceService = async (
 
     const transaction = transactionDoc[0];
 
-    // Push transaction ID to both sender's and receiver's allTransaction arrays
     sender.allTransaction.push(transaction._id as mongoose.Types.ObjectId);
     receiver.allTransaction.push(transaction._id as mongoose.Types.ObjectId);
 
-    // Save both users
     await sender.save({ session });
     await receiver.save({ session });
 
-    // Commit transaction
     await session.commitTransaction();
 
     return {
@@ -85,7 +78,6 @@ export const creditBalanceService = async (
   } catch (error) {
     await session.abortTransaction();
     
-    // Log failed transaction (outside session)
     try {
       await Transaction.create({
         senderId: senderId,
@@ -97,7 +89,85 @@ export const creditBalanceService = async (
         status: "failed"
       });
     } catch (logError) {
-      // If logging fails, just continue with throwing the original error
+      console.error("Failed to log transaction:", logError);
+    }
+    
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+};
+
+// NEW: Debit Balance for Campaign
+export const debitForCampaignService = async (
+  userId: string,
+  campaignId: string,
+  requestedAmount: number
+): Promise<DebitForCampaignResult> => {
+  const session: ClientSession = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const user = await User.findById(userId).session(session);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const balanceBefore = user.balance;
+
+    // Calculate actual amount to debit (limited by user's balance)
+    const actualAmount = Math.min(requestedAmount, user.balance);
+
+    if (actualAmount === 0) {
+      throw new Error("Insufficient balance");
+    }
+
+    // Debit from user
+    user.balance -= actualAmount;
+    const balanceAfter = user.balance;
+
+    // Create transaction record
+    const transactionDoc = await Transaction.create([{
+      receiverId: user._id,
+      senderId: undefined, // No sender for campaign debit
+      campaignId: campaignId,
+      type: "debit",
+      amount: actualAmount,
+      balanceBefore,
+      balanceAfter,
+      status: "success"
+    }], { session });
+
+    const transaction = transactionDoc[0];
+
+    // Push transaction to user's allTransaction array
+    user.allTransaction.push(transaction._id as mongoose.Types.ObjectId);
+
+    await user.save({ session });
+
+    await session.commitTransaction();
+
+    return {
+      user,
+      transaction,
+      actualNumbersProcessed: actualAmount // 1 point = 1 number
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    
+    // Log failed transaction
+    try {
+      await Transaction.create({
+        receiverId: userId,
+        campaignId: campaignId,
+        type: "debit",
+        amount: requestedAmount,
+        balanceBefore: 0,
+        balanceAfter: 0,
+        status: "failed"
+      });
+    } catch (logError) {
       console.error("Failed to log transaction:", logError);
     }
     

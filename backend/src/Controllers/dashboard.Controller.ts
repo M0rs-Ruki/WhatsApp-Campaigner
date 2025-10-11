@@ -164,8 +164,7 @@ const transaction = async (req: Request, res: Response) => {
         return res.status(200).json({
             success: true,
             data: {
-                id: user._id,
-                companyName: user.companyName,
+                allTransaction: user.allTransaction,
             }
         });
 
@@ -176,4 +175,4 @@ const transaction = async (req: Request, res: Response) => {
 }
 
 
-export { businessDetails, dashboard };
+export { businessDetails, dashboard, transaction };

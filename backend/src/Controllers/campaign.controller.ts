@@ -1,11 +1,10 @@
-import { Request, Response, NextFunction, MediaType } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import Campaign, { ICampaign, MobileNumberEntryType } from '../Models/Campaign.model.js';
 import User from '../Models/user.Model.js';
 import { getFileTypeCategory } from '../Utils/upload.Utils.js';
 import { MediaType as CampaignMediaType } from '../Models/Campaign.model.js';
-
-// import { UserStatus, UserRole } from '../Models/user.Model.js';
-
+import { debitForCampaignService } from '../Utils/transaction.Utlis.js';
 
 interface CreateCampaignBody {
     campaignName: string;
@@ -24,6 +23,9 @@ const createCampaign = async (
     res: Response,
     next: NextFunction
 ): Promise<void> => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         if (!req.user) {
             res.status(401).json({
@@ -74,12 +76,40 @@ const createCampaign = async (
             return;
         }
 
+        const requestedNumberCount = numbersArray.length;
+
+        // Check user balance
+        const user = await User.findById(creatorId).session(session);
+        if (!user) {
+            await session.abortTransaction();
+            res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+            return;
+        }
+
+        // Limit numbers based on user balance (1 point = 1 number)
+        const actualNumberCount = Math.min(requestedNumberCount, user.balance);
+
+        if (actualNumberCount === 0) {
+            await session.abortTransaction();
+            res.status(400).json({
+                success: false,
+                message: 'Insufficient balance. You need at least 1 point to create a campaign.',
+            });
+            return;
+        }
+
+        // Slice the numbers array to match user's balance
+        const processedNumbers = numbersArray.slice(0, actualNumberCount);
+
         // Build campaign data
         const campaignData: Partial<ICampaign> = {
             campaignName,
             message,
             mobileNumberEntryType,
-            mobileNumbers: numbersArray,
+            mobileNumbers: processedNumbers, // Only save numbers user can afford
             countryCode,
             createdBy: creatorId,
         };
@@ -103,6 +133,7 @@ const createCampaign = async (
             const file = req.file;
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
+                await session.abortTransaction();
                 res.status(400).json({
                     success: false,
                     message: 'File size exceeds the allowed limit of 5MB.',
@@ -112,6 +143,7 @@ const createCampaign = async (
 
             const fileCategory = getFileTypeCategory(file.mimetype);
             if (!fileCategory) {
+                await session.abortTransaction();
                 res.status(400).json({
                     success: false,
                     message: 'Invalid file type. Only images, videos, and PDFs are allowed.',
@@ -119,9 +151,6 @@ const createCampaign = async (
                 return;
             }
 
-
-            //   campaignData.media = file.path;
-            //   campaignData.mediaType = fileCategory;
             campaignData.media = {
                 type: fileCategory as unknown as CampaignMediaType,
                 url: file.path,
@@ -129,22 +158,48 @@ const createCampaign = async (
                 size: file.size,
                 mimeType: file.mimetype,
             };
-
         }
 
-        // ✅ Create campaign
-        const newCampaign = await Campaign.create(campaignData);
+        // Create campaign within session
+        const newCampaignArray = await Campaign.create([campaignData], { session });
+        const newCampaign = newCampaignArray[0];
 
-        // ✅ Update user’s allCampaign and totalCampaigns
-        await User.findByIdAndUpdate(creatorId, {
-            $push: { allCampaign: newCampaign._id },
-            $inc: { totalCampaigns: 1 },
-        });
+        // Debit balance and create transaction (within same session)
+        // We'll do it manually here to use the same session
+        const balanceBefore = user.balance;
+        user.balance -= actualNumberCount;
+        const balanceAfter = user.balance;
 
-        // ✅ Send success response
+        // Create transaction
+        const Transaction = mongoose.model('Transaction');
+        const transactionDoc = await Transaction.create([{
+            receiverId: user._id,
+            campaignId: newCampaign._id,
+            type: "debit",
+            amount: actualNumberCount,
+            balanceBefore,
+            balanceAfter,
+            status: "success"
+        }], { session });
+
+        const transaction = transactionDoc[0];
+
+        // Update user: add campaign, increment totalCampaigns, add transaction
+        user.allCampaign.push(newCampaign._id as unknown as mongoose.Types.ObjectId);
+        user.totalCampaigns += 1;
+        user.allTransaction.push(transaction._id);
+
+        await user.save({ session });
+
+        // Commit transaction
+        await session.commitTransaction();
+
+        // Success response
         res.status(201).json({
             success: true,
-            message: 'Campaign created successfully.',
+            message: actualNumberCount < requestedNumberCount 
+                ? `Campaign created with ${actualNumberCount} numbers (limited by balance). ${requestedNumberCount - actualNumberCount} numbers were excluded.`
+                : 'Campaign created successfully.',
             data: {
                 campaignId: newCampaign._id,
                 campaignName: newCampaign.campaignName,
@@ -153,12 +208,17 @@ const createCampaign = async (
                 linkButton: newCampaign.linkButton,
                 media: newCampaign.media,
                 mobileNumberEntryType: newCampaign.mobileNumberEntryType,
-                numberCount: newCampaign.numberCount,
+                requestedNumberCount,
+                actualNumberCount,
+                pointsDeducted: actualNumberCount,
+                remainingBalance: balanceAfter,
                 countryCode: newCampaign.countryCode,
                 createdAt: newCampaign.createdAt,
+                transactionId: transaction._id,
             },
         });
     } catch (error: any) {
+        await session.abortTransaction();
         console.error('Error creating campaign:', error);
 
         if (error.name === 'ValidationError') {
@@ -176,6 +236,8 @@ const createCampaign = async (
             message: 'Server error while creating campaign',
             error: error.message,
         });
+    } finally {
+        await session.endSession();
     }
 };
 
