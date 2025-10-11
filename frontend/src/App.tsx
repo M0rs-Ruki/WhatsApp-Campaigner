@@ -4,27 +4,10 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import SendWhatsapp from './pages/SendWhatsapp';
 import ManageBusinessPage from './pages/ManageBusiness';
+import DashboardPage from './pages/Dashboard';
 
 
-// Dashboard Pages
-const Dashboard = () => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="p-6 bg-white/30 backdrop-blur-lg rounded-xl border border-white/50 shadow-xl">
-        <h3 className="text-sm font-semibold text-black uppercase opacity-70">Total Messages</h3>
-        <p className="text-4xl font-bold text-black mt-2">12,450</p>
-      </div>
-      <div className="p-6 bg-green-500/20 backdrop-blur-lg rounded-xl border border-white/50 shadow-xl">
-        <h3 className="text-sm font-semibold text-black uppercase opacity-70">Delivered</h3>
-        <p className="text-4xl font-bold text-black mt-2">11,890</p>
-      </div>
-      <div className="p-6 bg-white/40 backdrop-blur-lg rounded-xl border border-green-200/50 shadow-xl">
-        <h3 className="text-sm font-semibold text-black uppercase opacity-70">Credits Left</h3>
-        <p className="text-4xl font-bold text-black mt-2">1,250</p>
-      </div>
-    </div>
-  </div>
-);
+
 
 const AddCredits = () => <div><h2 className="text-2xl font-bold text-black">Add Credits</h2></div>;
 const Credits = () => <div><h2 className="text-2xl font-bold text-black">Credits Management</h2></div>;
@@ -50,7 +33,7 @@ function App() {
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
                 <DashboardLayout>
-                  <Dashboard />
+                  <DashboardPage />
                 </DashboardLayout>
               </div>
             </ProtectedRoute>

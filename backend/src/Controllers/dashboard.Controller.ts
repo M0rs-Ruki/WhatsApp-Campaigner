@@ -59,16 +59,19 @@ const dashboard = async (req: Request, res: Response) => {
             });
         }
 
-        // Total messages across all campaigns
+        const userId = new mongoose.Types.ObjectId(user._id);
+        const currentYear = new Date().getFullYear();
+
+        // -------------------- Total messages across all campaigns --------------------
         const totalMessagesAgg = await Campaign.aggregate([
-            { $match: { createdBy: new mongoose.Types.ObjectId(user._id) } },
+            { $match: { createdBy: userId } },
             { $group: { _id: null, totalMessages: { $sum: '$numberCount' } } }
         ]);
         const totalMessages = totalMessagesAgg[0]?.totalMessages || 0;
 
-        // Monthly messages aggregation
+        // -------------------- Monthly messages aggregation --------------------
         const monthlyAgg = await Campaign.aggregate([
-            { $match: { createdBy: new mongoose.Types.ObjectId(user._id) } },
+            { $match: { createdBy: userId } },
             {
                 $group: {
                     _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
@@ -97,7 +100,7 @@ const dashboard = async (req: Request, res: Response) => {
             }
         ]);
 
-        // Calculate cumulative messages
+        // -------------------- Cumulative messages --------------------
         let cumulative = 0;
         const monthlyStatsWithCumulative = monthlyAgg.map(m => ({
             month: m.month,
@@ -105,6 +108,20 @@ const dashboard = async (req: Request, res: Response) => {
             cumulativeMessages: cumulative += m.totalMessages
         }));
 
+        // -------------------- Top 5 campaigns in the current year --------------------
+        const topFiveCampaigns = await Campaign.find({
+            createdBy: userId,
+            createdAt: { 
+                $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
+                $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`)
+            }
+        })
+        .sort({ numberCount: -1 })  // highest numberCount first
+        .limit(5)
+        .select('campaignName numberCount createdAt')  // only send necessary fields
+        .lean();
+
+        // -------------------- Return response --------------------
         return res.status(200).json({
             success: true,
             data: {
@@ -119,7 +136,8 @@ const dashboard = async (req: Request, res: Response) => {
                 allCampaign: user.allCampaign,
                 totalCampaigns: user.totalCampaigns,
                 totalMessages: totalMessages,
-                monthlyStats: monthlyStatsWithCumulative // ✅ ready for React charts
+                monthlyStats: monthlyStatsWithCumulative, // ready for React charts
+                topFiveCampaigns: topFiveCampaigns      // top 5 campaigns this year
             }
         });
 
