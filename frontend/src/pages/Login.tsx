@@ -38,14 +38,27 @@ const Login = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Store token in localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // // Debug: Log the response to see structure
+        // console.log('Login response:', data);
+          
+        // Store token - MUST be saved!
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        
+        // Store user info
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        
         // Redirect to dashboard
         navigate('/home');
       } else {
         setError('Invalid credentials');
       }
+      
+      
     } catch {
       setError('Login failed. Please try again.');
     } finally {

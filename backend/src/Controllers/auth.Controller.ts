@@ -150,19 +150,26 @@ export const Login = async (
 
         res.cookie('token', token, cookieOptions);
 
-        const userForResponse = {
-            _id: user._id,
-            companyName: user.companyName,
-            email: user.email,
-            image: user.image,
-            role: user.role,
-        };
+        // const userForResponse = {
+        //     _id: user._id,
+        //     companyName: user.companyName,
+        //     email: user.email,
+        //     image: user.image,
+        //     role: user.role,
+        // };
 
         return res.status(200).json({
             success: true,
             message: 'Logged in successfully.',
-            user: userForResponse,
+            token: generateToken(user),
+            user: {
+            _id: user._id,
+            email: user.email,
+            role: user.role,
+            companyName: user.companyName,
+            }
         });
+  
     } catch (error: unknown) {
         console.error('Error in Login controller:', error);
         return res.status(500).json({

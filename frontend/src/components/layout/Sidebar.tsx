@@ -1,52 +1,28 @@
-
 import { Link, useLocation } from 'react-router-dom';
-
-interface MenuItem {
-  label: string;
-  path: string;
-}
-
-interface MenuSection {
-  title?: string;
-  items: MenuItem[];
-}
+import { menuConfig, type MenuSection } from '../../constants/Roles';
+// import { type MenuItem } from '../../constants/Roles';
+import { getUserRole } from '../../utils/Auth';
 
 const Sidebar = () => {
   const location = useLocation();
   const activeItem = location.pathname;
+  const userRole = getUserRole();
 
-  const menuSections: MenuSection[] = [
-    {
-      items: [
-        { label: 'Dashboard', path: '/home' },
-        { label: 'Send Whatsapp', path: '/send-whatsapp' },
-        { label: 'Credits', path: '/credits' },
-      ]
-    },
-    {
-      title: 'RESELLERS & USERS',
-      items: [
-        { label: 'Manage Reseller', path: '/manage-reseller' },
-        { label: 'Manage Users', path: '/manage-users' },
-      ]
-    },
-    {
-      title: 'REPORTS',
-      items: [
-        { label: 'Credit Reports', path: '/credit-reports' },
-        { label: 'WhatsApp Report', path: '/whatsapp-report' },
-      ]
-    },
-    {
-      title: 'OTHERS',
-      items: [
-        { label: 'News', path: '/news' },
-        { label: 'Tree View', path: '/tree-view' },
-        { label: 'Complaints', path: '/complaints' },
-        { label: 'Manage Business', path: '/manage-business' },
-      ]
-    },
-  ];
+  // Filter menu items based on user role
+  const getFilteredMenuSections = (): MenuSection[] => {
+    if (!userRole) return [];
+
+    return menuConfig
+      .map(section => ({
+        ...section,
+        items: section.items.filter(item => 
+          item.allowedRoles.includes(userRole)
+        )
+      }))
+      .filter(section => section.items.length > 0); // Remove empty sections
+  };
+
+  const filteredMenuSections = getFilteredMenuSections();
 
   return (
     <aside className="w-64 min-h-screen bg-white/20 backdrop-blur-xl border-r border-white/30 p-4">
@@ -58,7 +34,7 @@ const Sidebar = () => {
 
       {/* Navigation Sections */}
       <nav className="space-y-6">
-        {menuSections.map((section, sectionIndex) => (
+        {filteredMenuSections.map((section, sectionIndex) => (
           <div key={sectionIndex}>
             
             {/* Section Title */}
