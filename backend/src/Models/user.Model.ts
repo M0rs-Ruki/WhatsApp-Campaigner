@@ -21,6 +21,10 @@ export interface IUser extends Document {
   number: number;
   password: string;
   role: UserRole;
+  allReseller: mongoose.Types.ObjectId[];
+  allUsers: mongoose.Types.ObjectId[];
+  totalCampaigns: number;
+  allCampaign: mongoose.Types.ObjectId[];  // Reference to all Campaigns
   balance: number;
   status: UserStatus;
   deletedAt?: Date;
@@ -69,6 +73,22 @@ const userSchema = new Schema<IUser>({
     enum: Object.values(UserRole),
     default: UserRole.USER,
   },
+  allReseller: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  allUsers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  totalCampaigns: {
+    type: Number,
+    default: 0,
+  },
+  allCampaign: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Campaign',
+  }],
   status: {
     type: String,
     enum: Object.values(UserStatus),

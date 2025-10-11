@@ -44,7 +44,9 @@ const Header = () => {
           </div>
 
           {/* User Profile Button */}
-          <button className="px-6 py-2 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 font-semibold text-black hover:bg-white/60 hover:shadow-lg transition-all">
+          <button 
+            onClick={() => navigate('/manage-business')}
+            className="px-6 py-2 bg-white/40 backdrop-blur-md rounded-xl border border-white/50 font-semibold text-black hover:bg-white/60 hover:shadow-lg transition-all">
             Profile
           </button>
 

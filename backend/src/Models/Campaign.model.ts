@@ -35,6 +35,7 @@ export interface ICampaign extends Document {
   phoneButton?: IPhoneButton;
   linkButton?: ILinkButton;
   media?: IMedia;
+  createdBy: mongoose.Types.ObjectId;
   mobileNumberEntryType: MobileNumberEntryType;
   mobileNumbers: string[];
   countryCode: string;
@@ -46,7 +47,7 @@ export interface ICampaign extends Document {
 /* -------------------- Sub-Schemas -------------------- */
 
 // 📞 Phone Button Subschema
-const PhoneButtonSchema = new Schema<IPhoneButton>(
+const PhoneButtonSchema = new Schema(
   {
     text: {
       type: String,
@@ -69,7 +70,7 @@ const PhoneButtonSchema = new Schema<IPhoneButton>(
 );
 
 // 🔗 Link Button Subschema
-const LinkButtonSchema = new Schema<ILinkButton>(
+const LinkButtonSchema = new Schema(
   {
     text: {
       type: String,
@@ -92,7 +93,7 @@ const LinkButtonSchema = new Schema<ILinkButton>(
 );
 
 // 🖼 Media Subschema
-const MediaSchema = new Schema<IMedia>(
+const MediaSchema = new Schema(
   {
     type: {
       type: String,
@@ -166,6 +167,12 @@ const campaignSchema = new Schema<ICampaign>(
     media: {
       type: MediaSchema,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    
     mobileNumberEntryType: {
       type: String,
       enum: Object.values(MobileNumberEntryType),

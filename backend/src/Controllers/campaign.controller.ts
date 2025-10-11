@@ -1,7 +1,11 @@
+import { Request, Response, NextFunction, MediaType } from 'express';
+import Campaign, { ICampaign, MobileNumberEntryType } from '../Models/Campaign.model.js';
+import User from '../Models/user.Model.js';
+import { getFileTypeCategory } from '../Utils/upload.Utils.js';
+import { MediaType as CampaignMediaType } from '../Models/Campaign.model.js';
 
-import { Request, Response, NextFunction } from 'express';
-import Campaign, { ICampaign, MediaType, MobileNumberEntryType } from '../Models/Campaign.model.js';
-import { getFileTypeCategory } from '../Utils/upload.Utils.js'; 
+// import { UserStatus, UserRole } from '../Models/user.Model.js';
+
 
 interface CreateCampaignBody {
     campaignName: string;
@@ -11,16 +15,9 @@ interface CreateCampaignBody {
     linkButtonText?: string;
     linkButtonUrl?: string;
     mobileNumberEntryType: MobileNumberEntryType;
-    mobileNumbers: string | string[]; // Can be comma-separated string or array
+    mobileNumbers: string | string[];
     countryCode: string;
 }
-
-
-/**
- * @desc    Create a new campaign
- * @route   POST /api/campaigns
- * @access  Private (add auth middleware later)
- */
 
 const createCampaign = async (
     req: Request<unknown, unknown, CreateCampaignBody>,
@@ -28,6 +25,16 @@ const createCampaign = async (
     next: NextFunction
 ): Promise<void> => {
     try {
+        if (!req.user) {
+            res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+            return;
+        }
+
+        const creatorId = req.user._id;
+
         const {
             campaignName,
             message,
@@ -37,20 +44,24 @@ const createCampaign = async (
             linkButtonUrl,
             mobileNumberEntryType,
             mobileNumbers,
-            countryCode
+            countryCode,
         } = req.body;
 
         if (!campaignName || !message || !countryCode) {
             res.status(400).json({
                 success: false,
-                message: 'Campaign name, message, and country code are required fields are required.'
+                message: 'Campaign name, message, and country code are required.',
             });
             return;
         }
 
+        // Parse mobile numbers
         let numbersArray: string[] = [];
         if (typeof mobileNumbers === 'string') {
-            numbersArray = mobileNumbers.split(',').map(num => num.trim()).filter(num => num.length > 0);
+            numbersArray = mobileNumbers
+                .split(',')
+                .map(num => num.trim())
+                .filter(num => num.length > 0);
         } else if (Array.isArray(mobileNumbers)) {
             numbersArray = mobileNumbers;
         }
@@ -58,41 +69,43 @@ const createCampaign = async (
         if (numbersArray.length === 0) {
             res.status(400).json({
                 success: false,
-                message: 'At least one mobile number is required.'
+                message: 'At least one mobile number is required.',
             });
             return;
         }
 
+        // Build campaign data
         const campaignData: Partial<ICampaign> = {
             campaignName,
             message,
             mobileNumberEntryType,
             mobileNumbers: numbersArray,
-            countryCode
+            countryCode,
+            createdBy: creatorId,
         };
 
         if (phoneButtonText && phoneButtonNumber) {
             campaignData.phoneButton = {
                 text: phoneButtonText,
-                number: phoneButtonNumber
+                number: phoneButtonNumber,
             };
         }
 
         if (linkButtonText && linkButtonUrl) {
             campaignData.linkButton = {
                 text: linkButtonText,
-                url: linkButtonUrl
+                url: linkButtonUrl,
             };
         }
 
+        // File validation
         if (req.file) {
             const file = req.file;
-
-            const maxSize = 5* 1024 * 1024; // 5MB
+            const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
                 res.status(400).json({
                     success: false,
-                    message: 'File size exceeds the allowed limit of 5MB.'
+                    message: 'File size exceeds the allowed limit of 5MB.',
                 });
                 return;
             }
@@ -101,18 +114,37 @@ const createCampaign = async (
             if (!fileCategory) {
                 res.status(400).json({
                     success: false,
-                    message: 'Invalid file type. Only images, videos, and PDFs are allowed.'
+                    message: 'Invalid file type. Only images, videos, and PDFs are allowed.',
                 });
+                return;
             }
+
+
+            //   campaignData.media = file.path;
+            //   campaignData.mediaType = fileCategory;
+            campaignData.media = {
+                type: fileCategory as unknown as CampaignMediaType,
+                url: file.path,
+                filename: file.originalname,
+                size: file.size,
+                mimeType: file.mimetype,
+            };
+
         }
 
-        // Create campaign in database
+        // ✅ Create campaign
         const newCampaign = await Campaign.create(campaignData);
 
-        // Send success response
+        // ✅ Update user’s allCampaign and totalCampaigns
+        await User.findByIdAndUpdate(creatorId, {
+            $push: { allCampaign: newCampaign._id },
+            $inc: { totalCampaigns: 1 },
+        });
+
+        // ✅ Send success response
         res.status(201).json({
             success: true,
-            message: 'Campaign created successfully',
+            message: 'Campaign created successfully.',
             data: {
                 campaignId: newCampaign._id,
                 campaignName: newCampaign.campaignName,
@@ -123,29 +155,26 @@ const createCampaign = async (
                 mobileNumberEntryType: newCampaign.mobileNumberEntryType,
                 numberCount: newCampaign.numberCount,
                 countryCode: newCampaign.countryCode,
-                createdAt: newCampaign.createdAt
-            }
+                createdAt: newCampaign.createdAt,
+            },
         });
-
     } catch (error: any) {
         console.error('Error creating campaign:', error);
-        
-        // Handle Mongoose validation errors
+
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map((err: any) => err.message);
             res.status(400).json({
                 success: false,
                 message: 'Validation failed',
-                errors: messages
+                errors: messages,
             });
             return;
         }
 
-        // Handle other errors
         res.status(500).json({
             success: false,
             message: 'Server error while creating campaign',
-            error: error.message
+            error: error.message,
         });
     }
 };
