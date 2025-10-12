@@ -360,6 +360,80 @@ const complaints = async (req: Request, res: Response) => {
     }
 }
 
+const manageReseller = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        const userId = user._id;
+        const userRole = user.role;
+
+        // Check if user is admin or reseller
+        if (userRole !== UserRole.ADMIN && userRole !== UserRole.RESELLER) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin and reseller can access this section.',
+            });
+        }
+
+        // Get current user with populated allReseller array
+        const currentUser = await User.findById(userId)
+            .populate('allReseller')
+            .lean();
+
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        // Get all resellers created by this admin/reseller
+        const resellers = currentUser.allReseller as any[];
+
+        // Format reseller data
+        const formattedResellers = resellers.map((reseller: any) => ({
+            id: reseller._id,
+            companyName: reseller.companyName,
+            email: reseller.email,
+            number: reseller.number,
+            role: reseller.role,
+            resellerCount: reseller.allReseller?.length || 0,
+            userCount: reseller.allUsers?.length || 0,
+            totalCampaigns: reseller.totalCampaigns || 0,
+            balance: reseller.balance || 0,
+            status: reseller.status,
+            createdAt: reseller.createdAt
+        }));
+
+        // Sort by most recent first
+        formattedResellers.sort((a, b) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Resellers fetched successfully.',
+            data: {
+                totalResellers: formattedResellers.length,
+                resellers: formattedResellers
+            },
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in manageReseller controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in manageReseller controller.',
+        });
+    }
+}
 
 
-export { businessDetails, dashboard, transaction, news, complaints };
+
+export { businessDetails, dashboard, transaction, news, complaints, manageReseller };
