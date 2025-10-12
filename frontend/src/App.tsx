@@ -7,6 +7,7 @@ import ManageBusinessPage from './pages/ManageBusiness';
 import DashboardPage from './pages/Dashboard';
 import CreditReportsPage from './pages/CreditReports';
 import NewsPage from './pages/News';
+import ComplaintsPage from './pages/Complaints';
 
 
 
@@ -17,7 +18,6 @@ const ManageUsers = () => <div><h2 className="text-2xl font-bold text-black">Man
 const CreditReports = () => <div><h2 className="text-2xl font-bold text-black">Credit Reports</h2></div>;
 const WhatsAppReport = () => <div><h2 className="text-2xl font-bold text-black">WhatsApp Reports</h2></div>;
 const TreeView = () => <div><h2 className="text-2xl font-bold text-black">Tree View</h2></div>;
-const Complaints = () => <div><h2 className="text-2xl font-bold text-black">Complaints</h2></div>;
 
 function App() {
   return (
@@ -144,7 +144,7 @@ function App() {
           element={
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><Complaints /></DashboardLayout>
+                <DashboardLayout><ComplaintsPage /></DashboardLayout>
               </div>
             </ProtectedRoute>
           }

@@ -16,7 +16,7 @@ router.post('/create', isLoggedIn, hasAuthority, upload.single('image'), createU
 router.delete('/delete/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), deleteUser);
 router.put('/freeze/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), freezeUser);
 router.put('/unfreeze/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), unfreezeUser);
-router.put('/update/:userId', isLoggedIn, hasAuthority, upload.none(), updateUser);
+router.put('/update/:userId', isLoggedIn, upload.none(), updateUser);
 
 
 

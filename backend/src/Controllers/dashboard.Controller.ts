@@ -305,9 +305,11 @@ const complaints = async (req: Request, res: Response) => {
 
         // Determine which complaints to fetch
         // Admin sees all complaints, regular users see only their own
-        const queryFilter = userRole === UserRole.ADMIN 
+        // Admin, Reseller, and User all see all complaints
+        const queryFilter = userRole === UserRole.ADMIN || userRole === UserRole.RESELLER || userRole === UserRole.USER
             ? {} 
             : { createdBy: userId };
+
 
         // Fetch complaints
         const allComplaints = await Complaint.find(queryFilter)
