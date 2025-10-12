@@ -289,5 +289,28 @@ const news = async (req: Request, res: Response) => {
     }
 }
 
+const complaints = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
 
-export { businessDetails, dashboard, transaction, news };
+        return res.status(200).json({
+            success: true,
+            message: 'Complaints feature is under development.',
+            data: {
+                
+            }
+        });
+
+    } catch (error) {
+        
+    }
+}
+
+
+export { businessDetails, dashboard, transaction, news, complaints };

@@ -25,6 +25,7 @@ export interface IUser extends Document {
   allUsers: mongoose.Types.ObjectId[];
   allCampaign: mongoose.Types.ObjectId[];
   allTransaction: mongoose.Types.ObjectId[];
+  allComplaint: mongoose.Types.ObjectId[];
   totalCampaigns: number;
   balance: number;
   status: UserStatus;
@@ -93,6 +94,10 @@ const userSchema = new Schema<IUser>({
   allTransaction: [{
     type: Schema.Types.ObjectId,
     ref: 'Transaction',
+  }],
+  allComplaint: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Complaint',
   }],
   status: {
     type: String,

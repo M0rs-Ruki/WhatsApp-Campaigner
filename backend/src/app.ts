@@ -35,6 +35,7 @@ import transactionRoutes from './Routes/transaction.Routes.js';
 import newsRoutes from './Routes/news.Routes.js';
 import campaignRoutes from './Routes/campaign.routes.js';
 import dashboardRoutes from './Routes/dashboard.Routes.js';
+import complaintRoutes from './Routes/complaint.Routes.js';
 
 
 // API Routes
@@ -44,6 +45,7 @@ app.use('/api/transaction', transactionRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // --- Database Connection and Server Initialization ---
 const startServer = async () => {
