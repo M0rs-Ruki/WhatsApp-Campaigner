@@ -167,8 +167,8 @@ const transaction = async (req: Request, res: Response) => {
 
         const userId = user._id;
 
-        // Get current user for balance
-        const currentUser = await User.findById(userId).select('balance companyName');
+        // Get current user with allTransaction array
+        const currentUser = await User.findById(userId).select('balance companyName allTransaction');
         
         if (!currentUser) {
             return res.status(404).json({
@@ -177,12 +177,9 @@ const transaction = async (req: Request, res: Response) => {
             });
         }
 
-        // Fetch last 100 transactions for this user
+        // Fetch ONLY transactions in user's allTransaction array (FIXED!)
         const transactions = await Transaction.find({
-            $or: [
-                { receiverId: userId },
-                { senderId: userId }
-            ]
+            _id: { $in: currentUser.allTransaction }
         })
             .sort({ transactionDate: -1 }) // Most recent first
             .limit(100)
@@ -201,6 +198,9 @@ const transaction = async (req: Request, res: Response) => {
                 userOrCampaign = transaction.senderId.companyName || 'Unknown User';
             } else if (isDebit && transaction.campaignId) {
                 userOrCampaign = transaction.campaignId.campaignName || 'Unknown Campaign';
+            } else if (isDebit && transaction.senderId) {
+                // For manual debit (admin/reseller taking money)
+                userOrCampaign = transaction.senderId.companyName || 'System';
             } else {
                 userOrCampaign = isCredit ? 'Credit Transaction' : 'Debit Transaction';
             }
@@ -243,6 +243,7 @@ const transaction = async (req: Request, res: Response) => {
         });
     }
 }
+
 
 const news = async (req: Request, res: Response) => {
     try {
