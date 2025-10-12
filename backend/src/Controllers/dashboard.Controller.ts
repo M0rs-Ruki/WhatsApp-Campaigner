@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import Campaign from '../Models/Campaign.model.js';
 import Transaction from '../Models/transaction.Model.js';
 import User from '../Models/user.Model.js';
+import News from '../Models/news.Model.js';
 
 
 
@@ -242,6 +243,51 @@ const transaction = async (req: Request, res: Response) => {
     }
 }
 
+const news = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        // Fetch last 50 news items (both ACTIVE and INACTIVE)
+        const allNews = await News.find()
+            .sort({ createdAt: -1 })
+            .limit(50)
+            .populate('createdBy', 'companyName')
+            .lean();
+        
+        // Format news for frontend
+        const formattedNews = allNews.map((newsItem: any) => ({
+            id: newsItem._id,
+            title: newsItem.title,
+            description: newsItem.description,
+            status: newsItem.status,
+            createdBy: newsItem.createdBy?.companyName || 'Unknown',
+            createdAt: newsItem.createdAt,
+            updatedAt: newsItem.updatedAt
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: 'News fetched successfully.',
+            data: {
+                totalNews: formattedNews.length,
+                news: formattedNews
+            },
+        });
+
+    } catch (error) {
+        console.error('Error in news controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in news controller.',
+        });
+    }
+}
 
 
-export { businessDetails, dashboard, transaction };
+export { businessDetails, dashboard, transaction, news };

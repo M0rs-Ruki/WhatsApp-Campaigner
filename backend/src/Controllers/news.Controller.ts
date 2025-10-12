@@ -81,7 +81,6 @@ const updateNews = async (req: Request, res: Response) => {
 };
 
 
-
 const deleteNews = async (req: Request, res: Response) => {
     try {
         const { newsId } = req.params;

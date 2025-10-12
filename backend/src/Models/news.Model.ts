@@ -1,4 +1,4 @@
-// models/News.ts
+
 import { Document, Schema, model } from 'mongoose';
 
 export interface INews extends Document {
