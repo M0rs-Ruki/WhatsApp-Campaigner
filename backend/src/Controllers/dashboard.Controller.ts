@@ -1,10 +1,11 @@
 import type { Request, Response } from 'express';
-import { IUser } from '../Models/user.Model.js';
+import { IUser, UserRole } from '../Models/user.Model.js';
 import mongoose from 'mongoose';
 import Campaign from '../Models/Campaign.model.js';
 import Transaction from '../Models/transaction.Model.js';
 import User from '../Models/user.Model.js';
 import News from '../Models/news.Model.js';
+import Complaint from '../Models/complaints.Model.js';
 
 
 
@@ -299,18 +300,64 @@ const complaints = async (req: Request, res: Response) => {
             });
         }
 
+        const userId = user._id;
+        const userRole = user.role;
+
+        // Determine which complaints to fetch
+        // Admin sees all complaints, regular users see only their own
+        const queryFilter = userRole === UserRole.ADMIN 
+            ? {} 
+            : { createdBy: userId };
+
+        // Fetch complaints
+        const allComplaints = await Complaint.find(queryFilter)
+            .sort({ createdAt: -1 }) // Most recent first
+            .limit(100) // Last 100 complaints
+            .populate('createdBy', 'companyName') // Get creator's company name
+            .populate('resolvedBy', 'companyName') // Get resolver's company name
+            .lean();
+
+        // Format complaints for frontend
+        const formattedComplaints = allComplaints.map((complaint: any) => ({
+            complaintId: complaint._id,
+            subject: complaint.subject,
+            description: complaint.description,
+            status: complaint.status,
+            createdBy: complaint.createdBy?.companyName || 'Unknown User',
+            createdAt: complaint.createdAt,
+            adminResponse: complaint.adminResponse || null,
+            resolvedBy: complaint.resolvedBy?.companyName || null,
+            resolvedAt: complaint.resolvedAt || null,
+            updatedAt: complaint.updatedAt
+        }));
+
+        // Calculate status breakdown
+        const statusBreakdown = {
+            pending: formattedComplaints.filter(c => c.status === 'pending').length,
+            inProgress: formattedComplaints.filter(c => c.status === 'in-progress').length,
+            resolved: formattedComplaints.filter(c => c.status === 'resolved').length,
+            closed: formattedComplaints.filter(c => c.status === 'closed').length
+        };
+
         return res.status(200).json({
             success: true,
-            message: 'Complaints feature is under development.',
+            message: 'Complaints fetched successfully.',
             data: {
-                
+                totalComplaints: formattedComplaints.length,
+                statusBreakdown,
+                complaints: formattedComplaints
             }
         });
 
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error('Error in complaints controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in complaints controller.',
+        });
     }
 }
+
 
 
 export { businessDetails, dashboard, transaction, news, complaints };
