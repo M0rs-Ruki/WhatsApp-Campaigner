@@ -2,7 +2,7 @@ import express from 'express';
 import isLoggedIn from '../Middlewares/isLoggedIn.Middleware.js';
 import { businessDetails,
     dashboard, transaction, news, complaints,
-    manageReseller, manageUser, treeView, } from '../Controllers/dashboard.Controller.js';
+    manageReseller, manageUser, treeView, whatsAppReports } from '../Controllers/dashboard.Controller.js';
 
 
 
@@ -16,6 +16,7 @@ router.get('/complaints', isLoggedIn, complaints);
 router.get('/manage-reseller', isLoggedIn, manageReseller);
 router.get('/manage-user', isLoggedIn, manageUser);
 router.get('/tree-view', isLoggedIn, treeView);
+router.get('/whatsapp-reports', isLoggedIn, whatsAppReports);
 
 
 export default router;

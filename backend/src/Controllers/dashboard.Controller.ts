@@ -648,9 +648,75 @@ const treeView = async (req: Request, res: Response) => {
     }
 };
 
+const whatsAppReports = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        const userId = user._id;
+
+        // Get current user to access their campaigns
+        const currentUser = await User.findById(userId).select('companyName allCampaign');
+        
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        // Fetch all campaigns created by this user
+        const campaigns = await Campaign.find({
+            _id: { $in: currentUser.allCampaign }
+        })
+            .sort({ createdAt: -1 }) // Most recent first
+            .populate('createdBy', 'companyName') // Get creator's company name
+            .lean();
+
+        // Format campaigns for frontend
+        const formattedCampaigns = campaigns.map((campaign: any) => ({
+            campaignId: campaign._id,
+            campaignName: campaign.campaignName,
+            message: campaign.message,
+            createdBy: campaign.createdBy?.companyName || currentUser.companyName,
+            mobileNumberCount: campaign.mobileNumbers?.length || 0,
+            createdAt: campaign.createdAt
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: 'WhatsApp reports fetched successfully.',
+            data: {
+                totalCampaigns: formattedCampaigns.length,
+                campaigns: formattedCampaigns
+            },
+            userData: {
+                companyName: user.companyName,
+                email: user.email,
+                number: user.number,
+                role: user.role,
+                status: user.status,
+                createdAt: user.createdAt,
+            }
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in whatsAppReports controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in whatsAppReports controller.',
+        });
+    }
+};
+
 
 
 export { businessDetails, dashboard,
     transaction, news, complaints, 
     manageReseller, manageUser,
-    treeView, };
+    treeView, whatsAppReports };
