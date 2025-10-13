@@ -518,7 +518,139 @@ const manageUser = async (req: Request, res: Response) => {
     }
 }
 
+const treeView = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        const userId = user._id;
+
+        // Recursive function to build tree (max 3 levels)
+        const buildTree = async (userId: string, currentLevel: number): Promise<any> => {
+            // Stop at level 3
+            if (currentLevel > 3) {
+                return null;
+            }
+
+            // Fetch user data
+            const user = await User.findById(userId)
+                .select('companyName email number role balance totalCampaigns status allReseller allUsers createdAt')
+                .lean();
+
+            if (!user) {
+                return null;
+            }
+
+            // Get resellers and users (limit to 20 each, no sorting for performance)
+            const resellerIds = user.allReseller?.slice(0, 20) || [];
+            const userIds = user.allUsers?.slice(0, 20) || [];
+
+            // Build node data
+            const node: any = {
+                id: user._id,
+                companyName: user.companyName,
+                email: user.email,
+                number: user.number,
+                role: user.role,
+                balance: user.balance,
+                totalCampaigns: user.totalCampaigns,
+                status: user.status,
+                directResellers: user.allReseller?.length || 0,
+                directUsers: user.allUsers?.length || 0,
+                level: currentLevel,
+                children: []
+            };
+
+            // Only fetch children if not at max depth
+            if (currentLevel < 3) {
+                // Fetch resellers recursively
+                for (const resellerId of resellerIds) {
+                    const resellerNode = await buildTree(resellerId.toString(), currentLevel + 1);
+                    if (resellerNode) {
+                        node.children.push(resellerNode);
+                    }
+                }
+
+                // Fetch users (users don't have children, so just add their data)
+                const users = await User.find({ _id: { $in: userIds } })
+                    .select('companyName email number role balance totalCampaigns status')
+                    .limit(20)
+                    .lean();
+
+                for (const childUser of users) {
+                    node.children.push({
+                        id: childUser._id,
+                        companyName: childUser.companyName,
+                        email: childUser.email,
+                        number: childUser.number,
+                        role: childUser.role,
+                        balance: childUser.balance,
+                        totalCampaigns: childUser.totalCampaigns,
+                        status: childUser.status,
+                        directResellers: 0,
+                        directUsers: 0,
+                        level: currentLevel + 1,
+                        children: [] // Users can't create others
+                    });
+                }
+            }
+
+            return node;
+        };
+
+        // Calculate total count recursively
+        const calculateTotal = (node: any): number => {
+            if (!node) return 0;
+            
+            let count = node.children.length; // Direct children
+            
+            // Add all descendants
+            for (const child of node.children) {
+                count += calculateTotal(child);
+            }
+            
+            return count;
+        };
+
+        // Build tree starting from logged-in user
+        const tree = await buildTree(userId.toString(), 0);
+
+        if (!tree) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        // Calculate total network size
+        const totalCount = calculateTotal(tree);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Tree view fetched successfully.',
+            data: {
+                totalCount,
+                tree
+            }
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in treeView controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in treeView controller.',
+        });
+    }
+};
 
 
 
-export { businessDetails, dashboard, transaction, news, complaints, manageReseller, manageUser };
+export { businessDetails, dashboard,
+    transaction, news, complaints, 
+    manageReseller, manageUser,
+    treeView, };

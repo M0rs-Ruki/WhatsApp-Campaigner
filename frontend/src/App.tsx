@@ -10,13 +10,13 @@ import NewsPage from './pages/News';
 import ComplaintsPage from './pages/Complaints';
 import ManageResellerPage from './pages/ManageReseller';
 import ManageUserPage from './pages/ManageUser';
+import TreeViewPage from './pages/TreeView';
 
 
 
 
 const CreditReports = () => <div><h2 className="text-2xl font-bold text-black">Credit Reports</h2></div>;
 const WhatsAppReport = () => <div><h2 className="text-2xl font-bold text-black">WhatsApp Reports</h2></div>;
-const TreeView = () => <div><h2 className="text-2xl font-bold text-black">Tree View</h2></div>;
 
 function App() {
   return (
@@ -122,7 +122,7 @@ function App() {
           element={
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><TreeView /></DashboardLayout>
+                <DashboardLayout><TreeViewPage /></DashboardLayout>
               </div>
             </ProtectedRoute>
           }
