@@ -6,7 +6,7 @@ export interface ITransaction extends Document {
   type: "credit" | "debit";
   amount: number;
   balanceBefore: number;
-  balanceAfter: number;
+  balanceAfter: number; 
   status: "success" | "failed";
   transactionDate: Date;
   campaignId?: mongoose.Types.ObjectId;
@@ -35,17 +35,14 @@ const transactionSchema = new Schema<ITransaction>({
     required: true,
     min: 0
   },
-  
-  balanceBefore: { 
+  balanceBefore: {
     type: Number, 
     required: true 
   },
-  balanceAfter: { 
+  balanceAfter: {
     type: Number, 
     required: true 
   },
-  
-  
   status: {
     type: String,
     enum: ["success", "failed"],
@@ -53,12 +50,10 @@ const transactionSchema = new Schema<ITransaction>({
     default: "success",
     index: true
   },
-  
   campaignId: { 
     type: Schema.Types.ObjectId, 
     ref: "Campaign"
   },
-  
   transactionDate: { 
     type: Date, 
     default: Date.now, 

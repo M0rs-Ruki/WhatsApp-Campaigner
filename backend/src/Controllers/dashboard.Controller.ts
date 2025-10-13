@@ -165,9 +165,8 @@ const transaction = async (req: Request, res: Response) => {
             });
         }
 
-        const userId = user._id;
+        const userId = user._id.toString();
 
-        // Get current user with allTransaction array
         const currentUser = await User.findById(userId).select('balance companyName allTransaction');
         
         if (!currentUser) {
@@ -177,47 +176,52 @@ const transaction = async (req: Request, res: Response) => {
             });
         }
 
-        // Fetch ONLY transactions in user's allTransaction array (FIXED!)
         const transactions = await Transaction.find({
             _id: { $in: currentUser.allTransaction }
         })
-            .sort({ transactionDate: -1 }) // Most recent first
+            .sort({ transactionDate: -1 })
             .limit(100)
-            .populate('senderId', 'companyName') // Get sender's company name
-            .populate('campaignId', 'campaignName') // Get campaign name
+            .populate('senderId', 'companyName')
+            .populate('receiverId', 'companyName')
+            .populate('campaignId', 'campaignName')
             .lean();
 
-        // Format transactions for frontend
         const formattedTransactions = transactions.map((transaction: any) => {
-            const isCredit = transaction.type === 'credit';
-            const isDebit = transaction.type === 'debit';
-
-            // userOrCampaign: sender name (credit) or campaign name (debit)
+            const transactionType = transaction.type;
+            
             let userOrCampaign = '';
-            if (isCredit && transaction.senderId) {
-                userOrCampaign = transaction.senderId.companyName || 'Unknown User';
-            } else if (isDebit && transaction.campaignId) {
-                userOrCampaign = transaction.campaignId.campaignName || 'Unknown Campaign';
-            } else if (isDebit && transaction.senderId) {
-                // For manual debit (admin/reseller taking money)
-                userOrCampaign = transaction.senderId.companyName || 'System';
-            } else {
-                userOrCampaign = isCredit ? 'Credit Transaction' : 'Debit Transaction';
-            }
-
-            // createdBy: sender name (credit) or current user's name (debit)
             let createdBy = '';
-            if (isCredit && transaction.senderId) {
-                createdBy = transaction.senderId.companyName || 'Unknown User';
-            } else if (isDebit) {
-                createdBy = currentUser.companyName;
+            let displayType = '';
+
+            if (transactionType === 'credit') {
+                displayType = 'credit';
+                userOrCampaign = transaction.senderId?.companyName || 'Unknown';
+                createdBy = transaction.senderId?.companyName || 'Unknown';
+            } 
+            else if (transactionType === 'debit') {
+                displayType = 'debit';
+                
+                if (transaction.campaignId) {
+                    userOrCampaign = transaction.campaignId.campaignName || 'Campaign';
+                    createdBy = currentUser.companyName;
+                } else {
+                    const senderId = transaction.senderId?._id?.toString();
+                    
+                    if (senderId === userId) {
+                        userOrCampaign = transaction.receiverId?.companyName || 'Unknown';
+                        createdBy = currentUser.companyName;
+                    } else {
+                        userOrCampaign = transaction.receiverId?.companyName || 'Unknown';
+                        createdBy = transaction.senderId?.companyName || 'System';
+                    }
+                }
             }
 
             return {
                 transactionId: transaction._id,
                 userOrCampaign,
                 amount: transaction.amount,
-                type: transaction.type,
+                type: displayType,
                 createdBy,
                 createdAt: transaction.transactionDate,
                 status: transaction.status,
@@ -243,6 +247,8 @@ const transaction = async (req: Request, res: Response) => {
         });
     }
 }
+
+
 
 
 const news = async (req: Request, res: Response) => {

@@ -49,11 +49,11 @@ export const creditBalance = async (
         senderBalance: result.sender.balance,
         receiverBalance: result.receiver.balance,
         transaction: {
-          id: result.transaction._id,
-          amount: result.transaction.amount,
-          type: result.transaction.type,
-          status: result.transaction.status,
-          date: result.transaction.transactionDate
+          id: result.creditTransaction._id,
+          amount: result.creditTransaction.amount,
+          type: result.creditTransaction.type,
+          status: result.creditTransaction.status,
+          date: result.creditTransaction.transactionDate
         }
       }
     });
@@ -135,11 +135,11 @@ export const debitBalance = async (
         senderBalance: result.sender.balance,
         receiverBalance: result.receiver.balance,
         transaction: {
-          id: result.transaction._id,
-          amount: result.transaction.amount,
-          type: result.transaction.type,
-          status: result.transaction.status,
-          date: result.transaction.transactionDate
+          id: result.debitTransaction._id,
+          amount: result.debitTransaction.amount,
+          type: result.debitTransaction.type,
+          status: result.debitTransaction.status,
+          date: result.debitTransaction.transactionDate
         }
       }
     });
@@ -152,7 +152,7 @@ export const debitBalance = async (
         });
         return;
       }
-      if (error.message === "Insufficient balance in user account") {
+      if (error.message === "Insufficient balance in receiver account") {
         res.status(400).json({
           success: false,
           message: error.message
@@ -170,5 +170,3 @@ export const debitBalance = async (
     next(error);
   }
 };
-
-

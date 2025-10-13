@@ -208,7 +208,6 @@ const CreditReports = () => {
               <tr className="border-b-2 border-white/60">
                 <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">ID</th>
                 <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">User/Campaign</th>
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Type</th>
                 <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Points</th>
                 <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">TXN Type</th>
                 <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Created By</th>
@@ -234,11 +233,6 @@ const CreditReports = () => {
                     </td>
                     <td className="py-4 px-4 text-black font-semibold max-w-[200px] truncate">
                       {transaction.userOrCampaign}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-black font-semibold capitalize">
-                        {transaction.type === 'credit' ? 'Credit' : 'Campaign'}
-                      </span>
                     </td>
                     <td className="py-4 px-4">
                       <span className={`font-bold ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
