@@ -168,7 +168,7 @@ const transaction = async (req: Request, res: Response) => {
         const userId = user._id.toString();
 
         const currentUser = await User.findById(userId).select('balance companyName allTransaction');
-        
+
         if (!currentUser) {
             return res.status(404).json({
                 success: false,
@@ -188,35 +188,35 @@ const transaction = async (req: Request, res: Response) => {
 
         const formattedTransactions = transactions.map((transaction: any) => {
             const transactionType = transaction.type;
-            
+        
             let userOrCampaign = '';
             let createdBy = '';
             let displayType = '';
-
+        
             if (transactionType === 'credit') {
                 displayType = 'credit';
                 userOrCampaign = transaction.senderId?.companyName || 'Unknown';
-                createdBy = transaction.senderId?.companyName || 'Unknown';
-            } 
+                createdBy = transaction.receiverId?.companyName || 'Unknown';
+            }
             else if (transactionType === 'debit') {
                 displayType = 'debit';
-                
+        
                 if (transaction.campaignId) {
                     userOrCampaign = transaction.campaignId.campaignName || 'Campaign';
                     createdBy = currentUser.companyName;
                 } else {
                     const senderId = transaction.senderId?._id?.toString();
-                    
+        
                     if (senderId === userId) {
                         userOrCampaign = transaction.receiverId?.companyName || 'Unknown';
                         createdBy = currentUser.companyName;
                     } else {
-                        userOrCampaign = transaction.receiverId?.companyName || 'Unknown';
+                        userOrCampaign = transaction.senderId?.companyName || 'System';
                         createdBy = transaction.senderId?.companyName || 'System';
                     }
                 }
             }
-
+        
             return {
                 transactionId: transaction._id,
                 userOrCampaign,
