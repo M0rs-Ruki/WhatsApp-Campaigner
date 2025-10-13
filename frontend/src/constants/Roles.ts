@@ -54,11 +54,11 @@ export enum UserRole {
     {
       title: 'REPORTS',
       items: [
-        { 
-          label: 'Credit Reports', 
-          path: '/credit-reports',
-          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER, UserRole.USER]
-        },
+        // { 
+        //   label: 'Credit Reports', 
+        //   path: '/credit-reports',
+        //   allowedRoles: [UserRole.ADMIN, UserRole.RESELLER, UserRole.USER]
+        // },
         { 
           label: 'WhatsApp Report', 
           path: '/whatsapp-report',

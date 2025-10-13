@@ -347,5 +347,177 @@ const updateUser = async (req: Request, res: Response) => {
     }
 };
 
+const changePassword = async (req: Request, res: Response) => {
+    try {
+        const { password, confirmPassword } = req.body;
+        const { userId } = req.params;
 
-export { createUser, deleteUser, freezeUser, unfreezeUser, updateUser };
+        // Validation
+        if (!password || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password and confirm password are required.',
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Passwords do not match.',
+            });
+        }
+
+        // Check if user is authenticated
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+
+        const currentUserId = req.user._id;
+        const currentUserRole = req.user.role;
+
+        // Only admin and reseller can use this endpoint
+        if (currentUserRole !== UserRole.ADMIN && currentUserRole !== UserRole.RESELLER) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin and reseller can change passwords.',
+            });
+        }
+
+        // Find the user whose password needs to be changed
+        const targetUser = await User.findById(userId);
+        if (!targetUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        // SECURITY CHECK: Verify ownership
+        const currentUser = await User.findById(currentUserId).select('allReseller allUsers role');
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'Current user not found.',
+            });
+        }
+
+        // Check if target user is in current user's created list
+        const isInResellerList = currentUser.allReseller.some(
+            (id) => id.toString() === userId.toString()
+        );
+        const isInUserList = currentUser.allUsers.some(
+            (id) => id.toString() === userId.toString()
+        );
+
+        // Admin cannot change another admin's password (security)
+        if (targetUser.role === UserRole.ADMIN) {
+            return res.status(403).json({
+                success: false,
+                message: 'Cannot change another admin\'s password.',
+            });
+        }
+
+        // Verify permission
+        if (!isInResellerList && !isInUserList) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to change this user\'s password. You can only change passwords of users you created.',
+            });
+        }
+
+        // Hash and update password
+        const hashedPassword = await hashPassword(password);
+        targetUser.password = hashedPassword;
+        await targetUser.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password changed successfully.',
+            data: {
+                userId: targetUser._id,
+                companyName: targetUser.companyName,
+                email: targetUser.email
+            }
+        });
+
+    } catch (error: any) {
+        console.error('Error changing password:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error during password change.',
+            error: error.message,
+        });
+    }
+};
+
+const changeOwnPassword = async (req: Request, res: Response) => {
+    try {
+        const { newPassword, confirmPassword } = req.body;
+
+        // Validation
+        if (!newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'new password, and confirm password are required.',
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'New passwords do not match.',
+            });
+        }
+
+        if (newPassword.length < 4) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 4 characters long.',
+            });
+        }
+
+        // Check authentication
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+
+        const userId = req.user._id;
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+
+        // Hash and update new password
+        const hashedPassword = await hashPassword(newPassword);
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Your password has been changed successfully.',
+        });
+
+    } catch (error: any) {
+        console.error('Error changing own password:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error during password change.',
+            error: error.message,
+        });
+    }
+};
+
+
+export { createUser, deleteUser, freezeUser, unfreezeUser, updateUser, changePassword, changeOwnPassword };

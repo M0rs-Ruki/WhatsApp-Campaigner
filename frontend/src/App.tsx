@@ -16,7 +16,6 @@ import WhatsAppReportsPage from './pages/WhatsAppReports';
 
 
 
-const CreditReports = () => <div><h2 className="text-2xl font-bold text-black">Credit Reports</h2></div>;
 
 function App() {
   return (
@@ -84,16 +83,6 @@ function App() {
           }
         />
 
-        <Route
-          path="/credit-reports"
-          element={
-            <ProtectedRoute>
-              <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><CreditReports /></DashboardLayout>
-              </div>
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/whatsapp-report"

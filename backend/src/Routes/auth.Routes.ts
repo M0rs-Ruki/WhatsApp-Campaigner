@@ -7,7 +7,6 @@ const router = express.Router();
 
 router.post('/register', upload.single('image'), Registration);
 router.post('/login', upload.none(), Login);
-
 router.post('/logout', isLoggedIn, Logout);
 
 export default router;
