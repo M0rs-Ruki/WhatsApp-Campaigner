@@ -167,7 +167,7 @@ const ManageBusiness = () => {
         return;
       }
 
-      if (passwordData.newPassword.length <= 4) {
+      if (passwordData.newPassword.length < 3) {
         setError('Password must be at least 5 characters long');
         return;
       }

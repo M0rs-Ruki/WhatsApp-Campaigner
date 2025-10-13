@@ -57,8 +57,11 @@ const ManageUser = () => {
   const [editFormData, setEditFormData] = useState({
     companyName: '',
     email: '',
-    number: ''
+    number: '',
+    password: '',        // ADD
+    confirmPassword: ''  // ADD
   });
+  
   
   const [creditAmount, setCreditAmount] = useState('');
   const [debitAmount, setDebitAmount] = useState('');
@@ -191,42 +194,113 @@ const ManageUser = () => {
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
 
-    if (!editFormData.companyName && !editFormData.email && !editFormData.number) {
+    const hasProfileUpdate = editFormData.companyName || editFormData.email || editFormData.number;
+    const hasPasswordUpdate = editFormData.password || editFormData.confirmPassword;
+
+    if (!hasProfileUpdate && !hasPasswordUpdate) {
       setError('Please provide at least one field to update');
       return;
+    }
+
+    // Validate password if provided
+    if (hasPasswordUpdate) {
+      if (!editFormData.password || !editFormData.confirmPassword) {
+        setError('Please fill in both password fields');
+        return;
+      }
+
+      if (editFormData.password !== editFormData.confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+
+      if (editFormData.password.length < 3) {
+        setError('Password must be at least 5 characters long');
+        return;
+      }
     }
 
     setActionLoading(true);
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/user/update/${selectedUser.id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editFormData),
-      });
+      let profileSuccess = false;
+      let passwordSuccess = false;
 
-      const result = await response.json();
+      // Update profile if fields provided
+      if (hasProfileUpdate) {
+        const profileData: { companyName?: string; email?: string; number?: string } = {};
+        if (editFormData.companyName) profileData.companyName = editFormData.companyName;
+        if (editFormData.email) profileData.email = editFormData.email;
+        if (editFormData.number) profileData.number = editFormData.number;
 
-      if (response.ok && result.success) {
-        setSuccess('User updated successfully!');
-        setShowEditModal(false);
-        setSelectedUser(null);
-        setEditFormData({ companyName: '', email: '', number: '' });
-        fetchUsersData();
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
-        setError(result.message || 'Failed to update user');
+        const profileResponse = await fetch(`${API_URL}/api/user/update/${selectedUser.id}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(profileData),
+        });
+
+        const profileResult = await profileResponse.json();
+
+        if (profileResponse.ok && profileResult.success) {
+          profileSuccess = true;
+        } else {
+          setError(profileResult.message || 'Failed to update profile');
+          setActionLoading(false);
+          return;
+        }
       }
+
+      // Update password if fields provided
+      if (hasPasswordUpdate) {
+        const passwordResponse = await fetch(`${API_URL}/api/user/change-password/${selectedUser.id}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            password: editFormData.password,
+            confirmPassword: editFormData.confirmPassword
+          }),
+        });
+
+        const passwordResult = await passwordResponse.json();
+
+        if (passwordResponse.ok && passwordResult.success) {
+          passwordSuccess = true;
+        } else {
+          setError(passwordResult.message || 'Failed to change password');
+          setActionLoading(false);
+          return;
+        }
+      }
+
+      // Set success message
+      if (profileSuccess && passwordSuccess) {
+        setSuccess('Profile and password updated successfully!');
+      } else if (profileSuccess) {
+        setSuccess('Profile updated successfully!');
+      } else if (passwordSuccess) {
+        setSuccess('Password changed successfully!');
+      }
+
+      setShowEditModal(false);
+      setSelectedUser(null);
+      setEditFormData({ companyName: '', email: '', number: '', password: '', confirmPassword: '' });
+      fetchUsersData();
+      setTimeout(() => setSuccess(''), 3000);
+
     } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
     }
   };
+
 
   // Handle add credit
   const handleAddCredit = async () => {
@@ -387,10 +461,13 @@ const ManageUser = () => {
     setEditFormData({
       companyName: user.companyName,
       email: user.email,
-      number: user.number
+      number: user.number,
+      password: '',        // ADD
+      confirmPassword: ''  // ADD
     });
     setShowEditModal(true);
   };
+  
 
   const openAddCreditModal = (user: User) => {
     setSelectedUser(user);
@@ -888,7 +965,7 @@ const ManageUser = () => {
                   onClick={() => {
                     setShowEditModal(false);
                     setSelectedUser(null);
-                    setEditFormData({ companyName: '', email: '', number: '' });
+                    setEditFormData({ companyName: '', email: '', number: '', password: '', confirmPassword: '' });
                     setError('');
                   }}
                   className="p-2 hover:bg-gray-200 rounded-lg transition-all"
@@ -897,39 +974,83 @@ const ManageUser = () => {
                 </button>
               </div>
 
+              {/* ERROR MESSAGE INSIDE MODAL */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 rounded-lg border border-red-300">
+                  <p className="text-red-700 font-semibold text-sm">{error}</p>
+                </div>
+              )}
+
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">Company Name</label>
-                  <input
-                    type="text"
-                    value={editFormData.companyName}
-                    onChange={(e) => setEditFormData({ ...editFormData, companyName: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
-                    placeholder="Enter company name"
-                  />
+                {/* PROFILE SECTION */}
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase">Profile Information</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-2">Company Name</label>
+                      <input
+                        type="text"
+                        value={editFormData.companyName}
+                        onChange={(e) => setEditFormData({ ...editFormData, companyName: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
+                        placeholder="Enter company name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={editFormData.email}
+                        onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
+                        placeholder="example@company.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={editFormData.number}
+                        onChange={(e) => setEditFormData({ ...editFormData, number: e.target.value })}
+                        maxLength={10}
+                        className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
+                        placeholder="Enter 10-digit number"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={editFormData.email}
-                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
-                    placeholder="example@company.com"
-                  />
-                </div>
+                {/* PASSWORD SECTION */}
+                <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-300">
+                  <h4 className="text-sm font-bold text-blue-700 mb-2 uppercase">Change Password</h4>
+                  <p className="text-xs text-gray-600 mb-3">Leave blank if you don't want to change password</p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-2">New Password</label>
+                      <input
+                        type="password"
+                        value={editFormData.password}
+                        onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
+                        placeholder="Enter new password (min 5 characters)"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={editFormData.number}
-                    onChange={(e) => setEditFormData({ ...editFormData, number: e.target.value })}
-                    maxLength={10}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
-                    placeholder="Enter 10-digit number"
-                  />
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-2">Confirm New Password</label>
+                      <input
+                        type="password"
+                        value={editFormData.confirmPassword}
+                        onChange={(e) => setEditFormData({ ...editFormData, confirmPassword: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <p className="text-sm text-gray-600">* Leave fields empty that you don't want to update</p>
@@ -946,7 +1067,7 @@ const ManageUser = () => {
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedUser(null);
-                      setEditFormData({ companyName: '', email: '', number: '' });
+                      setEditFormData({ companyName: '', email: '', number: '', password: '', confirmPassword: '' });
                       setError('');
                     }}
                     className="flex-1 px-6 py-3 bg-gray-300 text-black font-bold rounded-xl hover:bg-gray-400 transition-all"
@@ -959,6 +1080,7 @@ const ManageUser = () => {
           </div>
         </div>
       )}
+
 
       {/* Add Credit Modal */}
       {showAddCreditModal && selectedUser && (
