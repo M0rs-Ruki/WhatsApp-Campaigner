@@ -34,11 +34,6 @@ export enum UserRole {
           path: '/credits',
           allowedRoles: [UserRole.ADMIN, UserRole.RESELLER, UserRole.USER]
         },
-        { 
-          label: 'Add Credits', 
-          path: '/add-credits',
-          allowedRoles: [UserRole.ADMIN] // Only admin can see
-        },
       ]
     },
     {

@@ -9,12 +9,11 @@ import CreditReportsPage from './pages/CreditReports';
 import NewsPage from './pages/News';
 import ComplaintsPage from './pages/Complaints';
 import ManageResellerPage from './pages/ManageReseller';
+import ManageUserPage from './pages/ManageUser';
 
 
 
 
-const AddCredits = () => <div><h2 className="text-2xl font-bold text-black">Add Credits</h2></div>;
-const ManageUsers = () => <div><h2 className="text-2xl font-bold text-black">Manage Users</h2></div>;
 const CreditReports = () => <div><h2 className="text-2xl font-bold text-black">Credit Reports</h2></div>;
 const WhatsAppReport = () => <div><h2 className="text-2xl font-bold text-black">WhatsApp Reports</h2></div>;
 const TreeView = () => <div><h2 className="text-2xl font-bold text-black">Tree View</h2></div>;
@@ -62,16 +61,6 @@ function App() {
           }
         />
 
-        <Route
-          path="/add-credits"
-          element={
-            <ProtectedRoute>
-              <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><AddCredits /></DashboardLayout>
-              </div>
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/manage-reseller"
@@ -89,7 +78,7 @@ function App() {
           element={
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><ManageUsers /></DashboardLayout>
+                <DashboardLayout><ManageUserPage /></DashboardLayout>
               </div>
             </ProtectedRoute>
           }

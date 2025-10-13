@@ -297,6 +297,7 @@ const news = async (req: Request, res: Response) => {
     }
 }
 
+
 const complaints = async (req: Request, res: Response) => {
     try {
         const user = req.user;
@@ -366,6 +367,7 @@ const complaints = async (req: Request, res: Response) => {
         });
     }
 }
+
 
 const manageReseller = async (req: Request, res: Response) => {
     try {
@@ -442,5 +444,81 @@ const manageReseller = async (req: Request, res: Response) => {
 }
 
 
+const manageUser = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
 
-export { businessDetails, dashboard, transaction, news, complaints, manageReseller };
+        const userId = user._id;
+        const userRole = user.role;
+
+        // Check if user is admin or reseller
+        if (userRole !== UserRole.ADMIN && userRole !== UserRole.RESELLER) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin and reseller can access this section.',
+            });
+        }
+
+        // Get current user with populated allUsers array
+        const currentUser = await User.findById(userId)
+            .populate('allUsers')
+            .lean();
+
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        // Get all users created by this admin/reseller
+        const users = currentUser.allUsers as any[];
+
+        // Format user data
+        const formattedUsers = users.map((user: any) => ({
+            id: user._id,
+            companyName: user.companyName,
+            email: user.email,
+            number: user.number,
+            role: user.role,
+            resellerCount: user.allReseller?.length || 0,
+            userCount: user.allUsers?.length || 0,
+            totalCampaigns: user.totalCampaigns || 0,
+            balance: user.balance || 0,
+            status: user.status,
+            createdAt: user.createdAt
+        }));
+
+        // Sort by most recent first
+        formattedUsers.sort((a, b) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Users fetched successfully.',
+            data: {
+                totalUsers: formattedUsers.length,
+                users: formattedUsers
+            },
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in manageUser controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in manageUser controller.',
+        });
+    }
+}
+
+
+
+
+export { businessDetails, dashboard, transaction, news, complaints, manageReseller, manageUser };
