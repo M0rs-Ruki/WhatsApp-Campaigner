@@ -4,7 +4,7 @@ import Campaign, { ICampaign, MobileNumberEntryType } from '../Models/Campaign.m
 import User from '../Models/user.Model.js';
 import { getFileTypeCategory } from '../Utils/upload.Utils.js';
 import { MediaType as CampaignMediaType } from '../Models/Campaign.model.js';
-import { debitForCampaignService } from '../Utils/transaction.Utlis.js';
+// import { debitForCampaignService } from '../Utils/transaction.Utlis.js';
 
 interface CreateCampaignBody {
     campaignName: string;
@@ -36,6 +36,7 @@ const createCampaign = async (
         }
 
         const creatorId = req.user._id;
+        const creatorRole = req.user.role; // Get user's role
 
         const {
             campaignName,
@@ -89,19 +90,27 @@ const createCampaign = async (
             return;
         }
 
-        // Limit numbers based on user balance (1 point = 1 number)
-        const actualNumberCount = Math.min(requestedNumberCount, user.balance);
-
-        if (actualNumberCount === 0) {
-            await session.abortTransaction();
-            res.status(400).json({
-                success: false,
-                message: 'Insufficient balance. You need at least 1 point to create a campaign.',
-            });
-            return;
+        // ✅ FIXED: Admin has unlimited balance, others need to check
+        let actualNumberCount: number;
+        
+        if (user.role === 'admin') {
+            // Admin can create campaigns with any number of contacts
+            actualNumberCount = requestedNumberCount;
+        } else {
+            // Reseller/User: Limit numbers based on balance (1 point = 1 number)
+            actualNumberCount = Math.min(requestedNumberCount, user.balance);
+            
+            if (actualNumberCount === 0) {
+                await session.abortTransaction();
+                res.status(400).json({
+                    success: false,
+                    message: 'Insufficient balance. You need at least 1 point to create a campaign.',
+                });
+                return;
+            }
         }
 
-        // Slice the numbers array to match user's balance
+        // Slice the numbers array to match allowed count
         const processedNumbers = numbersArray.slice(0, actualNumberCount);
 
         // Build campaign data
@@ -109,7 +118,7 @@ const createCampaign = async (
             campaignName,
             message,
             mobileNumberEntryType,
-            mobileNumbers: processedNumbers, // Only save numbers user can afford
+            mobileNumbers: processedNumbers,
             countryCode,
             createdBy: creatorId,
         };
@@ -164,11 +173,16 @@ const createCampaign = async (
         const newCampaignArray = await Campaign.create([campaignData], { session });
         const newCampaign = newCampaignArray[0];
 
-        // Debit balance and create transaction (within same session)
-        // We'll do it manually here to use the same session
+        // ✅ FIXED: Only deduct balance if NOT admin
         const balanceBefore = user.balance;
-        user.balance -= actualNumberCount;
-        const balanceAfter = user.balance;
+        let balanceAfter = user.balance;
+
+        if (user.role !== 'admin') {
+            // Deduct balance for reseller/user
+            user.balance -= actualNumberCount;
+            balanceAfter = user.balance;
+        }
+        // Admin's balance stays the same (infinite money)
 
         // Create transaction
         const Transaction = mongoose.model('Transaction');
@@ -210,7 +224,7 @@ const createCampaign = async (
                 mobileNumberEntryType: newCampaign.mobileNumberEntryType,
                 requestedNumberCount,
                 actualNumberCount,
-                pointsDeducted: actualNumberCount,
+                pointsDeducted: user.role === 'admin' ? 0 : actualNumberCount,
                 remainingBalance: balanceAfter,
                 countryCode: newCampaign.countryCode,
                 createdAt: newCampaign.createdAt,

@@ -212,7 +212,7 @@ const transaction = async (req: Request, res: Response) => {
                         createdBy = currentUser.companyName;
                     } else {
                         userOrCampaign = transaction.senderId?.companyName || 'System';
-                        createdBy = transaction.senderId?.companyName || 'System';
+                        createdBy = transaction.receiverId?.companyName || 'System';
                     }
                 }
             }
