@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { ChangeEvent } from 'react';
 import { format } from 'date-fns';
 import { X, Plus, Eye, Edit2, DollarSign, Minus, Lock, Unlock, Trash2 } from 'lucide-react';
 import { getUserRole } from '../utils/Auth';
@@ -179,7 +180,7 @@ const ManageUser = () => {
       } else {
         setError(result.message || 'Failed to create user');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
@@ -220,7 +221,7 @@ const ManageUser = () => {
       } else {
         setError(result.message || 'Failed to update user');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
@@ -262,7 +263,7 @@ const ManageUser = () => {
       } else {
         setError(result.message || 'Failed to add credit');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
@@ -304,7 +305,7 @@ const ManageUser = () => {
       } else {
         setError(result.message || 'Failed to remove credit');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
@@ -337,7 +338,7 @@ const ManageUser = () => {
       } else {
         setError(result.message || `Failed to ${endpoint} user`);
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
@@ -368,7 +369,7 @@ const ManageUser = () => {
       } else {
         setError(result.message || 'Failed to delete user');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setActionLoading(false);
@@ -618,7 +619,7 @@ const ManageUser = () => {
               </button>
 
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
+                let pageNum: number;
                 if (totalPages <= 5) {
                   pageNum = i + 1;
                 } else if (currentPage <= 3) {
