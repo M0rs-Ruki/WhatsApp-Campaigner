@@ -125,6 +125,36 @@ const dashboard = async (req: Request, res: Response) => {
         .select('campaignName numberCount createdAt')  // only send necessary fields
         .lean();
 
+
+
+        // ✅ LATEST NEWS (active preferred, fallback to any latest)
+        let latestNews = await News.findOne({
+        status: { $regex: /^active$/i }   // case-insensitive match: ACTIVE, Active, active
+        })
+        .sort({ createdAt: -1 })          // newest first
+        .populate('createdBy', 'companyName')
+        .select('title description status createdAt createdBy')
+        .lean();
+
+        // Fallback: if no ACTIVE news exists, take the newest item regardless of status
+        if (!latestNews) {
+        latestNews = await News.findOne({})
+            .sort({ createdAt: -1 })
+            .populate('createdBy', 'companyName')
+            .select('title description status createdAt createdBy')
+            .lean();
+        }
+
+        const formattedLatestNews = latestNews
+        ? {
+            title: latestNews.title,
+            description: latestNews.description,
+            status: latestNews.status,
+            createdAt: latestNews.createdAt,
+            }
+        : null;
+
+
         // -------------------- Return response --------------------
         return res.status(200).json({
             success: true,
@@ -138,9 +168,11 @@ const dashboard = async (req: Request, res: Response) => {
                 totalCampaigns: user.totalCampaigns,
                 totalMessages: totalMessages,
                 monthlyStats: monthlyStatsWithCumulative,
-                topFiveCampaigns: topFiveCampaigns
+                topFiveCampaigns: topFiveCampaigns,
+                latestNews: formattedLatestNews  // ✅ MOVED INSIDE data object!
             }
         });
+
 
     } catch (error: unknown) {
         console.error('Error in dashboard controller:', error);
@@ -244,8 +276,6 @@ const transaction = async (req: Request, res: Response) => {
         });
     }
 }
-
-
 
 
 const news = async (req: Request, res: Response) => {

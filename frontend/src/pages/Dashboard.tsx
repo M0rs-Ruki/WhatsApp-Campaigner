@@ -25,6 +25,12 @@ interface DashboardData {
     numberCount: number;
     createdAt: string;
   }>;
+  latestNews: {
+    title: string;
+    description: string;
+    status: string;
+    createdAt: string;
+  };
 }
 
 const Dashboard = () => {
@@ -35,7 +41,7 @@ const Dashboard = () => {
   const [endDate, setEndDate] = useState('');
   const [zoomLevel, setZoomLevel] = useState(1);
   
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const API_URL = import.meta.env.VITE_API_URL;
   const userRole = getUserRole();
 
   // Fetch dashboard data
@@ -132,28 +138,33 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       
-      {/* Scrolling News Ticker */}
-      <div className="bg-red-500/80 backdrop-blur-md rounded-xl border border-white/30 shadow-lg overflow-hidden">
-        <Marquee pauseOnHover gradient={false} speed={50}>
-          <div className="flex items-center gap-8 py-3 px-4">
-            <span className="text-white font-semibold text-lg">
-              🔔 Welcome to WhatsApp Campaign Manager
-            </span>
-            <span className="text-white font-semibold text-lg">
-              • New features coming soon
-            </span>
-            <span className="text-white font-semibold text-lg">
-              • Campaign analytics now available
-            </span>
-            <span className="text-white font-semibold text-lg">
-              • Check your balance and start sending campaigns
-            </span>
-            <span className="text-white font-semibold text-lg">
-              🎉 Bulk messaging made easy
-            </span>
-          </div>
-        </Marquee>
-      </div>
+      {/* ✅ UPDATED: Dynamic Latest News Ticker */}
+      {/* ✅ SAFE VERSION - Shows news or message */}
+      {dashboardData.latestNews ? (
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 backdrop-blur-md rounded-xl border border-white/30 shadow-lg overflow-hidden">
+          <Marquee pauseOnHover gradient={false} speed={50}>
+            <div className="flex items-center gap-8 py-3 px-4">
+              <span className="text-white font-bold text-lg">
+                🔔 {dashboardData.latestNews.title}
+              </span>
+              <span className="text-white font-semibold text-lg">
+                • {dashboardData.latestNews.description}
+              </span>
+              <span className="text-white font-semibold text-base opacity-80">
+                📅 {new Date(dashboardData.latestNews.createdAt).toLocaleDateString('en-IN')}
+              </span>
+            </div>
+          </Marquee>
+        </div>
+      ) : (
+        <div className="bg-yellow-500/80 backdrop-blur-md rounded-xl border border-white/30 shadow-lg p-4">
+          <p className="text-white font-bold text-center">
+            ⚠️ No news available at the moment
+          </p>
+        </div>
+      )}
+
+
 
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

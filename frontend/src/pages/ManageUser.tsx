@@ -17,6 +17,7 @@ interface User {
   balance: number;
   status: 'active' | 'inactive' | 'deleted';
   createdAt: string;
+  image: string;
 }
 
 interface UsersData {
@@ -882,10 +883,11 @@ const ManageUser = () => {
       {/* View Details Modal */}
       {showViewModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-black">User Details</h3>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-3xl font-bold text-black">User Details</h3>
                 <button
                   onClick={() => {
                     setShowViewModal(false);
@@ -897,62 +899,117 @@ const ManageUser = () => {
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">User ID:</span>
-                    <p className="text-black font-semibold break-all">{selectedUser.id}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Company Name:</span>
-                    <p className="text-black font-semibold">{selectedUser.companyName}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Email:</span>
-                    <p className="text-black font-semibold">{selectedUser.email}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Phone Number:</span>
-                    <p className="text-black font-semibold">{selectedUser.number}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Role:</span>
-                    <p className="text-black font-semibold uppercase">{selectedUser.role}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Balance:</span>
-                    <p className="text-green-600 font-bold text-xl">₹{selectedUser.balance}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Total Resellers:</span>
-                    <p className="text-black font-semibold">{selectedUser.resellerCount}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Total Users:</span>
-                    <p className="text-black font-semibold">{selectedUser.userCount}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Total Campaigns:</span>
-                    <p className="text-black font-semibold">{selectedUser.totalCampaigns}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Status:</span>
-                    <p>
-                      <span className={`px-3 py-1 text-white text-xs font-bold rounded-full ${getStatusBadge(selectedUser.status)}`}>
-                        {selectedUser.status.toUpperCase()}
-                      </span>
+              <div className="space-y-5">
+                {/* Profile Image Section */}
+                {selectedUser.image && (
+                  <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-400 shadow-lg">
+                    <h4 className="text-lg font-bold text-blue-800 mb-3 flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-600 animate-pulse"></div>
+                      Profile Image
+                    </h4>
+                    <div className="flex justify-center">
+                      <div className="relative">
+                        <img 
+                          src={selectedUser.image} 
+                          alt={selectedUser.companyName}
+                          className="w-40 h-40 object-cover rounded-full border-4 border-blue-500 shadow-xl"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedUser.companyName) + '&background=3b82f6&color=fff&size=256';
+                          }}
+                        />
+                        <div className="absolute -bottom-2 -right-2 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full border-2 border-white">
+                          {selectedUser.role.toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-3 text-center break-all">
+                      <span className="font-bold">Image URL:</span> {selectedUser.image}
                     </p>
                   </div>
-                  <div className="col-span-2">
-                    <span className="text-sm font-bold text-gray-600">Created At:</span>
-                    <p className="text-black font-semibold">{formatDate(selectedUser.createdAt)}</p>
+                )}
+
+                {/* Basic Information */}
+                <div className="p-5 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-green-400 shadow-lg">
+                  <h4 className="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-600 animate-pulse"></div>
+                    Basic Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-xs font-bold text-green-700 uppercase">User ID</span>
+                      <p className="text-black font-mono text-sm break-all mt-1 bg-white px-3 py-2 rounded-lg">{selectedUser.id}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-green-700 uppercase">Company Name</span>
+                      <p className="text-black font-bold text-lg mt-1">{selectedUser.companyName}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-green-700 uppercase">Email</span>
+                      <p className="text-black font-semibold break-all mt-1">{selectedUser.email}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-green-700 uppercase">Phone Number</span>
+                      <p className="text-black font-semibold mt-1">+91 {selectedUser.number}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-green-700 uppercase">Status</span>
+                      <p className="mt-1">
+                        <span className={`px-3 py-1 text-white text-xs font-bold rounded-full ${getStatusBadge(selectedUser.status)}`}>
+                          {selectedUser.status.toUpperCase()}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-green-700 uppercase">Member Since</span>
+                      <p className="text-black font-semibold mt-1">{formatDate(selectedUser.createdAt)}</p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Account Statistics */}
+                <div className="p-5 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-400 shadow-lg">
+                  <h4 className="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse"></div>
+                    Account Statistics
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-white rounded-xl shadow-md border-2 border-green-200 hover:scale-105 transition-transform">
+                      <p className="text-4xl font-bold text-green-600">₹{selectedUser.balance}</p>
+                      <p className="text-xs text-gray-700 font-bold mt-2 uppercase">Balance</p>
+                    </div>
+                    <div className="text-center p-4 bg-white rounded-xl shadow-md border-2 border-blue-200 hover:scale-105 transition-transform">
+                      <p className="text-4xl font-bold text-blue-600">{selectedUser.resellerCount}</p>
+                      <p className="text-xs text-gray-700 font-bold mt-2 uppercase">Resellers</p>
+                    </div>
+                    <div className="text-center p-4 bg-white rounded-xl shadow-md border-2 border-yellow-200 hover:scale-105 transition-transform">
+                      <p className="text-4xl font-bold text-yellow-600">{selectedUser.userCount}</p>
+                      <p className="text-xs text-gray-700 font-bold mt-2 uppercase">Users</p>
+                    </div>
+                    <div className="text-center p-4 bg-white rounded-xl shadow-md border-2 border-purple-200 hover:scale-105 transition-transform">
+                      <p className="text-4xl font-bold text-purple-600">{selectedUser.totalCampaigns}</p>
+                      <p className="text-xs text-gray-700 font-bold mt-2 uppercase">Campaigns</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="mt-6">
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    setSelectedUser(null);
+                  }}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-lg rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
 
       {/* Edit User Modal */}
       {showEditModal && selectedUser && (
