@@ -6,13 +6,14 @@ import { createUser, deleteUser, freezeUser, unfreezeUser, updateUser, changePas
 import checkUserStatus from '../Middlewares/checkUserStatus.middleware.js';
 import hasAuthority from '../Middlewares/role.middleware.js';
 // import verifyUser from '../Middlewares/auth.Middleware.js';
+import { uploadUserImageToCloudinary } from '../Middlewares/uploadToCloudinary.Middleware.js';
 
 
 
 const router = express.Router();
 
 
-router.post('/create', isLoggedIn, hasAuthority, upload.single('image'), createUser);
+router.post('/create', isLoggedIn, hasAuthority, upload.single('image'), uploadUserImageToCloudinary, createUser);
 router.delete('/delete/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), deleteUser);
 router.put('/freeze/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), freezeUser);
 router.put('/unfreeze/:userId', isLoggedIn, checkUserStatus, hasAuthority, upload.none(), unfreezeUser);

@@ -2,9 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import Campaign, { ICampaign, MobileNumberEntryType } from '../Models/Campaign.model.js';
 import User from '../Models/user.Model.js';
-import { getFileTypeCategory } from '../Utils/upload.Utils.js';
-import { MediaType as CampaignMediaType } from '../Models/Campaign.model.js';
-// import { debitForCampaignService } from '../Utils/transaction.Utlis.js';
 
 interface CreateCampaignBody {
     campaignName: string;
@@ -16,6 +13,7 @@ interface CreateCampaignBody {
     mobileNumberEntryType: MobileNumberEntryType;
     mobileNumbers: string | string[];
     countryCode: string;
+    fileUrl?: string;
 }
 
 const createCampaign = async (
@@ -36,7 +34,9 @@ const createCampaign = async (
         }
 
         const creatorId = req.user._id;
-        const creatorRole = req.user.role; // Get user's role
+        
+        // ✅ Get Cloudinary URL from middleware (or empty string if no file)
+        const media = req.file?.path || req.body.fileUrl || '';
 
         const {
             campaignName,
@@ -51,6 +51,7 @@ const createCampaign = async (
         } = req.body;
 
         if (!campaignName || !message || !countryCode) {
+            await session.abortTransaction();
             res.status(400).json({
                 success: false,
                 message: 'Campaign name, message, and country code are required.',
@@ -70,6 +71,7 @@ const createCampaign = async (
         }
 
         if (numbersArray.length === 0) {
+            await session.abortTransaction();
             res.status(400).json({
                 success: false,
                 message: 'At least one mobile number is required.',
@@ -90,14 +92,12 @@ const createCampaign = async (
             return;
         }
 
-        // ✅ FIXED: Admin has unlimited balance, others need to check
+        // Admin has unlimited balance, others need to check
         let actualNumberCount: number;
         
         if (user.role === 'admin') {
-            // Admin can create campaigns with any number of contacts
             actualNumberCount = requestedNumberCount;
         } else {
-            // Reseller/User: Limit numbers based on balance (1 point = 1 number)
             actualNumberCount = Math.min(requestedNumberCount, user.balance);
             
             if (actualNumberCount === 0) {
@@ -121,6 +121,7 @@ const createCampaign = async (
             mobileNumbers: processedNumbers,
             countryCode,
             createdBy: creatorId,
+            media: media || undefined, // ✅ Store Cloudinary URL (or undefined if no file)
         };
 
         if (phoneButtonText && phoneButtonNumber) {
@@ -137,52 +138,26 @@ const createCampaign = async (
             };
         }
 
-        // File validation
-        if (req.file) {
-            const file = req.file;
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (file.size > maxSize) {
-                await session.abortTransaction();
-                res.status(400).json({
-                    success: false,
-                    message: 'File size exceeds the allowed limit of 5MB.',
-                });
-                return;
-            }
-
-            const fileCategory = getFileTypeCategory(file.mimetype);
-            if (!fileCategory) {
-                await session.abortTransaction();
-                res.status(400).json({
-                    success: false,
-                    message: 'Invalid file type. Only images, videos, and PDFs are allowed.',
-                });
-                return;
-            }
-
-            campaignData.media = {
-                type: fileCategory as unknown as CampaignMediaType,
-                url: file.path,
-                filename: file.originalname,
-                size: file.size,
-                mimeType: file.mimetype,
-            };
-        }
+        // ✅ REMOVED: File validation (middleware already handles it)
+        // The middleware (uploadCampaignFileToCloudinary) already:
+        // - Checks file size (5MB limit in multer config)
+        // - Validates file type (images only for now)
+        // - Uploads to Cloudinary
+        // - Deletes local file
+        // - Sets req.file.path to Cloudinary URL
 
         // Create campaign within session
         const newCampaignArray = await Campaign.create([campaignData], { session });
         const newCampaign = newCampaignArray[0];
 
-        // ✅ FIXED: Only deduct balance if NOT admin
+        // Only deduct balance if NOT admin
         const balanceBefore = user.balance;
         let balanceAfter = user.balance;
 
         if (user.role !== 'admin') {
-            // Deduct balance for reseller/user
             user.balance -= actualNumberCount;
             balanceAfter = user.balance;
         }
-        // Admin's balance stays the same (infinite money)
 
         // Create transaction
         const Transaction = mongoose.model('Transaction');
@@ -220,7 +195,7 @@ const createCampaign = async (
                 message: newCampaign.message,
                 phoneButton: newCampaign.phoneButton,
                 linkButton: newCampaign.linkButton,
-                media: newCampaign.media,
+                media: newCampaign.media, // ✅ Returns Cloudinary URL
                 mobileNumberEntryType: newCampaign.mobileNumberEntryType,
                 requestedNumberCount,
                 actualNumberCount,

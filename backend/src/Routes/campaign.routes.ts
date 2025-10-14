@@ -2,6 +2,8 @@ import { Router } from 'express';
 import createCampaign from '../Controllers/campaign.controller.js';
 import isLoggedIn from '../Middlewares/isLoggedIn.Middleware.js';
 import upload, { multerErrorHandler } from '../Utils/upload.Utils.js';
+import { uploadCampaignFileToCloudinary } from '../Middlewares/uploadToCloudinary.Middleware.js';
+
 
 const router = Router();
 
@@ -23,6 +25,6 @@ const router = Router();
  * - file (optional): single image/video/PDF up to 5MB
  */
 
-router.post('/',isLoggedIn, upload.single('file'), createCampaign, multerErrorHandler)
+router.post('/',isLoggedIn, upload.single('image'), uploadCampaignFileToCloudinary,  createCampaign)
 
 export default router;

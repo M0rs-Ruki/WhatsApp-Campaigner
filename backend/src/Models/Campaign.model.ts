@@ -34,7 +34,7 @@ export interface ICampaign extends Document {
   message: string;
   phoneButton?: IPhoneButton;
   linkButton?: ILinkButton;
-  media?: IMedia;
+  media?: string;
   createdBy: mongoose.Types.ObjectId;
   mobileNumberEntryType: MobileNumberEntryType;
   mobileNumbers: string[];
@@ -92,53 +92,6 @@ const LinkButtonSchema = new Schema(
   { _id: false }
 );
 
-// 🖼 Media Subschema
-const MediaSchema = new Schema(
-  {
-    type: {
-      type: String,
-      enum: Object.values(MediaType),
-      required: true
-    },
-    url: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    filename: {
-      type: String,
-      required: true
-    },
-    size: {
-      type: Number,
-      required: true,
-      max: [5242880, 'File size cannot exceed 5MB']
-    },
-    mimeType: {
-      type: String,
-      required: true,
-      validate: {
-        validator: (v: string) => {
-          const allowedTypes = [
-            'image/jpeg',
-            'image/jpg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'video/mp4',
-            'video/mpeg',
-            'video/quicktime',
-            'video/x-msvideo',
-            'application/pdf'
-          ];
-          return allowedTypes.includes(v);
-        },
-        message: 'Invalid file type. Only images, videos, and PDFs are allowed'
-      }
-    }
-  },
-  { _id: false }
-);
 
 /* -------------------- Main Schema -------------------- */
 
@@ -165,7 +118,7 @@ const campaignSchema = new Schema<ICampaign>(
       type: LinkButtonSchema,
     },
     media: {
-      type: MediaSchema,
+      type: String,
     },
     createdBy: {
       type: Schema.Types.ObjectId,
