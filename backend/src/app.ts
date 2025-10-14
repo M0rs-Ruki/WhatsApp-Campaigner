@@ -7,6 +7,10 @@ import connectDB from './DB/connect.DB.js';
 import multerErrorHandler from './Utils/multerError.Utils.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import startCleanupScheduler from './Jobs/cleanupScheduler.job.js'
+
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +54,8 @@ app.use('/api/news', newsRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/complaints', complaintRoutes);
+
+startCleanupScheduler();
 
 // --- Database Connection and Server Initialization ---
 const startServer = async () => {
