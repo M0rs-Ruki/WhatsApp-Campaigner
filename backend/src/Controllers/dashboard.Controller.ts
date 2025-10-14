@@ -547,8 +547,8 @@ const treeView = async (req: Request, res: Response) => {
             }
 
             // Get resellers and users (limit to 20 each, no sorting for performance)
-            const resellerIds = user.allReseller?.slice(0, 20) || [];
-            const userIds = user.allUsers?.slice(0, 20) || [];
+            const resellerIds = user.allReseller?.slice(0, 10) || [];
+            const userIds = user.allUsers?.slice(0, 10) || [];
 
             // Build node data
             const node: any = {
@@ -713,7 +713,6 @@ const whatsAppReports = async (req: Request, res: Response) => {
         });
     }
 };
-
 
 
 export { businessDetails, dashboard,
