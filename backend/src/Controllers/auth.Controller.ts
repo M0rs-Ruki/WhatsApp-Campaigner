@@ -203,3 +203,55 @@ export const Logout = (req: Request, res: Response): Response => {
         });
     }
 };
+
+
+export const updateProfile = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.',
+            });
+        }
+
+        const { companyName, email, number } = req.body;
+        const image = req.file?.path || req.body.imageUrl || '';
+
+        const updatedData: Partial<IUser> = {};
+        if (companyName) updatedData.companyName = companyName;
+        if (email) updatedData.email = email;
+        if (number) updatedData.number = number;
+        if (image) updatedData.image = image;
+
+        const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully.',
+            user: {
+                _id: updatedUser._id,
+                companyName: updatedUser.companyName,
+                email: updatedUser.email,
+                image: updatedUser.image,
+                number: updatedUser.number,
+                role: updatedUser.role,
+                balance: updatedUser.balance,
+            },
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in updateProfile controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred.',
+        });
+    }
+}

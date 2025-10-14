@@ -10,6 +10,7 @@ interface Campaign {
   createdBy: string;
   mobileNumberCount: number;
   createdAt: string;
+  image: string;
 }
 
 interface UserData {
@@ -372,10 +373,11 @@ const WhatsAppReports = () => {
       {/* Campaign Details Modal */}
       {showDetailsModal && selectedCampaign && userData && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-black">Campaign Details</h3>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-3xl font-bold text-black">Campaign Details</h3>
                 <button
                   onClick={() => {
                     setShowDetailsModal(false);
@@ -387,100 +389,127 @@ const WhatsAppReports = () => {
                 </button>
               </div>
 
-              <div className="space-y-4">
-                {/* USER DETAILS SECTION - FIRST */}
-                <div className="p-5 bg-blue-50 rounded-xl border-2 border-blue-400">
-                  <h4 className="text-lg font-bold text-blue-700 mb-4 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+              <div className="space-y-5">
+                {/* USER DETAILS SECTION */}
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-400 shadow-lg">
+                  <h4 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-600 animate-pulse"></div>
                     User Information
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Company Name:</span>
-                      <p className="text-black font-semibold text-lg">{userData.companyName}</p>
+                      <span className="text-xs font-bold text-blue-700 uppercase">Company Name</span>
+                      <p className="text-black font-bold text-lg mt-1">{userData.companyName}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Email Address:</span>
-                      <p className="text-black font-semibold break-all">{userData.email}</p>
+                      <span className="text-xs font-bold text-blue-700 uppercase">Email</span>
+                      <p className="text-black font-semibold break-all mt-1">{userData.email}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Phone Number:</span>
-                      <p className="text-black font-semibold">{userData.number}</p>
+                      <span className="text-xs font-bold text-blue-700 uppercase">Phone</span>
+                      <p className="text-black font-semibold mt-1">{userData.number}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Role:</span>
-                      <p className="text-black font-semibold uppercase">{userData.role}</p>
+                      <span className="text-xs font-bold text-blue-700 uppercase">Role</span>
+                      <p className="text-black font-semibold uppercase mt-1">{userData.role}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Status:</span>
-                      <p>
+                      <span className="text-xs font-bold text-blue-700 uppercase">Status</span>
+                      <p className="mt-1">
                         <span className={`px-3 py-1 text-white text-xs font-bold rounded-full ${getStatusBadge(userData.status)}`}>
                           {userData.status.toUpperCase()}
                         </span>
                       </p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">User Since:</span>
-                      <p className="text-black font-semibold">{formatDate(userData.createdAt)}</p>
+                      <span className="text-xs font-bold text-blue-700 uppercase">Member Since</span>
+                      <p className="text-black font-semibold text-sm mt-1">{formatDate(userData.createdAt)}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* CAMPAIGN DETAILS SECTION - SECOND */}
-                <div className="p-5 bg-green-50 rounded-xl border-2 border-green-400">
-                  <h4 className="text-lg font-bold text-green-700 mb-4 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-600"></div>
+                {/* CAMPAIGN DETAILS SECTION */}
+                <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-green-400 shadow-lg">
+                  <h4 className="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-600 animate-pulse"></div>
                     Campaign Information
                   </h4>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="col-span-2">
-                      <span className="text-sm font-bold text-gray-600">Campaign ID:</span>
-                      <p className="text-black font-semibold break-all text-sm">{selectedCampaign.campaignId}</p>
+                  
+                  {/* Campaign Basic Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                    <div className="col-span-2 md:col-span-1">
+                      <span className="text-xs font-bold text-green-700 uppercase">Campaign ID</span>
+                      <p className="text-black font-mono text-sm break-all mt-1 bg-white px-3 py-2 rounded-lg">{selectedCampaign.campaignId}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Campaign Name:</span>
-                      <p className="text-black font-semibold">{selectedCampaign.campaignName}</p>
+                      <span className="text-xs font-bold text-green-700 uppercase">Campaign Name</span>
+                      <p className="text-black font-bold text-lg mt-1">{selectedCampaign.campaignName}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Created By:</span>
-                      <p className="text-black font-semibold">{selectedCampaign.createdBy}</p>
+                      <span className="text-xs font-bold text-green-700 uppercase">Created By</span>
+                      <p className="text-black font-semibold mt-1">{selectedCampaign.createdBy}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Mobile Numbers Sent:</span>
-                      <p className="text-blue-600 font-bold text-xl">{selectedCampaign.mobileNumberCount}</p>
+                      <span className="text-xs font-bold text-green-700 uppercase">Recipients</span>
+                      <p className="text-blue-600 font-bold text-2xl mt-1">{selectedCampaign.mobileNumberCount}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-gray-600">Created At:</span>
-                      <p className="text-black font-semibold">{formatDate(selectedCampaign.createdAt)}</p>
+                      <span className="text-xs font-bold text-green-700 uppercase">Created At</span>
+                      <p className="text-black font-semibold text-sm mt-1">{formatDate(selectedCampaign.createdAt)}</p>
                     </div>
                   </div>
 
-                  {/* Message Content */}
-                  <div className="mt-4">
-                    <span className="text-sm font-bold text-gray-600 mb-2 block">Campaign Message:</span>
-                    <div className="p-4 bg-white rounded-lg border-2 border-green-300">
-                      <p className="text-black whitespace-pre-wrap">{selectedCampaign.message}</p>
+                  {/* Campaign Media */}
+                  {selectedCampaign.image && (
+                    <div className="mb-5">
+                      <span className="text-sm font-bold text-green-800 mb-3 block">📷 Campaign Media</span>
+                      <div className="bg-white p-4 rounded-xl border-2 border-green-300 shadow-md">
+                        <img 
+                          src={selectedCampaign.image} 
+                          alt="Campaign media"
+                          className="w-full max-h-[400px] object-contain rounded-lg shadow-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/600x400?text=Image+Not+Available';
+                          }}
+                        />
+                        <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-gray-600 break-all">
+                            <span className="font-bold">📎 URL:</span> {selectedCampaign.image}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Campaign Message */}
+                  <div>
+                    <span className="text-sm font-bold text-green-800 mb-3 block">💬 Campaign Message</span>
+                    <div className="bg-white p-5 rounded-xl border-2 border-green-300 shadow-md">
+                      <p className="text-black text-base leading-relaxed whitespace-pre-wrap">{selectedCampaign.message}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Stats Summary */}
-                <div className="p-4 bg-purple-50 rounded-xl border-2 border-purple-300">
-                  <h4 className="text-sm font-bold text-purple-700 mb-3">Campaign Statistics:</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-3 bg-white rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">{selectedCampaign.mobileNumberCount}</p>
-                      <p className="text-xs text-gray-600 mt-1">Total Recipients</p>
+                {/* STATS SUMMARY */}
+                <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-400 shadow-lg">
+                  <h4 className="text-xl font-bold text-purple-800 mb-4 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse"></div>
+                    Campaign Statistics
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-5 bg-white rounded-xl shadow-md border-2 border-blue-200 hover:scale-105 transition-transform">
+                      <p className="text-5xl font-bold text-blue-600">{selectedCampaign.mobileNumberCount}</p>
+                      <p className="text-sm text-gray-700 font-bold mt-2 uppercase">Total Recipients</p>
                     </div>
-                    <div className="text-center p-3 bg-white rounded-lg">
-                      <p className="text-3xl font-bold text-green-600">{selectedCampaign.message.length}</p>
-                      <p className="text-xs text-gray-600 mt-1">Characters</p>
+                    <div className="text-center p-5 bg-white rounded-xl shadow-md border-2 border-green-200 hover:scale-105 transition-transform">
+                      <p className="text-5xl font-bold text-green-600">{selectedCampaign.message.length}</p>
+                      <p className="text-sm text-gray-700 font-bold mt-2 uppercase">Characters</p>
                     </div>
-                    <div className="text-center p-3 bg-white rounded-lg">
-                      <p className="text-3xl font-bold text-purple-600">
+                    <div className="text-center p-5 bg-white rounded-xl shadow-md border-2 border-purple-200 hover:scale-105 transition-transform">
+                      <p className="text-5xl font-bold text-purple-600">
                         {Math.ceil(selectedCampaign.message.length / 160)}
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">SMS Parts</p>
+                      <p className="text-sm text-gray-700 font-bold mt-2 uppercase">SMS Parts</p>
                     </div>
                   </div>
                 </div>
@@ -493,7 +522,7 @@ const WhatsAppReports = () => {
                     setShowDetailsModal(false);
                     setSelectedCampaign(null);
                   }}
-                  className="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all"
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-lg rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg"
                 >
                   Close
                 </button>
@@ -502,6 +531,7 @@ const WhatsAppReports = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

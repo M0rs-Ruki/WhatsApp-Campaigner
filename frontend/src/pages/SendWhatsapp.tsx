@@ -146,7 +146,7 @@ const SendWhatsapp = () => {
 
       // Append file if selected
       if (selectedFile) {
-        submitData.append('file', selectedFile);
+        submitData.append('image', selectedFile);
       }
 
       // Send to backend

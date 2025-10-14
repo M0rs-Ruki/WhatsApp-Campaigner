@@ -20,6 +20,7 @@ const ManageBusiness = () => {
     confirmPassword: ''
   });
 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null); // ✅ NEW: Store selected image file
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [success, setSuccess] = useState('');
@@ -102,13 +103,28 @@ const ManageBusiness = () => {
     setError('');
   };
 
-  // Handle file selection
+  // ✅ UPDATED: Handle file selection
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+    if (!file) return;
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('Image size must be less than 5MB');
+      return;
     }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    setSelectedImage(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    setError('');
   };
 
   // Email validation
@@ -123,7 +139,7 @@ const ManageBusiness = () => {
     return phoneRegex.test(number);
   };
 
-  // Handle form submission (both profile and password)
+  // ✅ UPDATED: Handle form submission (profile, image, and password)
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -136,7 +152,7 @@ const ManageBusiness = () => {
     }
 
     // Check if anything is being updated
-    const hasProfileUpdate = formData.companyName || formData.email || formData.number;
+    const hasProfileUpdate = formData.companyName || formData.email || formData.number || selectedImage;
     const hasPasswordUpdate = passwordData.newPassword || passwordData.confirmPassword;
 
     if (!hasProfileUpdate && !hasPasswordUpdate) {
@@ -167,7 +183,7 @@ const ManageBusiness = () => {
         return;
       }
 
-      if (passwordData.newPassword.length < 3) {
+      if (passwordData.newPassword.length < 5) {
         setError('Password must be at least 5 characters long');
         return;
       }
@@ -179,20 +195,19 @@ const ManageBusiness = () => {
       let profileUpdateSuccess = false;
       let passwordUpdateSuccess = false;
 
-      // Update profile if fields are provided
+      // ✅ Update profile (including image) if fields are provided
       if (hasProfileUpdate) {
-        const updateData: Partial<BusinessData> = {};
-        if (formData.companyName) updateData.companyName = formData.companyName;
-        if (formData.email) updateData.email = formData.email;
-        if (formData.number) updateData.number = formData.number;
+        const profileFormData = new FormData(); // Use FormData for file upload
 
-        const profileResponse = await fetch(`${API_URL}/api/user/update/${userId}`, {
+        if (formData.companyName) profileFormData.append('companyName', formData.companyName);
+        if (formData.email) profileFormData.append('email', formData.email);
+        if (formData.number) profileFormData.append('number', formData.number);
+        if (selectedImage) profileFormData.append('image', selectedImage); // ✅ Add image file
+
+        const profileResponse = await fetch(`${API_URL}/api/auth/update-profile`, {
           method: 'PUT',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updateData),
+          body: profileFormData, // ✅ Send as FormData (not JSON)
         });
 
         const profileResult = await profileResponse.json();
@@ -206,12 +221,21 @@ const ManageBusiness = () => {
             const user = JSON.parse(userStr);
             const updatedUser = {
               ...user,
-              companyName: profileResult.data.companyName,
-              email: profileResult.data.email,
-              number: profileResult.data.number,
+              companyName: profileResult.user.companyName,
+              email: profileResult.user.email,
+              number: profileResult.user.number,
+              image: profileResult.user.image, // ✅ Update image URL
             };
             localStorage.setItem('user', JSON.stringify(updatedUser));
           }
+
+          // Update preview URL with new Cloudinary URL
+          if (profileResult.user.image) {
+            setPreviewUrl(profileResult.user.image);
+          }
+
+          // Clear selected image after successful upload
+          setSelectedImage(null);
         } else {
           setError(profileResult.message || 'Failed to update profile');
           setLoading(false);
@@ -237,7 +261,6 @@ const ManageBusiness = () => {
 
         if (passwordResponse.ok && passwordResult.success) {
           passwordUpdateSuccess = true;
-          // Clear password fields after successful change
           setPasswordData({ newPassword: '', confirmPassword: '' });
         } else {
           setError(passwordResult.message || 'Failed to change password');
@@ -248,9 +271,9 @@ const ManageBusiness = () => {
 
       // Set success message based on what was updated
       if (profileUpdateSuccess && passwordUpdateSuccess) {
-        setSuccess('Profile and password updated successfully!');
+        setSuccess('Profile, image, and password updated successfully!');
       } else if (profileUpdateSuccess) {
-        setSuccess('Profile updated successfully!');
+        setSuccess(selectedImage ? 'Profile and image updated successfully!' : 'Profile updated successfully!');
       } else if (passwordUpdateSuccess) {
         setSuccess('Password changed successfully!');
       }
@@ -285,7 +308,7 @@ const ManageBusiness = () => {
       {/* Page Header */}
       <div className="p-4 sm:p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
         <h2 className="text-2xl sm:text-3xl font-bold text-black">Update Profile</h2>
-        <p className="text-sm text-gray-600 mt-1">Update your profile information and change password</p>
+        <p className="text-sm text-gray-600 mt-1">Update your profile information, image, and change password</p>
       </div>
 
       {/* Success Message */}
@@ -369,8 +392,8 @@ const ManageBusiness = () => {
               <p className="text-xs text-black opacity-60 mt-2">* Enter 10-digit mobile number without country code</p>
             </div>
 
-            {/* Business Logo (Disabled) */}
-            <div className="opacity-60">
+            {/* ✅ Business Logo (NOW ENABLED!) */}
+            <div>
               <label htmlFor="image" className="block text-sm font-bold text-black mb-2 uppercase">
                 Business Logo
               </label>
@@ -380,7 +403,7 @@ const ManageBusiness = () => {
                   <img 
                     src={previewUrl} 
                     alt="Business Logo Preview" 
-                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border-2 border-white/80"
+                    className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl border-2 border-green-500 shadow-lg"
                   />
                 </div>
               )}
@@ -390,10 +413,10 @@ const ManageBusiness = () => {
                 id="image"
                 accept="image/*"
                 onChange={handleFileChange}
-                disabled={true}
-                className="w-full px-4 py-3 bg-white/30 backdrop-blur-sm border-2 border-white/50 rounded-xl text-black text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-400 file:text-white file:font-semibold cursor-not-allowed"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500 file:text-white file:font-semibold file:cursor-pointer hover:file:bg-green-600 transition-all"
               />
-              <p className="text-xs text-black opacity-60 mt-2">* Image upload feature coming soon</p>
+              <p className="text-xs text-black opacity-60 mt-2">* Maximum file size: 5MB. Supported formats: JPG, PNG, GIF</p>
             </div>
           </div>
         </div>

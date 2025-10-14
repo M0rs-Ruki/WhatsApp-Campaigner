@@ -685,7 +685,8 @@ const whatsAppReports = async (req: Request, res: Response) => {
             message: campaign.message,
             createdBy: campaign.createdBy?.companyName || currentUser.companyName,
             mobileNumberCount: campaign.mobileNumbers?.length || 0,
-            createdAt: campaign.createdAt
+            createdAt: campaign.createdAt,
+            image: campaign.media
         }));
 
         return res.status(200).json({
