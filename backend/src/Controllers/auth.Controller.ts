@@ -139,6 +139,20 @@ export const Login = async (
             });
         }
 
+        if (user.status === 'inactive') {
+            return res.status(403).json({
+                success: false,
+                message: 'Your account is Freeze. please contact your Admin or Reseller. They have the authority to unfreeze your account.'
+            })
+        };
+
+        if (user.status === 'deleted') {
+            return res.status(403).json({
+                success: false,
+                message: 'Your account is Deleted. please contact your Admin or Reseller. They have the authority to restore your account.'
+            })
+        };
+
         const isPasswordCorrect = await comparePassword(password, user.password);
         if (!isPasswordCorrect) {
             return res.status(401).json({
@@ -158,13 +172,6 @@ export const Login = async (
 
         res.cookie('token', token, cookieOptions);
 
-        // const userForResponse = {
-        //     _id: user._id,
-        //     companyName: user.companyName,
-        //     email: user.email,
-        //     image: user.image,
-        //     role: user.role,
-        // };
 
         return res.status(200).json({
             success: true,

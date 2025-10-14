@@ -17,7 +17,7 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    // Validate inputs
+    // Client-side validation
     if (!email || !password) {
       setError('Please fill in all fields');
       setLoading(false);
@@ -34,25 +34,27 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Store user info
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Login successful
         if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
         }
-        
-        // Redirect to dashboard
         navigate('/home');
       } else {
-        setError('Invalid credentials');
+        // Login failed - use backend error message
+        setError(data.message || 'Login failed. Please try again.');
       }
-    } catch {
-      setError('Login failed. Please try again.');
+    } catch (err) {
+      // Network error
+      setError('Network error. Please check your connection and try again.');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100 px-4">
