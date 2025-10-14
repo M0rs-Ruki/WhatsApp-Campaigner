@@ -95,7 +95,15 @@ export const Registration = async (
         return res.status(201).json({
             success: true,
             message: 'User registered successfully.',
-            user: userForResponse,
+            user: {
+                companyName: newUser.companyName,
+                email: newUser.email,
+                number: newUser.number,
+                role: newUser.role,
+                balance: newUser.balance,
+                image: newUser.image,
+                _id: newUser._id,
+            }
         });
     } catch (error: unknown) {
         console.error('Error in Registration controller:', error);
@@ -167,6 +175,7 @@ export const Login = async (
             email: user.email,
             role: user.role,
             companyName: user.companyName,
+            image: user.image
             }
         });
   

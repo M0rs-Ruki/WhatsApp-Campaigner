@@ -135,13 +135,10 @@ const dashboard = async (req: Request, res: Response) => {
                 balance: user.balance,
                 totalReseller: user.allReseller.length,
                 totalUsers: user.allUsers.length,
-                allReseller: user.allReseller,
-                allUsers: user.allUsers,
-                allCampaign: user.allCampaign,
                 totalCampaigns: user.totalCampaigns,
                 totalMessages: totalMessages,
-                monthlyStats: monthlyStatsWithCumulative, // ready for React charts
-                topFiveCampaigns: topFiveCampaigns      // top 5 campaigns this year
+                monthlyStats: monthlyStatsWithCumulative,
+                topFiveCampaigns: topFiveCampaigns
             }
         });
 
