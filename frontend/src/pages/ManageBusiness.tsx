@@ -9,6 +9,13 @@ interface BusinessData {
 }
 
 const ManageBusiness = () => {
+  // ✅ NEW: Store original data separately
+  const [originalData, setOriginalData] = useState<BusinessData>({
+    companyName: '',
+    email: '',
+    number: '',
+  });
+
   const [formData, setFormData] = useState<BusinessData>({
     companyName: '',
     email: '',
@@ -20,7 +27,7 @@ const ManageBusiness = () => {
     confirmPassword: ''
   });
 
-  const [selectedImage, setSelectedImage] = useState<File | null>(null); // ✅ NEW: Store selected image file
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [success, setSuccess] = useState('');
@@ -58,12 +65,16 @@ const ManageBusiness = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setFormData({
+        const data = {
           companyName: result.data.companyName || '',
           email: result.data.email || '',
           number: result.data.number || '',
           image: result.data.image || '',
-        });
+        };
+
+        // ✅ Store both original and form data
+        setOriginalData(data);
+        setFormData(data);
 
         if (result.data.image) {
           setPreviewUrl(result.data.image);
@@ -103,7 +114,7 @@ const ManageBusiness = () => {
     setError('');
   };
 
-  // ✅ UPDATED: Handle file selection
+  // Handle file selection
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -139,7 +150,7 @@ const ManageBusiness = () => {
     return phoneRegex.test(number);
   };
 
-  // ✅ UPDATED: Handle form submission (profile, image, and password)
+  // ✅ FIXED: Handle form submission (ONLY send changed fields)
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -151,22 +162,35 @@ const ManageBusiness = () => {
       return;
     }
 
-    // Check if anything is being updated
-    const hasProfileUpdate = formData.companyName || formData.email || formData.number || selectedImage;
+    // ✅ NEW: Build update object with ONLY changed fields
+    const profileUpdates: Partial<BusinessData> = {};
+    
+    if (formData.companyName !== originalData.companyName && formData.companyName.trim()) {
+      profileUpdates.companyName = formData.companyName;
+    }
+    if (formData.email !== originalData.email && formData.email.trim()) {
+      profileUpdates.email = formData.email;
+    }
+    if (formData.number !== originalData.number && formData.number.trim()) {
+      profileUpdates.number = formData.number;
+    }
+
+    const hasProfileUpdate = Object.keys(profileUpdates).length > 0 || selectedImage;
     const hasPasswordUpdate = passwordData.newPassword || passwordData.confirmPassword;
 
     if (!hasProfileUpdate && !hasPasswordUpdate) {
-      setError('Please provide at least one field to update');
+      setError('No changes detected. Please modify at least one field.');
       return;
     }
 
-    // Validate profile fields if provided
-    if (formData.email && !isValidEmail(formData.email)) {
+    // Validate email if changed
+    if (profileUpdates.email && !isValidEmail(profileUpdates.email)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    if (formData.number && !isValidPhoneNumber(formData.number)) {
+    // Validate phone if changed
+    if (profileUpdates.number && !isValidPhoneNumber(profileUpdates.number)) {
       setError('Please enter a valid 10-digit phone number');
       return;
     }
@@ -195,19 +219,20 @@ const ManageBusiness = () => {
       let profileUpdateSuccess = false;
       let passwordUpdateSuccess = false;
 
-      // ✅ Update profile (including image) if fields are provided
+      // ✅ FIXED: Update profile with ONLY changed fields
       if (hasProfileUpdate) {
-        const profileFormData = new FormData(); // Use FormData for file upload
+        const profileFormData = new FormData();
 
-        if (formData.companyName) profileFormData.append('companyName', formData.companyName);
-        if (formData.email) profileFormData.append('email', formData.email);
-        if (formData.number) profileFormData.append('number', formData.number);
-        if (selectedImage) profileFormData.append('image', selectedImage); // ✅ Add image file
+        // ✅ Only append changed fields
+        if (profileUpdates.companyName) profileFormData.append('companyName', profileUpdates.companyName);
+        if (profileUpdates.email) profileFormData.append('email', profileUpdates.email);
+        if (profileUpdates.number) profileFormData.append('number', profileUpdates.number);
+        if (selectedImage) profileFormData.append('image', selectedImage);
 
         const profileResponse = await fetch(`${API_URL}/api/auth/update-profile`, {
           method: 'PUT',
           credentials: 'include',
-          body: profileFormData, // ✅ Send as FormData (not JSON)
+          body: profileFormData,
         });
 
         const profileResult = await profileResponse.json();
@@ -224,17 +249,31 @@ const ManageBusiness = () => {
               companyName: profileResult.user.companyName,
               email: profileResult.user.email,
               number: profileResult.user.number,
-              image: profileResult.user.image, // ✅ Update image URL
+              image: profileResult.user.image,
             };
             localStorage.setItem('user', JSON.stringify(updatedUser));
           }
 
-          // Update preview URL with new Cloudinary URL
+          // ✅ Update original data to new values
+          setOriginalData({
+            companyName: profileResult.user.companyName,
+            email: profileResult.user.email,
+            number: profileResult.user.number,
+            image: profileResult.user.image,
+          });
+
+          setFormData({
+            companyName: profileResult.user.companyName,
+            email: profileResult.user.email,
+            number: profileResult.user.number,
+            image: profileResult.user.image,
+          });
+
+          // Update preview URL
           if (profileResult.user.image) {
             setPreviewUrl(profileResult.user.image);
           }
 
-          // Clear selected image after successful upload
           setSelectedImage(null);
         } else {
           setError(profileResult.message || 'Failed to update profile');
@@ -269,19 +308,22 @@ const ManageBusiness = () => {
         }
       }
 
-      // Set success message based on what was updated
+      // ✅ Better success messages
+      const changedFields = [];
+      if (profileUpdates.companyName) changedFields.push('company name');
+      if (profileUpdates.email) changedFields.push('email');
+      if (profileUpdates.number) changedFields.push('phone number');
+      if (selectedImage) changedFields.push('profile image');
+
       if (profileUpdateSuccess && passwordUpdateSuccess) {
-        setSuccess('Profile, image, and password updated successfully!');
+        setSuccess(`${changedFields.join(', ')} and password updated successfully!`);
       } else if (profileUpdateSuccess) {
-        setSuccess(selectedImage ? 'Profile and image updated successfully!' : 'Profile updated successfully!');
+        setSuccess(`${changedFields.join(', ')} updated successfully!`);
       } else if (passwordUpdateSuccess) {
         setSuccess('Password changed successfully!');
       }
 
-      // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // Clear success message after 5 seconds
       setTimeout(() => setSuccess(''), 5000);
 
     } catch (err) {
@@ -345,7 +387,7 @@ const ManageBusiness = () => {
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleInputChange}
-                placeholder="Enter company name"
+                placeholder={`Current: ${originalData.companyName || 'Not set'}`}
                 className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                 disabled={loading}
               />
@@ -362,7 +404,7 @@ const ManageBusiness = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="example@gmail.com"
+                placeholder={`Current: ${originalData.email || 'Not set'}`}
                 className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                 disabled={loading}
               />
@@ -383,7 +425,7 @@ const ManageBusiness = () => {
                   name="number"
                   value={formData.number}
                   onChange={handleInputChange}
-                  placeholder="Enter 10-digit number"
+                  placeholder={`Current: ${originalData.number || 'Not set'}`}
                   maxLength={10}
                   className="flex-1 px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                   disabled={loading}
@@ -392,7 +434,7 @@ const ManageBusiness = () => {
               <p className="text-xs text-black opacity-60 mt-2">* Enter 10-digit mobile number without country code</p>
             </div>
 
-            {/* ✅ Business Logo (NOW ENABLED!) */}
+            {/* Business Logo */}
             <div>
               <label htmlFor="image" className="block text-sm font-bold text-black mb-2 uppercase">
                 Business Logo
@@ -416,7 +458,7 @@ const ManageBusiness = () => {
                 disabled={loading}
                 className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500 file:text-white file:font-semibold file:cursor-pointer hover:file:bg-green-600 transition-all"
               />
-              <p className="text-xs text-black opacity-60 mt-2">* Maximum file size: 5MB. Supported formats: JPG, PNG, GIF</p>
+              <p className="text-xs text-black opacity-60 mt-2">* Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP</p>
             </div>
           </div>
         </div>
@@ -489,3 +531,4 @@ const ManageBusiness = () => {
 };
 
 export default ManageBusiness;
+  
