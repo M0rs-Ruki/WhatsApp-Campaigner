@@ -31,39 +31,39 @@ const storage = multer.diskStorage({
     }
 });
 
-// Updated file filter to allow images, videos, AND PDFs
+// ✅ FIXED: Strict image validation (JPG, PNG, GIF, WebP only)
 const fileFilter = (req: Request, file: Express.Multer.File, cb: Cb): void => {
-    // Define allowed file types for images, videos, and PDFs
-    const allowedImageTypes = /jpeg|jpg|png|gif|webp/;
-    const allowedVideoTypes = /mp4|mpeg|mov|avi/;
-    const allowedPdfTypes = /pdf/;
+    // Define allowed MIME types and extensions
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/gif',
+        'image/webp'  // ✅ Correct MIME type for WebP
+    ];
 
-    const fileExtension = path.extname(file.originalname).toLowerCase().replace('.', '');
-    const mimeType = file.mimetype;
+    const allowedExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
 
-    const isImage = allowedImageTypes.test(fileExtension) && 
-                    mimeType.startsWith('image/');
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    const mimeType = file.mimetype.toLowerCase();
 
-    const isVideo = allowedVideoTypes.test(fileExtension) && 
-                    mimeType.startsWith('video/');
+    // Check both MIME type AND extension
+    const isValidMimeType = allowedMimeTypes.includes(mimeType);
+    const isValidExtension = allowedExtensions.test(fileExtension);
 
-
-    const isPdf = allowedPdfTypes.test(fileExtension) && 
-                  mimeType === 'application/pdf';
-
-    if (isImage || isVideo || isPdf) {
+    if (isValidMimeType && isValidExtension) {
         cb(null, true);
     } else {
-        cb(new Error('Invalid file type. Only images (jpeg, jpg, png, gif, webp), videos (mp4, mpeg, mov, avi), and PDFs are allowed!'));
+        cb(new Error('Invalid file type. Only JPG, PNG, GIF, and WebP images are allowed!'));
     }
 };
 
-// Create the Multer instance with the configured options
+// Create the Multer instance
 const upload = multer({
     storage: storage,
     limits: { 
         fileSize: 1024 * 1024 * 5, // 5MB
-        files: 1 // Only ONE file at a time
+        files: 1
     },
     fileFilter: fileFilter
 });
@@ -76,7 +76,6 @@ const multerErrorHandler = (
     next: NextFunction
 ): Response | void => {
     if (err instanceof multer.MulterError) {
-        // Multer-specific Errors
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
                 success: false,
@@ -100,7 +99,6 @@ const multerErrorHandler = (
             message: err.message,
         });
     } else if (err) {
-        // Other errors (e.g., file type validation)
         return res.status(400).json({
             success: false,
             message: err.message || 'File upload error.',
@@ -109,7 +107,7 @@ const multerErrorHandler = (
     next();
 };
 
-// Helper function to determine file type category
+// Helper function for file type category
 export const getFileTypeCategory = (mimetype: string): 'image' | 'video' | 'pdf' | null => {
     if (mimetype.startsWith('image/')) return 'image';
     if (mimetype.startsWith('video/')) return 'video';

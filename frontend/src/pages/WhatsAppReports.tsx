@@ -46,7 +46,7 @@ const WhatsAppReports = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // Fetch reports data
   const fetchReportsData = useCallback(async () => {

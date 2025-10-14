@@ -328,7 +328,7 @@ const SendWhatsapp = () => {
             
             {/* Image Upload */}
             <div>
-              <label className="block text-xs font-bold text-black mb-2">IMAGE</label>
+              <label className="block text-xs font-bold text-black mb-2">IMAGE<span className="text-red-600">(Supported formats: JPG, PNG, GIF)</span></label> 
               <input
                 type="file"
                 accept="image/*"

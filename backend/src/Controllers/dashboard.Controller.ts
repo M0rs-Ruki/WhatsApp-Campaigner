@@ -407,6 +407,7 @@ const manageReseller = async (req: Request, res: Response) => {
             id: reseller._id,
             companyName: reseller.companyName,
             email: reseller.email,
+            image: reseller.image,
             number: reseller.number,
             role: reseller.role,
             resellerCount: reseller.allReseller?.length || 0,
@@ -483,6 +484,7 @@ const manageUser = async (req: Request, res: Response) => {
             companyName: user.companyName,
             email: user.email,
             number: user.number,
+            image: user.image,
             role: user.role,
             resellerCount: user.allReseller?.length || 0,
             userCount: user.allUsers?.length || 0,
@@ -683,7 +685,7 @@ const whatsAppReports = async (req: Request, res: Response) => {
             createdBy: campaign.createdBy?.companyName || currentUser.companyName,
             mobileNumberCount: campaign.mobileNumbers?.length || 0,
             createdAt: campaign.createdAt,
-            image: campaign.media
+            image: campaign.media?.url || campaign.media || null,
         }));
 
         return res.status(200).json({
