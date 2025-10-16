@@ -3,8 +3,7 @@ import isLoggedIn from '../Middlewares/isLoggedIn.Middleware.js';
 import { businessDetails,
     dashboard, transaction, news, complaints,
     manageReseller, manageUser, treeView, whatsAppReports } from '../Controllers/dashboard.Controller.js';
-
-
+import { exportCampaignToExcel } from '../Controllers/export.Controller.js';
 
 const router = express.Router();
 
@@ -17,6 +16,6 @@ router.get('/manage-reseller', isLoggedIn, manageReseller);
 router.get('/manage-user', isLoggedIn, manageUser);
 router.get('/tree-view', isLoggedIn, treeView);
 router.get('/whatsapp-reports', isLoggedIn, whatsAppReports);
-
+router.get('/export-campaign/:campaignId', isLoggedIn, exportCampaignToExcel);
 
 export default router;

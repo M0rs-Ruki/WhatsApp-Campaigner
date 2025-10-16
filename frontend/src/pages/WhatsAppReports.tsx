@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import { X, Eye, Calendar, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Eye, Calendar, Plus, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
 
 interface Campaign {
   campaignId: string;
@@ -13,6 +14,7 @@ interface Campaign {
   image: string;
 }
 
+
 interface UserData {
   companyName: string;
   email: string;
@@ -22,10 +24,12 @@ interface UserData {
   createdAt: string;
 }
 
+
 interface ReportsData {
   totalCampaigns: number;
   campaigns: Campaign[];
 }
+
 
 const WhatsAppReports = () => {
   const navigate = useNavigate();
@@ -33,6 +37,10 @@ const WhatsAppReports = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Download state
+  const [downloadingCampaigns, setDownloadingCampaigns] = useState<Set<string>>(new Set());
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,6 +56,7 @@ const WhatsAppReports = () => {
   
   const API_URL = import.meta.env.VITE_API_URL;
 
+
   // Fetch reports data
   const fetchReportsData = useCallback(async () => {
     try {
@@ -60,7 +69,9 @@ const WhatsAppReports = () => {
         },
       });
 
+
       const result = await response.json();
+
 
       if (response.ok && result.success) {
         setReportsData(result.data);
@@ -76,9 +87,74 @@ const WhatsAppReports = () => {
     }
   }, [API_URL]);
 
+
   useEffect(() => {
     fetchReportsData();
   }, [fetchReportsData]);
+
+
+  // Handle Excel Download
+  const handleDownloadExcel = async (campaignId: string) => {
+    if (downloadingCampaigns.has(campaignId)) return;
+
+    try {
+      setDownloadingCampaigns(prev => new Set(prev).add(campaignId));
+      setDownloadError(null);
+
+      const response = await fetch(
+        `${API_URL}/api/dashboard/export-campaign/${campaignId}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to download campaign data');
+      }
+
+      // Get filename from Content-Disposition header or create default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'campaign_export.xlsx';
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Create blob and trigger download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+    } catch (err: any) {
+      console.error('Download error:', err);
+      setDownloadError(err.message || 'Failed to download campaign data');
+      
+      // Auto-dismiss error after 5 seconds
+      setTimeout(() => {
+        setDownloadError(null);
+      }, 5000);
+    } finally {
+      setDownloadingCampaigns(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(campaignId);
+        return newSet;
+      });
+    }
+  };
+
 
   // Filter campaigns by date range
   const getFilteredCampaigns = () => {
@@ -99,16 +175,19 @@ const WhatsAppReports = () => {
     return filtered;
   };
 
+
   const filteredCampaigns = getFilteredCampaigns();
   const totalPages = Math.ceil(filteredCampaigns.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentCampaigns = filteredCampaigns.slice(startIndex, endIndex);
 
+
   // Reset to page 1 when items per page or filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [itemsPerPage, startDate, endDate]);
+
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -119,11 +198,13 @@ const WhatsAppReports = () => {
     }
   };
 
+
   // Truncate message
   const truncateMessage = (message: string, maxLength: number = 100) => {
     if (message.length <= maxLength) return message;
     return message.substring(0, maxLength) + '...';
   };
+
 
   // Get status badge
   const getStatusBadge = (status: string) => {
@@ -135,16 +216,19 @@ const WhatsAppReports = () => {
     return badges[status.toLowerCase() as keyof typeof badges] || 'bg-gray-500';
   };
 
+
   // Open details modal
   const openDetailsModal = (campaign: Campaign) => {
     setSelectedCampaign(campaign);
     setShowDetailsModal(true);
   };
 
+
   // Navigate to Send WhatsApp page
   const handleAddCampaign = () => {
     navigate('/send-whatsapp');
   };
+
 
   if (loading) {
     return (
@@ -155,6 +239,7 @@ const WhatsAppReports = () => {
       </div>
     );
   }
+
 
   return (
     <div className="space-y-6">
@@ -176,12 +261,29 @@ const WhatsAppReports = () => {
         </button>
       </div>
 
+
       {/* Error Message */}
       {error && (
         <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg">
           <p className="text-red-700 font-semibold">{error}</p>
         </div>
       )}
+
+      {/* Download Error Notification */}
+      {downloadError && (
+        <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg animate-pulse">
+          <div className="flex items-center justify-between">
+            <p className="text-red-700 font-semibold">{downloadError}</p>
+            <button
+              onClick={() => setDownloadError(null)}
+              className="text-red-700 hover:text-red-900"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* Date Filter Section */}
       <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
@@ -207,6 +309,7 @@ const WhatsAppReports = () => {
             />
           </div>
 
+
           <button
             onClick={() => {
               setStartDate('');
@@ -217,11 +320,13 @@ const WhatsAppReports = () => {
             Reset Filter
           </button>
 
+
           <div className="ml-auto text-sm text-black font-semibold">
             Showing {startIndex + 1} to {Math.min(endIndex, filteredCampaigns.length)} of {filteredCampaigns.length} campaigns
           </div>
         </div>
       </div>
+
 
       {/* Show Entries Selector */}
       <div className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
@@ -237,6 +342,7 @@ const WhatsAppReports = () => {
         </select>
         <span className="text-sm font-bold text-black">ENTRIES</span>
       </div>
+
 
       {/* Campaigns Table */}
       <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl overflow-hidden">
@@ -298,13 +404,27 @@ const WhatsAppReports = () => {
                       {formatDate(campaign.createdAt)}
                     </td>
                     <td className="py-4 px-4">
-                      <button
-                        onClick={() => openDetailsModal(campaign)}
-                        className="p-2 bg-green-500/60 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4 text-white" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openDetailsModal(campaign)}
+                          className="p-2 bg-green-500/60 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4 text-white" />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadExcel(campaign.campaignId)}
+                          disabled={downloadingCampaigns.has(campaign.campaignId)}
+                          className="p-2 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Download Excel"
+                        >
+                          {downloadingCampaigns.has(campaign.campaignId) ? (
+                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                          ) : (
+                            <Download className="w-4 h-4 text-white" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -314,12 +434,14 @@ const WhatsAppReports = () => {
         </div>
       </div>
 
+
       {/* Pagination */}
       {filteredCampaigns.length > 0 && (
         <>
           <div className="text-sm text-black font-semibold p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
             Showing {startIndex + 1} to {Math.min(endIndex, filteredCampaigns.length)} of {filteredCampaigns.length} entries
           </div>
+
 
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
@@ -330,6 +452,7 @@ const WhatsAppReports = () => {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
+
 
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum: number;
@@ -342,6 +465,7 @@ const WhatsAppReports = () => {
                 } else {
                   pageNum = currentPage - 2 + i;
                 }
+
 
                 return (
                   <button
@@ -358,6 +482,7 @@ const WhatsAppReports = () => {
                 );
               })}
 
+
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
@@ -370,6 +495,7 @@ const WhatsAppReports = () => {
         </>
       )}
 
+
       {/* Campaign Details Modal */}
       {showDetailsModal && selectedCampaign && userData && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -378,16 +504,38 @@ const WhatsAppReports = () => {
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-3xl font-bold text-black">Campaign Details</h3>
-                <button
-                  onClick={() => {
-                    setShowDetailsModal(false);
-                    setSelectedCampaign(null);
-                  }}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-all"
-                >
-                  <X className="w-6 h-6 text-black" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Download Button in Modal */}
+                  <button
+                    onClick={() => handleDownloadExcel(selectedCampaign.campaignId)}
+                    disabled={downloadingCampaigns.has(selectedCampaign.campaignId)}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500/80 backdrop-blur-md text-white font-bold rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Download Excel"
+                  >
+                    {downloadingCampaigns.has(selectedCampaign.campaignId) ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Downloading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5" />
+                        <span>Download Excel</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      setSelectedCampaign(null);
+                    }}
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-all"
+                  >
+                    <X className="w-6 h-6 text-black" />
+                  </button>
+                </div>
               </div>
+
 
               <div className="space-y-5">
                 {/* USER DETAILS SECTION */}
@@ -428,6 +576,7 @@ const WhatsAppReports = () => {
                   </div>
                 </div>
 
+
                 {/* CAMPAIGN DETAILS SECTION */}
                 <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-green-400 shadow-lg">
                   <h4 className="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
@@ -459,6 +608,7 @@ const WhatsAppReports = () => {
                     </div>
                   </div>
 
+
                   {/* Campaign Media */}
                   {selectedCampaign.image && (
                     <div className="mb-5">
@@ -481,6 +631,7 @@ const WhatsAppReports = () => {
                     </div>
                   )}
 
+
                   {/* Campaign Message */}
                   <div>
                     <span className="text-sm font-bold text-green-800 mb-3 block">💬 Campaign Message</span>
@@ -489,6 +640,7 @@ const WhatsAppReports = () => {
                     </div>
                   </div>
                 </div>
+
 
                 {/* STATS SUMMARY */}
                 <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-400 shadow-lg">
@@ -515,6 +667,7 @@ const WhatsAppReports = () => {
                 </div>
               </div>
 
+
               {/* Close Button */}
               <div className="mt-6">
                 <button
@@ -532,8 +685,10 @@ const WhatsAppReports = () => {
         </div>
       )}
 
+
     </div>
   );
 };
+
 
 export default WhatsAppReports;
