@@ -163,7 +163,7 @@ const CreditReports = () => {
             <span className="text-xs sm:text-sm font-bold text-black">Duration:</span>
           </div>
           
-          {/* Date Range Inputs with Labels */}
+          {/* Fixed Date Inputs with Labels */}
           <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border sm:border-2 border-white/80">
             <div className="flex flex-col">
               <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">From</label>
@@ -171,17 +171,17 @@ const CreditReports = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full"
+                className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full min-w-[100px]"
               />
             </div>
-            <span className="text-black font-bold">-</span>
+            <span className="text-black font-bold mt-3">-</span>
             <div className="flex flex-col">
               <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">To</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full"
+                className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full min-w-[100px]"
               />
             </div>
           </div>
