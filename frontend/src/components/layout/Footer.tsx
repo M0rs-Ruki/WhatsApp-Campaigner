@@ -28,11 +28,6 @@ const Footer = () => {
                   Support
                 </a>
               </li>
-              <li>
-                <a href="/api" className="font-semibold text-black hover:underline transition-all">
-                  API
-                </a>
-              </li>
             </ul>
           </div>
 
