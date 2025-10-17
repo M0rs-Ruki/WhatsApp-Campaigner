@@ -38,23 +38,25 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed on Desktop */}
       <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-50
+          fixed lg:sticky top-0 left-0 z-50
           w-64 sm:w-72 lg:w-64
-          min-h-screen bg-white/20 backdrop-blur-xl border-r border-white/30
+          h-screen
+          bg-white/20 backdrop-blur-xl border-r border-white/30
           p-3 sm:p-4
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           overflow-y-auto
+          lg:flex-shrink-0
         `}
       >
         
         {/* Mobile Close Button */}
         <button
           onClick={onClose}
-          className="lg:hidden absolute top-4 right-4 p-2 rounded-lg bg-red-500/30 backdrop-blur-md border border-white/40 hover:bg-red-500/50 transition-all duration-300"
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-lg bg-red-500/30 backdrop-blur-md border border-white/40 hover:bg-red-500/50 transition-all duration-300 z-10"
           aria-label="Close menu"
         >
           <X className="w-5 h-5 text-black" />

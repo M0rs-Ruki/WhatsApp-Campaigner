@@ -124,7 +124,7 @@ const TreeView = () => {
     setShowDetailsModal(true);
   };
 
-  // Render tree node recursively
+  // Render tree node recursively - Mobile Optimized
   const renderTreeNode = (node: TreeNode, isLast: boolean = false, prefix: string = '') => {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children && node.children.length > 0;
@@ -134,10 +134,10 @@ const TreeView = () => {
     return (
       <div key={node.id} className="relative">
         {/* Node Content */}
-        <div className={`flex items-center gap-2 ${prefix ? 'ml-8' : ''}`}>
-          {/* Tree Lines */}
+        <div className={`flex items-start sm:items-center gap-2 ${prefix ? 'ml-4 sm:ml-8' : ''}`}>
+          {/* Tree Lines - Hidden on mobile for cleaner look */}
           {prefix && (
-            <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center">
+            <div className="hidden sm:block absolute left-0 top-0 bottom-0 w-8 flex items-center">
               <div className={`w-full h-px bg-gray-300 ${isLast ? 'w-1/2' : ''}`}></div>
             </div>
           )}
@@ -146,66 +146,68 @@ const TreeView = () => {
           {hasChildren ? (
             <button
               onClick={() => toggleNode(node.id)}
-              className="z-10 p-1 hover:bg-gray-200 rounded-lg transition-all"
+              className="z-10 p-1 hover:bg-gray-200 rounded-lg transition-all flex-shrink-0 mt-1 sm:mt-0"
             >
               {isExpanded ? (
-                <ChevronDown className="w-5 h-5 text-black" />
+                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               ) : (
-                <ChevronRight className="w-5 h-5 text-black" />
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               )}
             </button>
           ) : (
-            <div className="w-7"></div>
+            <div className="w-5 sm:w-7 flex-shrink-0"></div>
           )}
 
-          {/* Node Card */}
+          {/* Node Card - Mobile Optimized */}
           <div
             onClick={() => openDetailsModal(node)}
-            className={`flex-1 flex items-center gap-3 p-3 ${roleStyle.bgColor} backdrop-blur-lg rounded-xl border-2 ${roleStyle.borderColor} shadow-lg hover:shadow-xl transition-all cursor-pointer group`}
+            className={`flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 ${roleStyle.bgColor} backdrop-blur-lg rounded-lg sm:rounded-xl border sm:border-2 ${roleStyle.borderColor} shadow-lg hover:shadow-xl transition-all cursor-pointer group`}
           >
-            {/* Role Icon */}
-            <div className={`p-2 ${roleStyle.bgColor} rounded-lg`}>
-              <RoleIcon className={`w-5 h-5 ${roleStyle.color}`} />
-            </div>
-
-            {/* Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <p className="font-bold text-black">{node.companyName}</p>
-                <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${roleStyle.color} ${roleStyle.bgColor} uppercase`}>
-                  {node.role}
-                </span>
-                {node.level <= 3 && (
-                  <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gray-200 text-gray-700">
-                    L{node.level}
-                  </span>
-                )}
+            {/* Role Icon + Basic Info (Mobile Horizontal Layout) */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className={`p-1.5 sm:p-2 ${roleStyle.bgColor} rounded-lg flex-shrink-0`}>
+                <RoleIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${roleStyle.color}`} />
               </div>
-              <p className="text-sm text-gray-600 font-semibold mt-1">
-                Balance: <span className="text-green-600 font-bold">₹{node.balance}</span>
-                {hasChildren && (
-                  <span className="ml-3 text-gray-500">
-                    ({node.children.length} {node.children.length === 1 ? 'child' : 'children'})
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <p className="font-bold text-black text-sm sm:text-base truncate">{node.companyName}</p>
+                  <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${roleStyle.color} ${roleStyle.bgColor} uppercase`}>
+                    {node.role}
                   </span>
-                )}
-              </p>
+                  {node.level <= 3 && (
+                    <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full bg-gray-200 text-gray-700">
+                      L{node.level}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs sm:text-sm text-gray-600 font-semibold mt-0.5 sm:mt-1">
+                  Balance: <span className="text-green-600 font-bold">₹{node.balance}</span>
+                  {hasChildren && (
+                    <span className="ml-2 sm:ml-3 text-gray-500">
+                      ({node.children.length})
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
 
-            {/* Hover Indicator */}
-            <div className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">
+            {/* Hover Indicator - Hidden on mobile */}
+            <div className="hidden sm:block text-xs text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0">
               Click for details
             </div>
           </div>
         </div>
 
-        {/* Vertical Line for Children */}
+        {/* Vertical Line for Children - Hidden on mobile */}
         {hasChildren && isExpanded && (
-          <div className="absolute left-3.5 top-12 bottom-0 w-px bg-gray-300"></div>
+          <div className="hidden sm:block absolute left-3.5 top-12 bottom-0 w-px bg-gray-300"></div>
         )}
 
         {/* Children */}
         {hasChildren && isExpanded && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-1.5 sm:mt-2 space-y-1.5 sm:space-y-2">
             {node.children.map((child, index) => 
               renderTreeNode(
                 child, 
@@ -221,9 +223,9 @@ const TreeView = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="p-8 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <p className="text-xl font-semibold text-black">Loading Network Tree...</p>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="p-6 sm:p-8 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <p className="text-base sm:text-xl font-semibold text-black">Loading Network Tree...</p>
         </div>
       </div>
     );
@@ -231,9 +233,9 @@ const TreeView = () => {
 
   if (!isAdminOrReseller) {
     return (
-      <div className="p-6">
-        <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg">
-          <p className="text-red-700 font-semibold">Access Denied. Only Admin and Reseller can access this page.</p>
+      <div className="p-3 sm:p-6">
+        <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
+          <p className="text-red-700 font-semibold text-sm sm:text-base">Access Denied. Only Admin and Reseller can access this page.</p>
         </div>
       </div>
     );
@@ -241,9 +243,9 @@ const TreeView = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg">
-          <p className="text-red-700 font-semibold">{error}</p>
+      <div className="p-3 sm:p-6">
+        <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
+          <p className="text-red-700 font-semibold text-sm sm:text-base">{error}</p>
         </div>
       </div>
     );
@@ -252,87 +254,84 @@ const TreeView = () => {
   if (!treeData) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       
-      {/* Page Header with Summary */}
-      <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* Page Header with Summary - Mobile Optimized */}
+      <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-black">Network Tree View</h2>
-            <p className="text-sm text-gray-600 mt-1">Your complete network hierarchy</p>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black text-center">Network Tree View</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1 text-center">Your complete network hierarchy</p>
           </div>
           
           {/* Total Count Card */}
-          <div className="p-4 bg-gradient-to-r from-blue-500/20 to-green-500/20 backdrop-blur-md rounded-xl border-2 border-white/60 shadow-lg">
-            <p className="text-sm font-bold text-black uppercase opacity-70">Total Network</p>
-            <p className="text-4xl font-bold text-black mt-1">{treeData.totalCount}</p>
-            <p className="text-xs text-gray-600 mt-1">Total members in your network</p>
+          <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-500/20 to-green-500/20 backdrop-blur-md rounded-lg sm:rounded-xl border sm:border-2 border-white/60 shadow-lg">
+            <p className="text-xs sm:text-sm font-bold text-black uppercase opacity-70 text-center">Total Network</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mt-0.5 sm:mt-1 text-center">{treeData.totalCount}</p>
+            <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1 text-center">Total members in your network</p>
           </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <p className="text-sm font-bold text-black mb-3">Legend:</p>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-blue-600" />
-            <span className="text-sm font-semibold text-black">Admin</span>
+      {/* Legend - Mobile Optimized */}
+      <div className="p-3 sm:p-4 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+        <p className="text-xs sm:text-sm font-bold text-black mb-2 sm:mb-3">Legend:</p>
+        <div className="flex flex-row flex-wrap gap-2 sm:gap-4 justify-start">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-black">Admin</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-semibold text-black">Reseller</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-black">Reseller</span>
           </div>
-          <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-orange-600" />
-            <span className="text-sm font-semibold text-black">User</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-semibold text-black">Click to expand/collapse</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <User className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-black">User</span>
           </div>
         </div>
       </div>
 
-      {/* Tree Structure */}
-      <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <div className="space-y-2">
+
+      {/* Tree Structure - Mobile Optimized */}
+      <div className="p-3 sm:p-4 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl overflow-x-auto">
+        <div className="space-y-1.5 sm:space-y-2 min-w-[280px]">
           {renderTreeNode(treeData.tree)}
         </div>
       </div>
 
-      {/* Details Modal */}
+      {/* Details Modal - Mobile Optimized */}
       {showDetailsModal && selectedNode && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-black">Member Details</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border sm:border-2 border-green-500 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">Member Details</h3>
                 <button
                   onClick={() => {
                     setShowDetailsModal(false);
                     setSelectedNode(null);
                   }}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-all"
+                  className="p-1.5 sm:p-2 hover:bg-gray-200 rounded-lg transition-all flex-shrink-0"
                 >
-                  <X className="w-6 h-6 text-black" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Role Badge */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   {(() => {
                     const roleStyle = getRoleStyle(selectedNode.role);
                     const RoleIcon = roleStyle.icon;
                     return (
                       <>
-                        <div className={`p-3 ${roleStyle.bgColor} rounded-xl`}>
-                          <RoleIcon className={`w-8 h-8 ${roleStyle.color}`} />
+                        <div className={`p-2 sm:p-3 ${roleStyle.bgColor} rounded-lg sm:rounded-xl flex-shrink-0`}>
+                          <RoleIcon className={`w-6 h-6 sm:w-8 sm:h-8 ${roleStyle.color}`} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-600">Role</p>
-                          <p className={`text-xl font-bold ${roleStyle.color} uppercase`}>
+                          <p className="text-xs sm:text-sm font-bold text-gray-600">Role</p>
+                          <p className={`text-base sm:text-lg md:text-xl font-bold ${roleStyle.color} uppercase`}>
                             {selectedNode.role}
                           </p>
                         </div>
@@ -341,82 +340,82 @@ const TreeView = () => {
                   })()}
                 </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">User ID:</span>
-                    <p className="text-black font-semibold break-all text-sm">{selectedNode.id}</p>
+                {/* Details Grid - Mobile Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                  <div className="col-span-1 sm:col-span-2">
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">User ID:</span>
+                    <p className="text-black font-semibold break-all text-xs sm:text-sm">{selectedNode.id}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Company Name:</span>
-                    <p className="text-black font-semibold">{selectedNode.companyName}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Company Name:</span>
+                    <p className="text-black font-semibold text-sm sm:text-base">{selectedNode.companyName}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Email:</span>
-                    <p className="text-black font-semibold break-all text-sm">{selectedNode.email}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Phone Number:</span>
+                    <p className="text-black font-semibold text-sm sm:text-base">{selectedNode.number}</p>
+                  </div>
+                  <div className="col-span-1 sm:col-span-2">
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Email:</span>
+                    <p className="text-black font-semibold break-all text-xs sm:text-sm">{selectedNode.email}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Phone Number:</span>
-                    <p className="text-black font-semibold">{selectedNode.number}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Balance:</span>
+                    <p className="text-green-600 font-bold text-lg sm:text-xl">₹{selectedNode.balance}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Balance:</span>
-                    <p className="text-green-600 font-bold text-xl">₹{selectedNode.balance}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Total Campaigns:</span>
+                    <p className="text-black font-semibold text-sm sm:text-base">{selectedNode.totalCampaigns}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Total Campaigns:</span>
-                    <p className="text-black font-semibold">{selectedNode.totalCampaigns}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-600">Status:</span>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Status:</span>
                     <p>
-                      <span className={`px-3 py-1 text-white text-xs font-bold rounded-full ${getStatusBadge(selectedNode.status)}`}>
+                      <span className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-xs font-bold rounded-full ${getStatusBadge(selectedNode.status)}`}>
                         {selectedNode.status.toUpperCase()}
                       </span>
                     </p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Level:</span>
-                    <p className="text-black font-semibold">Level {selectedNode.level}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Level:</span>
+                    <p className="text-black font-semibold text-sm sm:text-base">Level {selectedNode.level}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Direct Resellers:</span>
-                    <p className="text-green-600 font-bold text-lg">{selectedNode.directResellers}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Direct Resellers:</span>
+                    <p className="text-green-600 font-bold text-base sm:text-lg">{selectedNode.directResellers}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-600">Direct Users:</span>
-                    <p className="text-orange-600 font-bold text-lg">{selectedNode.directUsers}</p>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Direct Users:</span>
+                    <p className="text-orange-600 font-bold text-base sm:text-lg">{selectedNode.directUsers}</p>
                   </div>
                 </div>
 
-                {/* Network Summary */}
-                <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-300">
-                  <p className="text-sm font-bold text-blue-700 mb-2">Network Summary:</p>
-                  <div className="grid grid-cols-3 gap-4">
+                {/* Network Summary - Mobile Grid */}
+                <div className="p-3 sm:p-4 bg-blue-50 rounded-lg sm:rounded-xl border sm:border-2 border-blue-300">
+                  <p className="text-xs sm:text-sm font-bold text-blue-700 mb-2">Network Summary:</p>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-blue-600">{selectedNode.directResellers}</p>
-                      <p className="text-xs text-gray-600">Resellers</p>
+                      <p className="text-xl sm:text-2xl font-bold text-blue-600">{selectedNode.directResellers}</p>
+                      <p className="text-[10px] sm:text-xs text-gray-600">Resellers</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-orange-600">{selectedNode.directUsers}</p>
-                      <p className="text-xs text-gray-600">Users</p>
+                      <p className="text-xl sm:text-2xl font-bold text-orange-600">{selectedNode.directUsers}</p>
+                      <p className="text-[10px] sm:text-xs text-gray-600">Users</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">{selectedNode.children.length}</p>
-                      <p className="text-xs text-gray-600">Total Direct</p>
+                      <p className="text-xl sm:text-2xl font-bold text-green-600">{selectedNode.children.length}</p>
+                      <p className="text-[10px] sm:text-xs text-gray-600">Total Direct</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Close Button */}
-              <div className="mt-6">
+              {/* Close Button - Full Width on Mobile */}
+              <div className="mt-4 sm:mt-6">
                 <button
                   onClick={() => {
                     setShowDetailsModal(false);
                     setSelectedNode(null);
                   }}
-                  className="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all"
+                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-green-600 transition-all active:scale-95"
                 >
                   Close
                 </button>

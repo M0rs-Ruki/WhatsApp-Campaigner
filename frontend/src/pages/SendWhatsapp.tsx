@@ -53,7 +53,6 @@ const SendWhatsapp = () => {
     "blockquote",
     "link",
   ];
-  
 
   // Handle text input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -191,33 +190,35 @@ const SendWhatsapp = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       
-      {/* Page Header */}
-      <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <h2 className="text-3xl font-bold text-black">SEND NEW Campaign</h2>
+      {/* Page Header - Mobile Responsive */}
+      <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
+          SEND NEW Campaign
+        </h2>
       </div>
 
-      {/* Success Message */}
+      {/* Success Message - Mobile Responsive */}
       {success && (
-        <div className="p-4 bg-green-500/30 backdrop-blur-md rounded-xl border border-white/50 shadow-lg">
-          <p className="text-black font-semibold">{success}</p>
+        <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-md rounded-lg sm:rounded-xl border border-white/50 shadow-lg">
+          <p className="text-black font-semibold text-sm sm:text-base">{success}</p>
         </div>
       )}
 
-      {/* Error Message */}
+      {/* Error Message - Mobile Responsive */}
       {error && (
-        <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg">
-          <p className="text-red-700 font-semibold">{error}</p>
+        <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
+          <p className="text-red-700 font-semibold text-sm sm:text-base">{error}</p>
         </div>
       )}
 
-      {/* Main Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Main Form - Mobile Responsive */}
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         
         {/* Campaign Name */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-2 uppercase">
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
             Campaign Name *
           </label>
           <input
@@ -226,17 +227,17 @@ const SendWhatsapp = () => {
             value={formData.campaignName}
             onChange={handleInputChange}
             placeholder="Enter campaign name"
-            className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
             disabled={loading}
           />
         </div>
 
         {/* Message - Rich Text Editor */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-2 uppercase">
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
             Message *
           </label>
-          <div className="bg-white/80 rounded-xl overflow-hidden">
+          <div className="bg-white/80 rounded-lg sm:rounded-xl overflow-hidden">
             <ReactQuill
               theme="snow"
               value={formData.message}
@@ -244,24 +245,24 @@ const SendWhatsapp = () => {
               modules={modules}
               formats={formats}
               placeholder="Enter your message..."
-              className="text-black"
+              className="text-black text-sm sm:text-base"
             />
           </div>
         </div>
 
-        {/* Phone Button */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-4 uppercase">
+        {/* Phone Button - Mobile Stacked */}
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-3 sm:mb-4 uppercase">
             Phone number on Button :
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <input
               type="text"
               name="phoneButtonText"
               value={formData.phoneButtonText}
               onChange={handleInputChange}
               placeholder="Call us"
-              className="px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
             <input
@@ -270,25 +271,25 @@ const SendWhatsapp = () => {
               value={formData.phoneButtonNumber}
               onChange={handleInputChange}
               placeholder="Phone Number"
-              className="px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
           </div>
         </div>
 
-        {/* Link Button */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-4 uppercase">
+        {/* Link Button - Mobile Stacked */}
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-3 sm:mb-4 uppercase">
             Link on Button :
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <input
               type="text"
               name="linkButtonText"
               value={formData.linkButtonText}
               onChange={handleInputChange}
               placeholder="Visit us"
-              className="px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
             <input
@@ -297,62 +298,64 @@ const SendWhatsapp = () => {
               value={formData.linkButtonUrl}
               onChange={handleInputChange}
               placeholder="URL"
-              className="px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
           </div>
         </div>
 
-        {/* File Uploads - Only ONE can be selected */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-4 uppercase">
-            Upload Media (Select Only One) <span className="text-red-600">(MAX FILE SIZE 5MB)</span>
+        {/* File Uploads - Mobile Optimized */}
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-3 sm:mb-4 uppercase">
+            Upload Media (Select Only One) <span className="text-red-600 text-[10px] sm:text-xs">(MAX 5MB)</span>
           </label>
           
           {selectedFile && (
-            <div className="mb-4 p-3 bg-green-500/20 backdrop-blur-sm rounded-xl border border-green-300 flex items-center justify-between">
-              <span className="text-black font-semibold">
+            <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-green-500/20 backdrop-blur-sm rounded-lg sm:rounded-xl border border-green-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <span className="text-black font-semibold text-xs sm:text-sm break-all">
                 {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
               </span>
               <button
                 type="button"
                 onClick={clearFile}
-                className="px-4 py-2 bg-red-500/60 backdrop-blur-md text-white font-semibold rounded-lg hover:bg-red-600/60 transition-all"
+                className="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500/60 backdrop-blur-md text-white text-sm font-semibold rounded-lg hover:bg-red-600/60 transition-all active:scale-95"
               >
                 Remove
               </button>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             
             {/* Image Upload */}
             <div>
-              <label className="block text-xs font-bold text-black mb-2">IMAGE<span className="text-red-600">(Supported formats: JPG, PNG, GIF)</span></label> 
+              <label className="block text-[10px] sm:text-xs font-bold text-black mb-2">
+                IMAGE <span className="text-red-600 block sm:inline">(JPG, PNG, GIF)</span>
+              </label> 
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleFileUpload(e, 'image')}
                 disabled={loading || (selectedFile !== null && fileType !== 'image')}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
 
             {/* Video Upload */}
             <div>
-              <label className="block text-xs font-bold text-black mb-2">VIDEO</label>
+              <label className="block text-[10px] sm:text-xs font-bold text-black mb-2">VIDEO</label>
               <input
                 type="file"
                 accept="video/*"
                 onChange={(e) => handleFileUpload(e, 'video')}
                 disabled={loading || (selectedFile !== null && fileType !== 'video')}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
 
             {/* PDF Upload */}
             <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-black mb-2">
+              <label className="block text-[10px] sm:text-xs font-bold text-black mb-2">
                 UPLOAD PDF
               </label>
               <input
@@ -360,22 +363,22 @@ const SendWhatsapp = () => {
                 accept="application/pdf"
                 onChange={(e) => handleFileUpload(e, 'pdf')}
                 disabled={loading || (selectedFile !== null && fileType !== 'pdf')}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
           </div>
         </div>
 
         {/* Mobile Number Entry Type */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-2 uppercase">
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
             Mobile Number Enter Type *
           </label>
           <select
             name="mobileNumberEntryType"
             value={formData.mobileNumberEntryType}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
             disabled={loading}
           >
             <option value="Manual Entry">Manual Entry</option>
@@ -384,9 +387,9 @@ const SendWhatsapp = () => {
           </select>
         </div>
 
-        {/* Mobile Numbers */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-2 uppercase">
+        {/* Mobile Numbers - Responsive Textarea */}
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
             Mobile Numbers *
           </label>
           <textarea
@@ -394,15 +397,15 @@ const SendWhatsapp = () => {
             value={formData.mobileNumbers}
             onChange={handleInputChange}
             placeholder="Enter mobile numbers (comma-separated)"
-            rows={5}
-            className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
+            rows={4}
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
             disabled={loading}
           />
         </div>
 
         {/* Number Count */}
-        <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <label className="block text-sm font-bold text-black mb-2 uppercase">
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
             Number Count *
           </label>
           <input
@@ -411,17 +414,17 @@ const SendWhatsapp = () => {
             value={formData.numberCount}
             onChange={handleInputChange}
             placeholder="Enter number count"
-            className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
             disabled={loading}
           />
         </div>
 
-        {/* Submit Button */}
+        {/* Submit Button - Full Width on Mobile */}
         <div className="flex justify-center">
           <button
             type="submit"
             disabled={loading}
-            className="px-12 py-4 bg-green-500/80 backdrop-blur-md text-white font-bold text-lg rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-green-500/80 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
           >
             {loading ? 'Submitting...' : 'Submit'}
           </button>
