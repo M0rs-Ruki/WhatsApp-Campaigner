@@ -163,20 +163,27 @@ const CreditReports = () => {
             <span className="text-xs sm:text-sm font-bold text-black">Duration:</span>
           </div>
           
-          <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 bg-white/60 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border sm:border-2 border-white/80">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full xs:w-auto"
-            />
-            <span className="text-black font-bold text-center xs:inline hidden">-</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full xs:w-auto"
-            />
+          {/* Date Range Inputs with Labels */}
+          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border sm:border-2 border-white/80">
+            <div className="flex flex-col">
+              <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">From</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full"
+              />
+            </div>
+            <span className="text-black font-bold">-</span>
+            <div className="flex flex-col">
+              <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-transparent text-black text-xs sm:text-sm font-semibold focus:outline-none w-full"
+              />
+            </div>
           </div>
 
           <button
@@ -194,6 +201,7 @@ const CreditReports = () => {
           </div>
         </div>
       </div>
+
 
       {/* Transaction Table - Desktop View */}
       <div className="hidden md:block p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl overflow-hidden">
