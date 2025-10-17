@@ -12,6 +12,7 @@ import ManageResellerPage from './pages/ManageReseller';
 import ManageUserPage from './pages/ManageUser';
 import TreeViewPage from './pages/TreeView';
 import WhatsAppReportsPage from './pages/WhatsAppReports';
+import AllCampaignPage from './pages/AllCampaigns';
 
 
 
@@ -90,6 +91,17 @@ function App() {
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
                 <DashboardLayout><WhatsAppReportsPage /></DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path='/all-campaign'
+          element={
+            <ProtectedRoute>
+              <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
+                <DashboardLayout><AllCampaignPage /></DashboardLayout>
               </div>
             </ProtectedRoute>
           }

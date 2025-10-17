@@ -744,8 +744,74 @@ const whatsAppReports = async (req: Request, res: Response) => {
     }
 };
 
+const allCampaigns = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        // Check if user is admin
+        if (user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Admin privileges required.',
+            });
+        }
+
+        // Fetch latest 50 campaigns sorted by creation date (newest first)
+        const campaigns = await Campaign.find()
+            .sort({ createdAt: -1 })
+            .limit(50)
+            .populate('createdBy', 'companyName email number role status createdAt')
+            .lean();
+
+        // Format campaigns for frontend
+        const formattedCampaigns = campaigns.map((campaign: any) => ({
+            campaignId: campaign._id,
+            campaignName: campaign.campaignName,
+            message: campaign.message,
+            createdBy: campaign.createdBy?.companyName || 'Unknown',
+            mobileNumberCount: campaign.mobileNumbers?.length || 0,
+            createdAt: campaign.createdAt,
+            image: campaign.media?.url || campaign.media || null,
+            // User information for modal details
+            userData: {
+                companyName: campaign.createdBy?.companyName || 'Unknown',
+                email: campaign.createdBy?.email || 'N/A',
+                number: campaign.createdBy?.number || 'N/A',
+                role: campaign.createdBy?.role || 'N/A',
+                status: campaign.createdBy?.status || 'N/A',
+                createdAt: campaign.createdBy?.createdAt || null,
+            }
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: 'All campaigns fetched successfully.',
+            data: {
+                totalCampaigns: formattedCampaigns.length,
+                campaigns: formattedCampaigns
+            }
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in getAllCampaigns controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred while fetching all campaigns.',
+        });
+    }
+};
+
 
 export { businessDetails, dashboard,
     transaction, news, complaints, 
     manageReseller, manageUser,
-    treeView, whatsAppReports };
+    treeView, whatsAppReports,
+    allCampaigns 
+
+};

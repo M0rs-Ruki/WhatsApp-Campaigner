@@ -19,7 +19,7 @@ const Sidebar = () => {
           item.allowedRoles.includes(userRole)
         )
       }))
-      .filter(section => section.items.length > 0); // Remove empty sections
+      .filter(section => section.items.length > 0);
   };
 
   const filteredMenuSections = getFilteredMenuSections();

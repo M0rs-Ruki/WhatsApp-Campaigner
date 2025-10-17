@@ -42,12 +42,12 @@ export enum UserRole {
         { 
           label: 'Manage Reseller', 
           path: '/manage-reseller',
-          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER] // User can't see
+          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER]
         },
         { 
           label: 'Manage Users', 
           path: '/manage-users',
-          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER] // User can't see
+          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER]
         },
       ]
     },
@@ -64,6 +64,11 @@ export enum UserRole {
           path: '/whatsapp-report',
           allowedRoles: [UserRole.ADMIN, UserRole.RESELLER, UserRole.USER]
         },
+        {
+          label: 'All Campaign',
+          path: '/all-campaign',
+          allowedRoles: [UserRole.ADMIN]
+        }
       ]
     },
     {
@@ -77,7 +82,7 @@ export enum UserRole {
         { 
           label: 'Tree View', 
           path: '/tree-view',
-          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER] // User can't see
+          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER]
         },
         { 
           label: 'Complaints', 
