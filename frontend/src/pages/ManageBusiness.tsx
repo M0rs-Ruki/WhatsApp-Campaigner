@@ -9,7 +9,6 @@ interface BusinessData {
 }
 
 const ManageBusiness = () => {
-  // ✅ NEW: Store original data separately
   const [originalData, setOriginalData] = useState<BusinessData>({
     companyName: '',
     email: '',
@@ -36,7 +35,6 @@ const ManageBusiness = () => {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Get userId from localStorage
   const getUserId = (): string | null => {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
@@ -50,7 +48,6 @@ const ManageBusiness = () => {
     }
   };
 
-  // Fetch business details on page load
   const fetchBusinessDetails = useCallback(async () => {
     try {
       setFetchLoading(true);
@@ -72,7 +69,6 @@ const ManageBusiness = () => {
           image: result.data.image || '',
         };
 
-        // ✅ Store both original and form data
         setOriginalData(data);
         setFormData(data);
 
@@ -94,7 +90,6 @@ const ManageBusiness = () => {
     fetchBusinessDetails();
   }, [fetchBusinessDetails]);
 
-  // Handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -104,7 +99,6 @@ const ManageBusiness = () => {
     setError('');
   };
 
-  // Handle password input changes
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({
@@ -114,19 +108,16 @@ const ManageBusiness = () => {
     setError('');
   };
 
-  // Handle file selection
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setError('Image size must be less than 5MB');
       return;
     }
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please select a valid image file');
       return;
@@ -138,19 +129,16 @@ const ManageBusiness = () => {
     setError('');
   };
 
-  // Email validation
   const isValidEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Phone number validation (10 digits)
   const isValidPhoneNumber = (number: string): boolean => {
     const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(number);
   };
 
-  // ✅ FIXED: Handle form submission (ONLY send changed fields)
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -162,7 +150,6 @@ const ManageBusiness = () => {
       return;
     }
 
-    // ✅ NEW: Build update object with ONLY changed fields
     const profileUpdates: Partial<BusinessData> = {};
     
     if (formData.companyName !== originalData.companyName && formData.companyName.trim()) {
@@ -183,19 +170,16 @@ const ManageBusiness = () => {
       return;
     }
 
-    // Validate email if changed
     if (profileUpdates.email && !isValidEmail(profileUpdates.email)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    // Validate phone if changed
     if (profileUpdates.number && !isValidPhoneNumber(profileUpdates.number)) {
       setError('Please enter a valid 10-digit phone number');
       return;
     }
 
-    // Validate password fields if provided
     if (hasPasswordUpdate) {
       if (!passwordData.newPassword || !passwordData.confirmPassword) {
         setError('Please fill in both password fields');
@@ -219,11 +203,9 @@ const ManageBusiness = () => {
       let profileUpdateSuccess = false;
       let passwordUpdateSuccess = false;
 
-      // ✅ FIXED: Update profile with ONLY changed fields
       if (hasProfileUpdate) {
         const profileFormData = new FormData();
 
-        // ✅ Only append changed fields
         if (profileUpdates.companyName) profileFormData.append('companyName', profileUpdates.companyName);
         if (profileUpdates.email) profileFormData.append('email', profileUpdates.email);
         if (profileUpdates.number) profileFormData.append('number', profileUpdates.number);
@@ -240,7 +222,6 @@ const ManageBusiness = () => {
         if (profileResponse.ok && profileResult.success) {
           profileUpdateSuccess = true;
 
-          // Update localStorage
           const userStr = localStorage.getItem('user');
           if (userStr) {
             const user = JSON.parse(userStr);
@@ -254,7 +235,6 @@ const ManageBusiness = () => {
             localStorage.setItem('user', JSON.stringify(updatedUser));
           }
 
-          // ✅ Update original data to new values
           setOriginalData({
             companyName: profileResult.user.companyName,
             email: profileResult.user.email,
@@ -269,7 +249,6 @@ const ManageBusiness = () => {
             image: profileResult.user.image,
           });
 
-          // Update preview URL
           if (profileResult.user.image) {
             setPreviewUrl(profileResult.user.image);
           }
@@ -282,7 +261,6 @@ const ManageBusiness = () => {
         }
       }
 
-      // Update password if fields are provided
       if (hasPasswordUpdate) {
         const passwordResponse = await fetch(`${API_URL}/api/user/change-own-password`, {
           method: 'PUT',
@@ -308,7 +286,6 @@ const ManageBusiness = () => {
         }
       }
 
-      // ✅ Better success messages
       const changedFields = [];
       if (profileUpdates.companyName) changedFields.push('company name');
       if (profileUpdates.email) changedFields.push('email');
@@ -336,49 +313,49 @@ const ManageBusiness = () => {
 
   if (fetchLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="p-8 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <p className="text-xl font-semibold text-black">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="p-6 sm:p-8 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <p className="text-base sm:text-xl font-semibold text-black">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
       
-      {/* Page Header */}
-      <div className="p-4 sm:p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <h2 className="text-2xl sm:text-3xl font-bold text-black">Update Profile</h2>
-        <p className="text-sm text-gray-600 mt-1">Update your profile information, image, and change password</p>
+      {/* Page Header - Mobile Optimized */}
+      <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">Update Profile</h2>
+        <p className="text-xs sm:text-sm text-gray-600 mt-1">Update your profile information, image, and change password</p>
       </div>
 
-      {/* Success Message */}
+      {/* Success Message - Mobile Optimized */}
       {success && (
-        <div className="p-4 bg-green-500/30 backdrop-blur-md rounded-xl border border-white/50 shadow-lg animate-fade-in">
-          <p className="text-black font-semibold">{success}</p>
+        <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-md rounded-lg sm:rounded-xl border border-white/50 shadow-lg animate-fade-in">
+          <p className="text-black font-semibold text-sm sm:text-base">{success}</p>
         </div>
       )}
 
-      {/* Error Message */}
+      {/* Error Message - Mobile Optimized */}
       {error && (
-        <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg animate-fade-in">
-          <p className="text-red-700 font-semibold">{error}</p>
+        <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg animate-fade-in">
+          <p className="text-red-700 font-semibold text-sm sm:text-base">{error}</p>
         </div>
       )}
 
       {/* Main Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         
         {/* Profile Information Section */}
-        <div className="p-4 sm:p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <h3 className="text-lg sm:text-xl font-bold text-black mb-4">Profile Information</h3>
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-black mb-3 sm:mb-4">Profile Information</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             
             {/* Company Name */}
             <div>
-              <label htmlFor="companyName" className="block text-sm font-bold text-black mb-2 uppercase">
+              <label htmlFor="companyName" className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
                 Company Name
               </label>
               <input
@@ -388,14 +365,14 @@ const ManageBusiness = () => {
                 value={formData.companyName}
                 onChange={handleInputChange}
                 placeholder={`Current: ${originalData.companyName || 'Not set'}`}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                 disabled={loading}
               />
             </div>
 
             {/* Email Address */}
             <div>
-              <label htmlFor="email" className="block text-sm font-bold text-black mb-2 uppercase">
+              <label htmlFor="email" className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
                 Email Address
               </label>
               <input
@@ -405,18 +382,18 @@ const ManageBusiness = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder={`Current: ${originalData.email || 'Not set'}`}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                 disabled={loading}
               />
             </div>
 
             {/* Business Contact */}
             <div>
-              <label htmlFor="number" className="block text-sm font-bold text-black mb-2 uppercase">
+              <label htmlFor="number" className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
                 Business Contact
               </label>
               <div className="flex gap-2">
-                <div className="px-3 sm:px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black font-semibold text-sm sm:text-base">
+                <div className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-black font-semibold text-sm sm:text-base flex items-center">
                   +91
                 </div>
                 <input
@@ -427,25 +404,25 @@ const ManageBusiness = () => {
                   onChange={handleInputChange}
                   placeholder={`Current: ${originalData.number || 'Not set'}`}
                   maxLength={10}
-                  className="flex-1 px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                  className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                   disabled={loading}
                 />
               </div>
-              <p className="text-xs text-black opacity-60 mt-2">* Enter 10-digit mobile number without country code</p>
+              <p className="text-[10px] sm:text-xs text-black opacity-60 mt-2">* Enter 10-digit mobile number without country code</p>
             </div>
 
-            {/* Business Logo */}
+            {/* Business Logo - Mobile Optimized */}
             <div>
-              <label htmlFor="image" className="block text-sm font-bold text-black mb-2 uppercase">
+              <label htmlFor="image" className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
                 Business Logo
               </label>
               
               {previewUrl && (
-                <div className="mb-4">
+                <div className="mb-3 sm:mb-4">
                   <img 
                     src={previewUrl} 
                     alt="Business Logo Preview" 
-                    className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl border-2 border-green-500 shadow-lg"
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-lg sm:rounded-xl border-2 border-green-500 shadow-lg"
                   />
                 </div>
               )}
@@ -456,23 +433,23 @@ const ManageBusiness = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 disabled={loading}
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500 file:text-white file:font-semibold file:cursor-pointer hover:file:bg-green-600 transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-black text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500 file:text-white file:text-xs sm:file:text-sm file:font-semibold file:cursor-pointer hover:file:bg-green-600 transition-all disabled:opacity-50"
               />
-              <p className="text-xs text-black opacity-60 mt-2">* Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP</p>
+              <p className="text-[10px] sm:text-xs text-black opacity-60 mt-2">* Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP</p>
             </div>
           </div>
         </div>
 
         {/* Change Password Section */}
-        <div className="p-4 sm:p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <h3 className="text-lg sm:text-xl font-bold text-black mb-2">Change Password</h3>
-          <p className="text-sm text-gray-600 mb-4">Leave blank if you don't want to change your password</p>
+        <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-black mb-2">Change Password</h3>
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Leave blank if you don't want to change your password</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             
             {/* New Password */}
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-bold text-black mb-2 uppercase">
+              <label htmlFor="newPassword" className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
                 New Password
               </label>
               <input
@@ -482,14 +459,14 @@ const ManageBusiness = () => {
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
                 placeholder="Enter new password (min 5 characters)"
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 disabled={loading}
               />
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-bold text-black mb-2 uppercase">
+              <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
                 Confirm New Password
               </label>
               <input
@@ -499,15 +476,15 @@ const ManageBusiness = () => {
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
                 placeholder="Confirm new password"
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 disabled={loading}
               />
             </div>
           </div>
 
-          {/* Password Requirements */}
-          <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-300">
-            <p className="text-xs text-gray-700">
+          {/* Password Requirements - Mobile Optimized */}
+          <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-yellow-50 rounded-lg border border-yellow-300">
+            <p className="text-[10px] sm:text-xs text-gray-700">
               <span className="font-bold">Password Requirements:</span><br />
               • Minimum 5 characters<br />
               • Both passwords must match
@@ -515,12 +492,12 @@ const ManageBusiness = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-center pt-4">
+        {/* Submit Button - Full Width on Mobile */}
+        <div className="flex justify-center pt-2 sm:pt-4">
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-green-500/80 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-6 sm:px-8 md:px-12 py-2.5 sm:py-3 md:py-4 bg-green-500/80 backdrop-blur-md text-white font-bold text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
           >
             {loading ? 'Saving Changes...' : 'Save Changes'}
           </button>
@@ -531,4 +508,3 @@ const ManageBusiness = () => {
 };
 
 export default ManageBusiness;
-  
