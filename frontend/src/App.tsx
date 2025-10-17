@@ -14,6 +14,7 @@ import TreeViewPage from './pages/TreeView';
 import WhatsAppReportsPage from './pages/WhatsAppReports';
 import AllCampaignPage from './pages/AllCampaigns';
 import DocumentationPage from './pages/Documentation';
+import SupportPage from './pages/Support';
 
 
 
@@ -154,9 +155,11 @@ function App() {
         <Route
           path= "/docs"
           element={
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-              <DashboardLayout><DocumentationPage /></DashboardLayout>
-            </div>
+            <ProtectedRoute>
+              <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
+                <DashboardLayout><DocumentationPage /></DashboardLayout>
+              </div>
+            </ProtectedRoute>
           }
         />
 
@@ -165,7 +168,7 @@ function App() {
           element={
             <ProtectedRoute>
               <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><ManageBusinessPage /></DashboardLayout>
+                <DashboardLayout><SupportPage /></DashboardLayout>
               </div>
             </ProtectedRoute>
           }

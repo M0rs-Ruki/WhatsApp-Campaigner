@@ -2,7 +2,7 @@ import express from 'express';
 import isLoggedIn from '../Middlewares/isLoggedIn.Middleware.js';
 import { businessDetails,
     dashboard, transaction, news, complaints,
-    manageReseller, manageUser, treeView, whatsAppReports, allCampaigns } from '../Controllers/dashboard.Controller.js';
+    manageReseller, manageUser, treeView, whatsAppReports, allCampaigns, support } from '../Controllers/dashboard.Controller.js';
 import { exportCampaignToExcel } from '../Controllers/export.Controller.js';
 
 const router = express.Router();
@@ -18,5 +18,6 @@ router.get('/tree-view', isLoggedIn, treeView);
 router.get('/whatsapp-reports', isLoggedIn, whatsAppReports);
 router.get('/export-campaign/:campaignId', isLoggedIn, exportCampaignToExcel);
 router.get('/all-campaigns', isLoggedIn, allCampaigns);
+router.get('/support', isLoggedIn, support);
 
 export default router;

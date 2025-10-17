@@ -17,6 +17,25 @@ declare global {
   }
 }
 
+interface SupportResponse {
+    companyName: string;
+    email: string;
+    number: string;
+    role: UserRole;
+    status: string;
+    image?: string;
+}
+interface UserDocument {
+    companyName: string;
+    email: string;
+    number: string;
+    image?: string;
+    role: UserRole;
+    status: string;
+    createdAt: Date;
+
+}
+
 const businessDetails = (req: Request, res: Response) => {
     try {
         
@@ -471,7 +490,6 @@ const manageReseller = async (req: Request, res: Response) => {
     }
 }
 
-
 const manageUser = async (req: Request, res: Response) => {
     try {
         const user = req.user;
@@ -807,11 +825,58 @@ const allCampaigns = async (req: Request, res: Response) => {
     }
 };
 
+const support = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const user = req.user;
+        
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. User not found.',
+            });
+        }
+
+        const creator = await User.findById(user.userID).lean<UserDocument>();
+        
+        if (!creator) {
+            return res.status(404).json({
+                success: false,
+                message: 'Creator not found.',
+            });
+        }
+
+        const responseData: SupportResponse = {
+            companyName: creator.companyName,
+            email: creator.email,
+            number: creator.number,
+            role: creator.role,
+            status: creator.status,
+            image: creator.image
+        };
+
+        return res.status(200).json({
+            success: true,
+            message: 'User details fetched successfully.',
+            data: responseData,
+        });
+
+    } catch (error: unknown) {
+        console.error('Error in support controller:', error);
+        
+        if (error instanceof Error) {
+            console.error('Error details:', error.message);
+        }
+        
+        return res.status(500).json({
+            success: false,
+            message: 'An internal server error occurred in support controller.',
+        });
+    }
+};
 
 export { businessDetails, dashboard,
     transaction, news, complaints, 
     manageReseller, manageUser,
     treeView, whatsAppReports,
-    allCampaigns 
-
+    allCampaigns, support
 };
