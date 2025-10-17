@@ -154,11 +154,9 @@ function App() {
         <Route
           path= "/docs"
           element={
-            <ProtectedRoute>
-              <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
-                <DashboardLayout><DocumentationPage /></DashboardLayout>
-              </div>
-            </ProtectedRoute>
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100">
+              <DashboardLayout><DocumentationPage /></DashboardLayout>
+            </div>
           }
         />
 
