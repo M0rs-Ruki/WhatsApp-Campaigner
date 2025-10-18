@@ -189,6 +189,12 @@ const AllCampaigns = () => {
     return message.substring(0, maxLength) + '...';
   };
 
+
+  const stripHtmlTags = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '');
+  };
+
   // Get status badge
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -333,7 +339,7 @@ return (
 
               {/* Message Preview */}
               <p className="text-xs text-black opacity-80 line-clamp-2 mb-2">
-                {truncateMessage(campaign.message, 80)}
+                {truncateMessage(stripHtmlTags(campaign.message), 80)}
               </p>
 
               {/* Creator + Date */}
@@ -405,7 +411,7 @@ return (
                     </td>
                     <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold max-w-[300px]">
                       <div className="line-clamp-2">
-                        {truncateMessage(campaign.message, 80)}
+                        {truncateMessage(stripHtmlTags(campaign.message), 80)}
                       </div>
                       {campaign.message.length > 80 && (
                         <button
