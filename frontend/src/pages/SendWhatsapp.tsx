@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import ReactQuill from 'react-quill-new';
-import type { FormEvent, ChangeEvent } from 'react';
-import 'react-quill-new/dist/quill.snow.css';
+import { useState } from "react";
+import ReactQuill from "react-quill-new";
+import type { FormEvent, ChangeEvent } from "react";
+import "react-quill-new/dist/quill.snow.css";
 
 interface FormData {
   campaignName: string;
@@ -18,88 +18,141 @@ interface FormData {
 
 const SendWhatsapp = () => {
   const [formData, setFormData] = useState<FormData>({
-    campaignName: '',
-    message: '',
-    phoneButtonText: '',
-    phoneButtonNumber: '',
-    linkButtonText: '',
-    linkButtonUrl: '',
-    mobileNumberEntryType: 'manual',
-    mobileNumbers: '',
-    countryCode: '+91',
-    numberCount: ''
+    campaignName: "",
+    message: "",
+    phoneButtonText: "",
+    phoneButtonNumber: "",
+    linkButtonText: "",
+    linkButtonUrl: "",
+    mobileNumberEntryType: "manual",
+    mobileNumbers: "",
+    countryCode: "+91",
+    numberCount: "",
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileType, setFileType] = useState<'image' | 'video' | 'pdf' | null>(null);
+  const [fileType, setFileType] = useState<"image" | "video" | "pdf" | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [fileUploadError, setFileUploadError] = useState("");
+  const [mobileNumberError, setMobileNumberError] = useState('');
+  const [phoneNumberError, setPhoneNumberError] = useState('');
+
 
   // Rich text editor configuration
   const modules = {
     toolbar: [
-      ['bold', 'italic'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['blockquote'],
-      ['link']
+      ["bold", "italic"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["blockquote"],
+      ["link"],
     ],
   };
 
-  const formats = [
-    "bold",
-    "italic",
-    "list", 
-    "blockquote",
-    "link",
-  ];
+  const formats = ["bold", "italic", "list", "blockquote", "link"];
 
   // Handle text input changes
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Handle rich text editor change
   const handleMessageChange = (content: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      message: content
+      message: content,
     }));
   };
 
   // Handle file upload
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'pdf') => {
+  const handleFileUpload = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: "image" | "video" | "pdf"
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Check file size (5MB limit)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      setError('File size exceeds 5MB limit');
+      setFileUploadError("File size exceeds 5MB limit");
       return;
     }
 
     // Validate file type
     const validTypes: Record<string, string[]> = {
-      image: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'],
-      video: ['video/mp4', 'video/mpeg', 'video/quicktime'],
-      pdf: ['application/pdf']
+      image: ["image/png", "image/jpeg", "image/jpg", "image/gif"],
+      video: ["video/mp4"],
+      pdf: ["application/pdf"],
     };
 
     if (!validTypes[type].includes(file.type)) {
-      setError(`Invalid ${type} file type`);
+      setFileUploadError(`Invalid ${type} file type`);
       return;
     }
 
-    // Clear previous file if different type is selected
     setSelectedFile(file);
     setFileType(type);
-    setError('');
+    setFileUploadError("");
   };
+
+  // Handle mobile number input with validation
+  const handleMobileNumberChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+
+    const { value } = e.target;
+    const validPattern = /^[0-9,\s]*$/;
+    
+    if (!validPattern.test(value)) {
+      setMobileNumberError('Only numbers, commas, and spaces are allowed');
+    } else {
+      setMobileNumberError('');
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      mobileNumbers: value
+    }));
+  };
+
+  // Count mobile numbers (comma-separated)
+  const countMobileNumbers = (): number => {
+    if (!formData.mobileNumbers.trim()) return 0;
+    
+    const numbers = formData.mobileNumbers
+      .split(',')
+      .map(num => num.trim())
+      .filter(num => num.length > 0);
+    
+    return numbers.length;
+  };
+
+  // Handle phone number input with validation (only numbers and spaces)
+  const handlePhoneNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const validPattern = /^[0-9\s+]*$/;
+    
+    if (!validPattern.test(value)) {
+      setPhoneNumberError('Only numbers and spaces and plus sign are allowed');
+    } else {
+      setPhoneNumberError('');
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      phoneButtonNumber: value
+    }));
+  };
+
+
 
   // Clear selected file
   const clearFile = () => {
@@ -110,13 +163,17 @@ const SendWhatsapp = () => {
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setLoading(true);
 
     // Validation
-    if (!formData.campaignName || !formData.message || !formData.mobileNumbers) {
-      setError('Campaign name, message, and mobile numbers are required');
+    if (
+      !formData.campaignName ||
+      !formData.message ||
+      !formData.mobileNumbers
+    ) {
+      setError("Campaign name, message, and mobile numbers are required");
       setLoading(false);
       return;
     }
@@ -124,34 +181,37 @@ const SendWhatsapp = () => {
     try {
       // Create FormData for multipart/form-data
       const submitData = new FormData();
-      
+
       // Append form fields
-      submitData.append('campaignName', formData.campaignName);
-      submitData.append('message', formData.message);
-      submitData.append('mobileNumberEntryType', formData.mobileNumberEntryType);
-      submitData.append('mobileNumbers', formData.mobileNumbers);
-      submitData.append('countryCode', formData.countryCode);
+      submitData.append("campaignName", formData.campaignName);
+      submitData.append("message", formData.message);
+      submitData.append(
+        "mobileNumberEntryType",
+        formData.mobileNumberEntryType
+      );
+      submitData.append("mobileNumbers", formData.mobileNumbers);
+      submitData.append("countryCode", formData.countryCode);
 
       // Append optional fields
       if (formData.phoneButtonText && formData.phoneButtonNumber) {
-        submitData.append('phoneButtonText', formData.phoneButtonText);
-        submitData.append('phoneButtonNumber', formData.phoneButtonNumber);
+        submitData.append("phoneButtonText", formData.phoneButtonText);
+        submitData.append("phoneButtonNumber", formData.phoneButtonNumber);
       }
 
       if (formData.linkButtonText && formData.linkButtonUrl) {
-        submitData.append('linkButtonText', formData.linkButtonText);
-        submitData.append('linkButtonUrl', formData.linkButtonUrl);
+        submitData.append("linkButtonText", formData.linkButtonText);
+        submitData.append("linkButtonUrl", formData.linkButtonUrl);
       }
 
       // Append file if selected
       if (selectedFile) {
-        submitData.append('image', selectedFile);
+        submitData.append("image", selectedFile);
       }
 
       // Send to backend
       const API_URL = import.meta.env.VITE_API_URL;
       const response = await fetch(`${API_URL}/api/campaigns`, {
-        method: 'POST',
+        method: "POST",
         body: submitData,
         credentials: "include",
       });
@@ -159,30 +219,30 @@ const SendWhatsapp = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setSuccess('Campaign created successfully!');
+        setSuccess("Campaign created successfully!");
         // Reset form
         setFormData({
-          campaignName: '',
-          message: '',
-          phoneButtonText: '',
-          phoneButtonNumber: '',
-          linkButtonText: '',
-          linkButtonUrl: '',
-          mobileNumberEntryType: 'manual',
-          mobileNumbers: '',
-          countryCode: '+91',
-          numberCount: ''
+          campaignName: "",
+          message: "",
+          phoneButtonText: "",
+          phoneButtonNumber: "",
+          linkButtonText: "",
+          linkButtonUrl: "",
+          mobileNumberEntryType: "manual",
+          mobileNumbers: "",
+          countryCode: "+91",
+          numberCount: "",
         });
         setSelectedFile(null);
         setFileType(null);
       } else {
-        setError(result.message || 'Failed to create campaign');
+        setError(result.message || "Failed to create campaign");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An unknown error occurred. Please try again.');
+        setError("An unknown error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -191,7 +251,6 @@ const SendWhatsapp = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      
       {/* Page Header - Mobile Responsive */}
       <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
@@ -202,20 +261,23 @@ const SendWhatsapp = () => {
       {/* Success Message - Mobile Responsive */}
       {success && (
         <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-md rounded-lg sm:rounded-xl border border-white/50 shadow-lg">
-          <p className="text-black font-semibold text-sm sm:text-base">{success}</p>
+          <p className="text-black font-semibold text-sm sm:text-base">
+            {success}
+          </p>
         </div>
       )}
 
       {/* Error Message - Mobile Responsive */}
       {error && (
         <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
-          <p className="text-red-700 font-semibold text-sm sm:text-base">{error}</p>
+          <p className="text-red-700 font-semibold text-sm sm:text-base">
+            {error}
+          </p>
         </div>
       )}
 
       {/* Main Form - Mobile Responsive */}
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        
         {/* Campaign Name */}
         <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
           <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
@@ -269,13 +331,20 @@ const SendWhatsapp = () => {
               type="tel"
               name="phoneButtonNumber"
               value={formData.phoneButtonNumber}
-              onChange={handleInputChange}
+              onChange={handlePhoneNumberChange}
               placeholder="Phone Number"
               className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
           </div>
+          
+          {phoneNumberError && (
+            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300">
+              <p className="text-red-700 font-semibold text-sm sm:text-base">{phoneNumberError}</p>
+            </div>
+          )}
         </div>
+
 
         {/* Link Button - Mobile Stacked */}
         <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
@@ -307,13 +376,17 @@ const SendWhatsapp = () => {
         {/* File Uploads - Mobile Optimized */}
         <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
           <label className="block text-xs sm:text-sm font-bold text-black mb-3 sm:mb-4 uppercase">
-            Upload Media (Select Only One) <span className="text-red-600 text-[10px] sm:text-xs">(MAX 5MB)</span>
+            Upload Media (Select Only One){" "}
+            <span className="text-red-600 text-[10px] sm:text-xs">
+              (MAX 5MB)
+            </span>
           </label>
-          
+
           {selectedFile && (
             <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-green-500/20 backdrop-blur-sm rounded-lg sm:rounded-xl border border-green-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <span className="text-black font-semibold text-xs sm:text-sm break-all">
-                {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                {selectedFile.name} (
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
               </span>
               <button
                 type="button"
@@ -326,29 +399,37 @@ const SendWhatsapp = () => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            
             {/* Image Upload */}
             <div>
               <label className="block text-[10px] sm:text-xs font-bold text-black mb-2">
-                IMAGE <span className="text-red-600 block sm:inline">(JPG, PNG, GIF)</span>
-              </label> 
+                IMAGE{" "}
+                <span className="text-red-600 block sm:inline">
+                  (JPG, PNG, GIF)
+                </span>
+              </label>
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => handleFileUpload(e, 'image')}
-                disabled={loading || (selectedFile !== null && fileType !== 'image')}
+                onChange={(e) => handleFileUpload(e, "image")}
+                disabled={
+                  loading || (selectedFile !== null && fileType !== "image")
+                }
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
 
             {/* Video Upload */}
             <div>
-              <label className="block text-[10px] sm:text-xs font-bold text-black mb-2">VIDEO</label>
+              <label className="block text-[10px] sm:text-xs font-bold text-black mb-2">
+                VIDEO
+              </label>
               <input
                 type="file"
                 accept="video/*"
-                onChange={(e) => handleFileUpload(e, 'video')}
-                disabled={loading || (selectedFile !== null && fileType !== 'video')}
+                onChange={(e) => handleFileUpload(e, "video")}
+                disabled={
+                  loading || (selectedFile !== null && fileType !== "video")
+                }
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
@@ -361,12 +442,23 @@ const SendWhatsapp = () => {
               <input
                 type="file"
                 accept="application/pdf"
-                onChange={(e) => handleFileUpload(e, 'pdf')}
-                disabled={loading || (selectedFile !== null && fileType !== 'pdf')}
+                onChange={(e) => handleFileUpload(e, "pdf")}
+                disabled={
+                  loading || (selectedFile !== null && fileType !== "pdf")
+                }
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
           </div>
+
+          {/* File Upload Error - Shows below the file inputs */}
+          {fileUploadError && (
+            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300">
+              <p className="text-red-700 font-semibold text-sm sm:text-base">
+                {fileUploadError}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Mobile Number Entry Type */}
@@ -390,18 +482,24 @@ const SendWhatsapp = () => {
         {/* Mobile Numbers - Responsive Textarea */}
         <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
           <label className="block text-xs sm:text-sm font-bold text-black mb-2 uppercase">
-            Mobile Numbers *
+            Mobile Numbers * (Count: {countMobileNumbers()})
           </label>
           <textarea
             name="mobileNumbers"
             value={formData.mobileNumbers}
-            onChange={handleInputChange}
+            onChange={handleMobileNumberChange}
             placeholder="Enter mobile numbers (comma-separated)"
             rows={4}
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
             disabled={loading}
           />
+          {mobileNumberError && (
+            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300">
+              <p className="text-red-700 font-semibold text-sm sm:text-base">{mobileNumberError}</p>
+            </div>
+          )}
         </div>
+
 
         {/* Number Count */}
         <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
@@ -426,7 +524,7 @@ const SendWhatsapp = () => {
             disabled={loading}
             className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-green-500/80 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
           >
-            {loading ? 'Submitting...' : 'Submit'}
+            {loading ? "Submitting..." : "Submit"}
           </button>
         </div>
       </form>
