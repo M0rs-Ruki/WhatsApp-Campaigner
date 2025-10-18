@@ -853,7 +853,23 @@ const ManageUser = () => {
           <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-blue-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-5 md:p-6">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">Add New User</h3>
+                <div>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">Add New User</h3>
+                  {/* Success Message */}
+                  {success && (
+                    <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-md rounded-lg sm:rounded-xl border border-white/50 shadow-lg">
+                      <p className="text-black font-semibold text-sm sm:text-base">{success}</p>
+                    </div>
+                  )}
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
+                      <p className="text-red-700 font-semibold text-sm sm:text-base">{error}</p>
+                    </div>
+                  )}
+                </div>
+                
                 <button
                   onClick={() => {
                     setShowCreateModal(false);
