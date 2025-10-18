@@ -84,7 +84,7 @@ const ManageReseller = () => {
   );
   const [actionLoading, setActionLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_URL = import.meta.env.VITE_API_URL;
   const userRole = getUserRole();
   const isAdminOrReseller =
     userRole === UserRole.ADMIN || userRole === UserRole.RESELLER;
