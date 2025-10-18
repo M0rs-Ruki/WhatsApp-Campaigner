@@ -957,31 +957,32 @@ const ManageReseller = () => {
       {/* Create Reseller Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-blue-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <div>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
-                    Add New Reseller/User
-                  </h3>
-                  {/* Success Message */}
-                  {success && (
-                    <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-md rounded-lg sm:rounded-xl border border-white/50 shadow-lg">
-                      <p className="text-black font-semibold text-sm sm:text-base">
-                        {success}
-                      </p>
-                    </div>
-                  )}
+          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-blue-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            
+            {/* Success Message - Floating Toast */}
+            {success && (
+              <div className="absolute top-4 left-4 right-4 p-3 sm:p-4 bg-green-500/90 backdrop-blur-md rounded-lg sm:rounded-xl border border-green-600 shadow-2xl z-[100]">
+                <p className="text-white font-semibold text-sm sm:text-base text-center">
+                  {success}
+                </p>
+              </div>
+            )}
 
-                  {/* Error Message */}
-                  {error && (
-                    <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
-                      <p className="text-red-700 font-semibold text-sm sm:text-base">
-                        {error}
-                      </p>
-                    </div>
-                  )}
-                </div>
+            {/* Error Message - Floating Toast */}
+            {error && (
+              <div className="absolute top-4 left-4 right-4 p-3 sm:p-4 bg-red-500/90 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-600 shadow-2xl z-[100]">
+                <p className="text-white font-semibold text-sm sm:text-base text-center">
+                  {error}
+                </p>
+              </div>
+            )}
+
+            <div className="p-4 sm:p-5 md:p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
+                  Add New Reseller
+                </h3>
 
                 <button
                   onClick={() => {
@@ -1003,7 +1004,9 @@ const ManageReseller = () => {
                 </button>
               </div>
 
+              {/* Form Fields */}
               <div className="space-y-3 sm:space-y-4">
+                {/* Company Name */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Company Name *
@@ -1017,11 +1020,12 @@ const ManageReseller = () => {
                         companyName: e.target.value,
                       })
                     }
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Enter company name"
                   />
                 </div>
 
+                {/* Email */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Email *
@@ -1035,11 +1039,12 @@ const ManageReseller = () => {
                         email: e.target.value,
                       })
                     }
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="example@company.com"
                   />
                 </div>
 
+                {/* Password */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Password *
@@ -1053,11 +1058,12 @@ const ManageReseller = () => {
                         password: e.target.value,
                       })
                     }
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Enter password"
                   />
                 </div>
 
+                {/* Phone Number */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Phone Number *
@@ -1072,11 +1078,12 @@ const ManageReseller = () => {
                       })
                     }
                     maxLength={10}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Enter 10-digit number"
                   />
                 </div>
 
+                {/* Role */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Role *
@@ -1089,13 +1096,14 @@ const ManageReseller = () => {
                         role: e.target.value,
                       })
                     }
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black font-semibold focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black font-semibold focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
                   >
                     <option value="reseller">reseller</option>
                     <option value="user">user</option>
                   </select>
                 </div>
 
+                {/* Initial Balance */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Initial Balance *
@@ -1109,12 +1117,13 @@ const ManageReseller = () => {
                         balance: e.target.value,
                       })
                     }
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Enter initial balance"
                     min="0"
                   />
                 </div>
 
+                {/* Profile Image */}
                 <div>
                   <label className="block text-xs sm:text-sm font-bold text-black mb-2">
                     Profile Image *
@@ -1128,15 +1137,21 @@ const ManageReseller = () => {
                         setCreateFormData({ ...createFormData, image: file });
                       }
                     }}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-blue-500 file:text-white file:text-xs sm:file:text-sm file:font-semibold focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-blue-500 file:text-white file:text-xs sm:file:text-sm file:font-semibold file:cursor-pointer hover:file:bg-blue-600 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
                   />
+                  {createFormData.image && (
+                    <p className="mt-2 text-xs sm:text-sm text-green-600 font-medium">
+                      ✓ {createFormData.image.name}
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
                   <button
                     onClick={handleCreateUser}
                     disabled={actionLoading}
-                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 active:scale-95"
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                   >
                     {actionLoading ? "Creating..." : "Create User"}
                   </button>
@@ -1154,7 +1169,8 @@ const ManageReseller = () => {
                       });
                       setError("");
                     }}
-                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-300 text-black text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-gray-400 transition-all active:scale-95"
+                    disabled={actionLoading}
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-300 text-black text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                   >
                     Cancel
                   </button>
