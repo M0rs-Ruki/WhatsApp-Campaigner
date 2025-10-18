@@ -71,7 +71,7 @@ export const exportCampaignToExcel = async (req: Request, res: Response) => {
         worksheet.getRow(1).fill = {
             type: 'pattern',
             pattern: 'solid',
-            fgColor: { argb: 'FF22C55E' }, // Tailwind green-500
+            fgColor: { argb: 'FF22C55E' },
         };
         worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
         worksheet.getRow(1).height = 25;
@@ -128,13 +128,8 @@ export const exportCampaignToExcel = async (req: Request, res: Response) => {
             });
         });
 
-        // Generate file name: CampaignName_YYYY-MM-DD.xlsx
-        const sanitizedCampaignName = campaign.campaignName
-            .replace(/[^a-zA-Z0-9]/g, '_')
-            .replace(/_+/g, '_');
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const fileName = `${sanitizedCampaignName}_${dateStr}.xlsx`;
+        // Generate file name
+        const fileName = `${Date.now()}_campaign_${campaign.campaignName}.xlsx`;
 
         // Set response headers
         res.setHeader(

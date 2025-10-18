@@ -125,7 +125,7 @@ const WhatsAppReports = () => {
 
       // Get filename from Content-Disposition header or create default
       const contentDisposition = response.headers.get("Content-Disposition");
-      let filename = "campaign_export.xlsx";
+      let filename = `Campaign_${campaignId}.xlsx`;
 
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
