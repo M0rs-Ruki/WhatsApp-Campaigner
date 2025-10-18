@@ -367,10 +367,10 @@ const complaints = async (req: Request, res: Response) => {
 
         // Fetch complaints
         const allComplaints = await Complaint.find(queryFilter)
-            .sort({ createdAt: -1 }) // Most recent first
-            .limit(100) // Last 100 complaints
-            .populate('createdBy', 'companyName') // Get creator's company name
-            .populate('resolvedBy', 'companyName') // Get resolver's company name
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .populate('createdBy', 'companyName')
+            .populate('resolvedBy', 'companyName')
             .lean();
 
         // Format complaints for frontend

@@ -1,14 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
-import { X, Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getUserRole } from '../utils/Auth';
-import { UserRole } from '../constants/Roles';
+import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
+import {
+  X,
+  Plus,
+  Edit2,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+} from "lucide-react";
+import { getUserRole } from "../utils/Auth";
+import { UserRole } from "../constants/Roles";
 
 interface NewsItem {
   id: string;
   title: string;
   description: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: "ACTIVE" | "INACTIVE";
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -22,31 +30,31 @@ interface NewsData {
 const News = () => {
   const [newsData, setNewsData] = useState<NewsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
-  
+
   // Form data
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
+    title: "",
+    description: "",
+    status: "ACTIVE" as "ACTIVE" | "INACTIVE",
   });
-  
+
   // Selected news for edit/delete
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
   const userRole = getUserRole();
   const isAdmin = userRole === UserRole.ADMIN;
 
@@ -55,10 +63,10 @@ const News = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_URL}/api/dashboard/news`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -67,11 +75,11 @@ const News = () => {
       if (response.ok && result.success) {
         setNewsData(result.data);
       } else {
-        setError(result.message || 'Failed to load news data');
+        setError(result.message || "Failed to load news data");
       }
     } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('News fetch error:', err);
+      setError("Network error. Please try again.");
+      console.error("News fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -95,7 +103,7 @@ const News = () => {
   // Format date
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd-MMM-yyyy hh:mm a');
+      return format(new Date(dateString), "dd-MMM-yyyy hh:mm a");
     } catch {
       return dateString;
     }
@@ -104,19 +112,19 @@ const News = () => {
   // Handle create news
   const handleCreateNews = async () => {
     if (!formData.title || !formData.description) {
-      setError('Please fill in all fields');
+      setError("Please fill in all fields");
       return;
     }
 
     setActionLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await fetch(`${API_URL}/api/news/create`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -124,16 +132,16 @@ const News = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setSuccess('News created successfully!');
+        setSuccess("News created successfully!");
         setShowCreateModal(false);
-        setFormData({ title: '', description: '', status: 'ACTIVE' });
+        setFormData({ title: "", description: "", status: "ACTIVE" });
         fetchNewsData();
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => setSuccess(""), 3000);
       } else {
-        setError(result.message || 'Failed to create news');
+        setError(result.message || "Failed to create news");
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setActionLoading(false);
     }
@@ -142,37 +150,40 @@ const News = () => {
   // Handle update news
   const handleUpdateNews = async () => {
     if (!selectedNews || !formData.title || !formData.description) {
-      setError('Please fill in all fields');
+      setError("Please fill in all fields");
       return;
     }
 
     setActionLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/news/update/${selectedNews.id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${API_URL}/api/news/update/${selectedNews.id}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setSuccess('News updated successfully!');
+        setSuccess("News updated successfully!");
         setShowEditModal(false);
         setSelectedNews(null);
-        setFormData({ title: '', description: '', status: 'ACTIVE' });
+        setFormData({ title: "", description: "", status: "ACTIVE" });
         fetchNewsData();
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => setSuccess(""), 3000);
       } else {
-        setError(result.message || 'Failed to update news');
+        setError(result.message || "Failed to update news");
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setActionLoading(false);
     }
@@ -183,27 +194,30 @@ const News = () => {
     if (!selectedNews) return;
 
     setActionLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/news/delete/${selectedNews.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API_URL}/api/news/delete/${selectedNews.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setSuccess('News deleted successfully!');
+        setSuccess("News deleted successfully!");
         setShowDeleteModal(false);
         setSelectedNews(null);
         fetchNewsData();
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => setSuccess(""), 3000);
       } else {
-        setError(result.message || 'Failed to delete news');
+        setError(result.message || "Failed to delete news");
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setActionLoading(false);
     }
@@ -243,19 +257,20 @@ const News = () => {
   }
 
   return (
-    <div className="space-y-6">
-      
-      {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <h2 className="text-3xl font-bold text-black">List of All News</h2>
-        
+    <div className="space-y-4 sm:space-y-6">
+      {/* Page Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black text-center">
+          List of All News
+        </h2>
+
         {/* Create News Button - Only for Admin */}
         {isAdmin && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-green-500/80 backdrop-blur-md text-white font-bold rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 transition-all"
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500/80 backdrop-blur-md text-white font-bold text-sm sm:text-base rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 transition-all active:scale-95"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Create New News
           </button>
         )}
@@ -263,99 +278,209 @@ const News = () => {
 
       {/* Success Message */}
       {success && (
-        <div className="p-4 bg-green-500/30 backdrop-blur-md rounded-xl border border-white/50 shadow-lg">
-          <p className="text-black font-semibold">{success}</p>
+        <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-md rounded-lg sm:rounded-xl border border-white/50 shadow-lg">
+          <p className="text-black font-semibold text-sm sm:text-base">
+            {success}
+          </p>
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="p-4 bg-red-100/60 backdrop-blur-md rounded-xl border border-red-300 shadow-lg">
-          <p className="text-red-700 font-semibold">{error}</p>
+        <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
+          <p className="text-red-700 font-semibold text-sm sm:text-base">
+            {error}
+          </p>
         </div>
       )}
 
       {/* Show Entries Selector */}
-      <div className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-        <span className="text-sm font-bold text-black">SHOW</span>
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+        <span className="text-xs sm:text-sm font-bold text-black">SHOW</span>
         <select
           value={itemsPerPage}
           onChange={(e) => setItemsPerPage(Number(e.target.value))}
-          className="px-3 py-2 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-xl text-black font-semibold focus:outline-none focus:border-green-500"
+          className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm text-black font-semibold focus:outline-none focus:border-green-500"
         >
           <option value={10}>10</option>
           <option value={25}>25</option>
           <option value={50}>50</option>
         </select>
-        <span className="text-sm font-bold text-black">ENTRIES</span>
+        <span className="text-xs sm:text-sm font-bold text-black">ENTRIES</span>
       </div>
 
-      {/* News Table */}
-      <div className="p-6 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl overflow-hidden">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {currentNews.length === 0 ? (
+          <div className="p-6 bg-white/40 backdrop-blur-lg rounded-xl border border-white/60 shadow-xl text-center">
+            <p className="text-base font-semibold text-black opacity-70">
+              No news available
+            </p>
+          </div>
+        ) : (
+          currentNews.map((news, index) => (
+            <div
+              key={news.id}
+              className="p-3 bg-white/40 backdrop-blur-lg rounded-xl border border-white/60 shadow-lg"
+            >
+              {/* Header Row */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-black opacity-70">
+                  #{startIndex + index + 1}
+                </span>
+                <span
+                  className={`px-2 py-0.5 text-white text-[10px] font-bold rounded-full ${
+                    news.status === "ACTIVE" ? "bg-green-500" : "bg-red-500"
+                  }`}
+                >
+                  {news.status}
+                </span>
+              </div>
+
+              {/* Title */}
+              <p className="text-sm font-bold text-black mb-1.5 line-clamp-1">
+                {news.title}
+              </p>
+
+              {/* Description Preview */}
+              <p className="text-xs text-black opacity-80 line-clamp-2 mb-2">
+                {news.description}
+              </p>
+
+              {/* Date + Creator */}
+              <div className="text-[10px] text-black opacity-60 mb-2 pb-2 border-b border-white/30">
+                <div>Created: {formatDate(news.createdAt)}</div>
+                <div>By: {news.createdBy}</div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 justify-end">
+                <button
+                  onClick={() => openDescriptionModal(news)}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500/60 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                >
+                  <Eye className="w-3 h-3" />
+                  View
+                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={() => openEditModal(news)}
+                      className="p-1.5 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all active:scale-95"
+                    >
+                      <Edit2 className="w-3 h-3 text-white" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(news)}
+                      className="p-1.5 bg-red-500/60 backdrop-blur-sm rounded-lg hover:bg-red-600/60 transition-all active:scale-95"
+                    >
+                      <Trash2 className="w-3 h-3 text-white" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block p-4 sm:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-white/60">
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">ID</th>
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Date</th>
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Title</th>
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Description</th>
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Status</th>
-                <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Created By</th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  ID
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Date
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Title
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Description
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Status
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Created By
+                </th>
                 {isAdmin && (
-                  <th className="text-left py-4 px-4 text-sm font-bold text-black uppercase">Actions</th>
+                  <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                    Actions
+                  </th>
                 )}
               </tr>
             </thead>
             <tbody>
               {currentNews.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6} className="py-12 text-center text-black opacity-70">
-                    <p className="text-lg font-semibold">No news available</p>
+                  <td
+                    colSpan={isAdmin ? 7 : 6}
+                    className="py-8 sm:py-12 text-center text-black opacity-70"
+                  >
+                    <p className="text-base sm:text-lg font-semibold">
+                      No news available
+                    </p>
                   </td>
                 </tr>
               ) : (
                 currentNews.map((news, index) => (
-                  <tr 
-                    key={news.id} 
+                  <tr
+                    key={news.id}
                     className="border-b border-white/30 hover:bg-white/20 transition-all"
                   >
-                    <td className="py-4 px-4 text-black font-semibold">
+                    <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold">
                       {startIndex + index + 1}
                     </td>
-                    <td className="py-4 px-4 text-black font-semibold whitespace-nowrap">
+                    <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold whitespace-nowrap">
                       <div className="text-xs">
                         <div>Created: {formatDate(news.createdAt)}</div>
-                        <div className="text-gray-600 mt-1">Updated: {formatDate(news.updatedAt)}</div>
+                        <div className="text-gray-600 mt-1">
+                          Updated: {formatDate(news.updatedAt)}
+                        </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-black font-semibold max-w-[200px]">
+                    <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold max-w-[200px]">
                       {news.title}
                     </td>
-                    <td className="py-4 px-4 text-black font-semibold max-w-[400px]">
-                      <div className="line-clamp-3">
-                        {news.description}
-                      </div>
+                    <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold max-w-[400px]">
+                      <div className="line-clamp-3">{news.description}</div>
                       <button
                         onClick={() => openDescriptionModal(news)}
-                        className="text-green-600 font-bold text-sm mt-1 hover:underline"
+                        className="text-green-600 font-bold text-xs sm:text-sm mt-1 hover:underline"
                       >
                         Read More
                       </button>
                     </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 text-white text-xs font-bold rounded-full ${
-                        news.status === 'ACTIVE' ? 'bg-green-500' : 'bg-red-500'
-                      }`}>
+                    <td className="py-3 sm:py-4 px-3 sm:px-4">
+                      <span
+                        className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-xs font-bold rounded-full ${
+                          news.status === "ACTIVE"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }`}
+                      >
                         {news.status}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-black font-semibold">
+                    <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold">
                       {news.createdBy}
                     </td>
                     {isAdmin && (
-                      <td className="py-4 px-4">
+                      <td className="py-3 sm:py-4 px-3 sm:px-4">
                         <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openDescriptionModal(news)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-500/80 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                            title="View"
+                          >
+                            <Eye className="w-3 h-3 text-white" />
+                            View
+                          </button>
                           <button
                             onClick={() => openEditModal(news)}
                             className="p-2 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all"
@@ -384,115 +509,156 @@ const News = () => {
       {/* Pagination Info and Controls */}
       {newsData && newsData.totalNews > 0 && (
         <>
-          <div className="text-sm text-black font-semibold p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-            Showing {startIndex + 1} to {Math.min(endIndex, newsData.totalNews)} of {newsData.totalNews} entries
+          <div className="text-xs sm:text-sm text-black font-semibold p-3 sm:p-4 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
+            Showing {startIndex + 1} to {Math.min(endIndex, newsData.totalNews)}{" "}
+            of {newsData.totalNews} entries
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 p-4 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl flex-wrap">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 font-semibold text-black hover:bg-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 sm:p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 font-semibold text-black hover:bg-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-4 py-2 font-bold rounded-lg border-2 transition-all ${
-                    currentPage === page
-                      ? 'bg-green-500 text-white border-green-600 shadow-lg'
-                      : 'bg-white/60 text-black border-white/80 hover:bg-white/80'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-2.5 sm:px-4 py-1.5 sm:py-2 text-sm font-bold rounded-lg border-2 transition-all ${
+                      currentPage === pageNum
+                        ? "bg-green-500 text-white border-green-600 shadow-lg"
+                        : "bg-white/60 text-black border-white/80 hover:bg-white/80"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
 
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 font-semibold text-black hover:bg-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 sm:p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 font-semibold text-black hover:bg-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           )}
         </>
       )}
 
-      {/* Create News Modal */}
+      {/* Create News Modal - Mobile Optimized */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-black">Create New News</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
+                  Create New News
+                </h3>
                 <button
                   onClick={() => {
                     setShowCreateModal(false);
-                    setFormData({ title: '', description: '', status: 'ACTIVE' });
-                    setError('');
+                    setFormData({
+                      title: "",
+                      description: "",
+                      status: "ACTIVE",
+                    });
+                    setError("");
                   }}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-all"
+                  className="p-1.5 sm:p-2 hover:bg-gray-200 rounded-lg transition-all flex-shrink-0"
                 >
-                  <X className="w-6 h-6 text-black" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-black mb-2">Title *</label>
+                  <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                    Title *
+                  </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-green-500"
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-green-500"
                     placeholder="Enter news title"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-black mb-2">Description *</label>
+                  <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                    Description *
+                  </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={6}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-green-500 resize-none"
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    rows={5}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-green-500 resize-none"
                     placeholder="Enter news description"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-black mb-2">Status *</label>
+                  <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                    Status *
+                  </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'ACTIVE' | 'INACTIVE' })}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black font-semibold focus:outline-none focus:border-green-500"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: e.target.value as "ACTIVE" | "INACTIVE",
+                      })
+                    }
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black font-semibold focus:outline-none focus:border-green-500"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
                   </select>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
                   <button
                     onClick={handleCreateNews}
                     disabled={actionLoading}
-                    className="flex-1 px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all disabled:opacity-50"
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-green-600 transition-all disabled:opacity-50 active:scale-95"
                   >
-                    {actionLoading ? 'Creating...' : 'Create News'}
+                    {actionLoading ? "Creating..." : "Create News"}
                   </button>
                   <button
                     onClick={() => {
                       setShowCreateModal(false);
-                      setFormData({ title: '', description: '', status: 'ACTIVE' });
-                      setError('');
+                      setFormData({
+                        title: "",
+                        description: "",
+                        status: "ACTIVE",
+                      });
+                      setError("");
                     }}
-                    className="flex-1 px-6 py-3 bg-gray-300 text-black font-bold rounded-xl hover:bg-gray-400 transition-all"
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-300 text-black text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-gray-400 transition-all active:scale-95"
                   >
                     Cancel
                   </button>
@@ -503,77 +669,102 @@ const News = () => {
         </div>
       )}
 
-      {/* Edit News Modal */}
+      {/* Edit News Modal - Mobile Optimized */}
       {showEditModal && selectedNews && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-blue-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-black">Edit News</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-blue-500 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
+                  Edit News
+                </h3>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     setSelectedNews(null);
-                    setFormData({ title: '', description: '', status: 'ACTIVE' });
-                    setError('');
+                    setFormData({
+                      title: "",
+                      description: "",
+                      status: "ACTIVE",
+                    });
+                    setError("");
                   }}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-all"
+                  className="p-1.5 sm:p-2 hover:bg-gray-200 rounded-lg transition-all flex-shrink-0"
                 >
-                  <X className="w-6 h-6 text-black" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-black mb-2">Title *</label>
+                  <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                    Title *
+                  </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500"
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500"
                     placeholder="Enter news title"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-black mb-2">Description *</label>
+                  <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                    Description *
+                  </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={6}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black focus:outline-none focus:border-blue-500 resize-none"
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    rows={5}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 resize-none"
                     placeholder="Enter news description"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-black mb-2">Status *</label>
+                  <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                    Status *
+                  </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'ACTIVE' | 'INACTIVE' })}
-                    className="w-full px-4 py-3 bg-white/60 border-2 border-gray-300 rounded-xl text-black font-semibold focus:outline-none focus:border-blue-500"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: e.target.value as "ACTIVE" | "INACTIVE",
+                      })
+                    }
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black font-semibold focus:outline-none focus:border-blue-500"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
                   </select>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
                   <button
                     onClick={handleUpdateNews}
                     disabled={actionLoading}
-                    className="flex-1 px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50"
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 active:scale-95"
                   >
-                    {actionLoading ? 'Updating...' : 'Update News'}
+                    {actionLoading ? "Updating..." : "Update News"}
                   </button>
                   <button
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedNews(null);
-                      setFormData({ title: '', description: '', status: 'ACTIVE' });
-                      setError('');
+                      setFormData({
+                        title: "",
+                        description: "",
+                        status: "ACTIVE",
+                      });
+                      setError("");
                     }}
-                    className="flex-1 px-6 py-3 bg-gray-300 text-black font-bold rounded-xl hover:bg-gray-400 transition-all"
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-300 text-black text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-gray-400 transition-all active:scale-95"
                   >
                     Cancel
                   </button>
@@ -584,29 +775,32 @@ const News = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal - Mobile Optimized */}
       {showDeleteModal && selectedNews && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-red-500 shadow-2xl w-full max-w-md">
-            <div className="p-6">
-              <h3 className="text-2xl font-bold text-black mb-4">Delete News</h3>
-              <p className="text-black mb-6">
-                Are you sure you want to delete this news? This action cannot be undone.
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-red-500 shadow-2xl w-full max-w-md">
+            <div className="p-4 sm:p-5 md:p-6">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black mb-3 sm:mb-4">
+                Delete News
+              </h3>
+              <p className="text-black text-sm sm:text-base mb-4 sm:mb-6">
+                Are you sure you want to delete this news? This action cannot be
+                undone.
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   onClick={handleDeleteNews}
                   disabled={actionLoading}
-                  className="flex-1 px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all disabled:opacity-50"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-red-600 transition-all disabled:opacity-50 active:scale-95"
                 >
-                  {actionLoading ? 'Deleting...' : 'Yes, Delete'}
+                  {actionLoading ? "Deleting..." : "Yes, Delete"}
                 </button>
                 <button
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedNews(null);
                   }}
-                  className="flex-1 px-6 py-3 bg-gray-300 text-black font-bold rounded-xl hover:bg-gray-400 transition-all"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-300 text-black text-sm sm:text-base font-bold rounded-lg sm:rounded-xl hover:bg-gray-400 transition-all active:scale-95"
                 >
                   No, Cancel
                 </button>
@@ -616,48 +810,72 @@ const News = () => {
         </div>
       )}
 
-      {/* Description Modal */}
+      {/* Description Modal - Mobile Optimized */}
       {showDescriptionModal && selectedNews && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-black">{selectedNews.title}</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white/90 backdrop-blur-xl rounded-xl sm:rounded-2xl border-2 border-green-500 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
+                  {selectedNews.title}
+                </h3>
                 <button
                   onClick={() => {
                     setShowDescriptionModal(false);
                     setSelectedNews(null);
                   }}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-all"
+                  className="p-1.5 sm:p-2 hover:bg-gray-200 rounded-lg transition-all flex-shrink-0"
                 >
-                  <X className="w-6 h-6 text-black" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
                 </button>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <span className="text-sm font-bold text-gray-600">Created: </span>
-                  <span className="text-sm text-black">{formatDate(selectedNews.createdAt)}</span>
+                  <span className="text-xs sm:text-sm font-bold text-gray-600">
+                    Created:{" "}
+                  </span>
+                  <span className="text-xs sm:text-sm text-black">
+                    {formatDate(selectedNews.createdAt)}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-gray-600">Updated: </span>
-                  <span className="text-sm text-black">{formatDate(selectedNews.updatedAt)}</span>
+                  <span className="text-xs sm:text-sm font-bold text-gray-600">
+                    Updated:{" "}
+                  </span>
+                  <span className="text-xs sm:text-sm text-black">
+                    {formatDate(selectedNews.updatedAt)}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-gray-600">Created By: </span>
-                  <span className="text-sm text-black">{selectedNews.createdBy}</span>
+                  <span className="text-xs sm:text-sm font-bold text-gray-600">
+                    Created By:{" "}
+                  </span>
+                  <span className="text-xs sm:text-sm text-black">
+                    {selectedNews.createdBy}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-gray-600">Status: </span>
-                  <span className={`px-3 py-1 text-white text-xs font-bold rounded-full ${
-                    selectedNews.status === 'ACTIVE' ? 'bg-green-500' : 'bg-red-500'
-                  }`}>
+                  <span className="text-xs sm:text-sm font-bold text-gray-600">
+                    Status:{" "}
+                  </span>
+                  <span
+                    className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-xs font-bold rounded-full ${
+                      selectedNews.status === "ACTIVE"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                  >
                     {selectedNews.status}
                   </span>
                 </div>
               </div>
-              <div className="mt-6">
-                <h4 className="text-lg font-bold text-black mb-2">Description:</h4>
-                <p className="text-black whitespace-pre-wrap">{selectedNews.description}</p>
+              <div className="mt-4 sm:mt-6">
+                <h4 className="text-base sm:text-lg font-bold text-black mb-2">
+                  Description:
+                </h4>
+                <p className="text-black text-sm sm:text-base whitespace-pre-wrap">
+                  {selectedNews.description}
+                </p>
               </div>
             </div>
           </div>
