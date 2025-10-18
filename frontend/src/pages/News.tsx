@@ -357,7 +357,8 @@ const News = () => {
               <div className="flex items-center gap-2 justify-end">
                 <button
                   onClick={() => openDescriptionModal(news)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500/60 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                  title="View"
                 >
                   <Eye className="w-3 h-3" />
                   View
@@ -366,13 +367,13 @@ const News = () => {
                   <>
                     <button
                       onClick={() => openEditModal(news)}
-                      className="p-1.5 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all active:scale-95"
+                      className="p-1.5 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600 transition-all active:scale-95"
                     >
                       <Edit2 className="w-3 h-3 text-white" />
                     </button>
                     <button
                       onClick={() => openDeleteModal(news)}
-                      className="p-1.5 bg-red-500/60 backdrop-blur-sm rounded-lg hover:bg-red-600/60 transition-all active:scale-95"
+                      className="p-1.5 bg-red-500/60 backdrop-blur-sm rounded-lg hover:bg-red-600 transition-all active:scale-95"
                     >
                       <Trash2 className="w-3 h-3 text-white" />
                     </button>
@@ -483,14 +484,14 @@ const News = () => {
                           </button>
                           <button
                             onClick={() => openEditModal(news)}
-                            className="p-2 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all"
+                            className="p-2 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/80 transition-all"
                             title="Edit"
                           >
                             <Edit2 className="w-4 h-4 text-white" />
                           </button>
                           <button
                             onClick={() => openDeleteModal(news)}
-                            className="p-2 bg-red-500/60 backdrop-blur-sm rounded-lg hover:bg-red-600/60 transition-all"
+                            className="p-2 bg-red-500/60 backdrop-blur-sm rounded-lg hover:bg-red-600/80 transition-all"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4 text-white" />
