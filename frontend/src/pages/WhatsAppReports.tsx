@@ -96,6 +96,7 @@ const WhatsAppReports = () => {
     }
   }, [API_URL]);
 
+
   useEffect(() => {
     fetchReportsData();
   }, [fetchReportsData]);
@@ -206,6 +207,12 @@ const WhatsAppReports = () => {
       return dateString;
     }
   };
+
+  const stripHtmlTags = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '');
+  };
+
 
   // Truncate message
   const truncateMessage = (message: string, maxLength: number = 100) => {
@@ -396,7 +403,7 @@ const WhatsAppReports = () => {
 
               {/* Message Preview */}
               <p className="text-xs text-black opacity-80 line-clamp-2 mb-2">
-                {truncateMessage(campaign.message, 80)}
+                {truncateMessage(stripHtmlTags(campaign.message), 80)}
               </p>
 
               {/* Creator + Date */}
@@ -489,7 +496,7 @@ const WhatsAppReports = () => {
                     </td>
                     <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold max-w-[300px]">
                       <div className="line-clamp-2">
-                        {truncateMessage(campaign.message, 80)}
+                        {truncateMessage(stripHtmlTags(campaign.message), 80)}
                       </div>
                       {campaign.message.length > 80 && (
                         <button
@@ -801,7 +808,7 @@ const WhatsAppReports = () => {
                     </span>
                     <div className="bg-white p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl border sm:border-2 border-green-300 shadow-md">
                       <p className="text-black text-xs sm:text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                        {selectedCampaign.message}
+                        {stripHtmlTags(selectedCampaign.message)}
                       </p>
                     </div>
                   </div>
