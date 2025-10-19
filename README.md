@@ -713,7 +713,32 @@ Types: Add, Update, Fix, Remove, Refactor, Docs, Style, Test
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the ProMinds Digital (formerly Prolific IDEAS) License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🏢 Created By
+
+### ProMinds Digital
+**Formerly Prolific IDEAS**
+
+*Digital Marketing & IT Solutions Company*
+
+ProMinds Digital is a leading brand-driven performance marketing company that specializes in delivering comprehensive digital marketing and technology solutions. With expertise in Digital Marketing, WhatsApp Marketing, SEO, and cutting-edge web/app development, ProMinds empowers businesses to enhance their online presence and drive sustainable growth.
+
+#### 🎯 Core Services
+- 📱 Digital Marketing
+- 💬 WhatsApp Marketing
+- 🔍 SEO Services
+- 🌐 Web Development
+- 📲 App Development
+- 📊 Performance Marketing
+
+#### 🌐 Connect with ProMinds Digital
+- **Website**: [prominds.digital](https://prominds.digital)
+- **Legacy Site**: [prolificideas.in](https://prolificideas.in)
+- **Facebook**: [Follow for updates](https://facebook.com/promindsdigital)
+- **WhatsApp**: [Marketing Expert](https://wa.me/your-number)
 
 ---
 
