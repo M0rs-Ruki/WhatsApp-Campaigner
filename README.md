@@ -127,7 +127,6 @@ A comprehensive full-stack WhatsApp campaign management system built with the ME
 - `campaigns` - WhatsApp campaign data and metadata
 - `complaints` - Support tickets and resolutions
 - `transactions` - Credit transactions and history
-- `businesses` - Business profiles and settings
 - `news` - Platform announcements
 - `reviews` - User feedback and ratings
 
@@ -158,7 +157,7 @@ git --version
 - **Code Editor**: VS Code with ESLint and TypeScript extensions
 - **API Testing**: Postman or Thunder Client
 - **Database GUI**: MongoDB Compass
-- **Terminal**: iTerm2 (Mac) or Windows Terminal
+- **Terminal**: iTerm2 (Mac) or Windows Terminal or GNOME Terminal (Linux)
 
 ---
 
@@ -225,12 +224,12 @@ Create `backend/.env`:
 ```env
 # Server Configuration
 PORT=8080
-NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/whatsapp-campaigner
-# For MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/whatsapp-campaigner
+MONGO_URI=mongodb://localhost:27017/whatsapp-campaigner
+DB_NAME=whatsapp-campaigner
+
 
 # JWT Configuration
 JWT_SECRET=your_super_secret_jwt_key_here_minimum_32_characters_long
@@ -241,16 +240,16 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
-# CORS
-FRONTEND_URL=http://localhost:5173
-# For production: https://whats-app-campaigner.vercel.app
+# Cloudinary
+CLOUDINARY_URL=cloudinary://<ApiKey>:<SecretKey>@<CloudName>
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 # Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=15 * 50 * 1000
+RATE_LIMIT_MAX_REQUESTS=127
 
-# Cookie Configuration
-COOKIE_EXPIRE=7
 ```
 
 ### Frontend Configuration
@@ -259,16 +258,7 @@ Create `frontend/.env`:
 
 ```env
 # API Configuration
-VITE_API_URL=http://localhost:8080/api
-# For production: https://your-backend-url.onrender.com/api
-
-# Application
-VITE_APP_NAME=WhatsApp Campaigner
-VITE_APP_VERSION=1.0.0
-
-# Feature Flags (optional)
-VITE_ENABLE_ANALYTICS=false
-VITE_ENABLE_DEBUG=true
+VITE_API_URL=http://localhost:8080
 ```
 
 ---
@@ -318,8 +308,7 @@ npm run dev
 ### Accessing the Application
 
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8080/api
-- **API Health Check**: http://localhost:8080/api/health
+- **Backend API**: http://localhost:8080
 
 ---
 
@@ -513,7 +502,6 @@ WhatsApp-Campaigner/
 ### Authentication Endpoints
 
 ```
-POST   /api/auth/register        Register new user
 POST   /api/auth/login           User login
 POST   /api/auth/logout          User logout
 GET    /api/auth/profile         Get user profile
@@ -731,7 +719,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**M0rs-Ruki**
+**Anup Pradhan (M0rs)**
 
 - GitHub: [@M0rs-Ruki](https://github.com/M0rs-Ruki)
 - Project: [WhatsApp Campaigner](https://github.com/M0rs-Ruki/WhatsApp-Campaigner)
