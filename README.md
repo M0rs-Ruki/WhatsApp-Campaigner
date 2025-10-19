@@ -1,1132 +1,760 @@
-📋 Project Overview
-Project Name
-WhatsApp Campaign Management System
+# 📱 WhatsApp Campaigner
+
+A comprehensive full-stack WhatsApp campaign management system built with the MERN stack, featuring role-based access control, campaign management, credit systems, and real-time reporting.
+
+[![Live Demo](https://img.shields.io/badge/demo-live-success)](https://whats-app-campaigner.vercel.app/)
+[![GitHub](https://img.shields.io/badge/github-repository-blue)](https://github.com/M0rs-Ruki/WhatsApp-Campaigner)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+---
+
+## 📑 Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [Architecture](#️-architecture)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Environment Variables](#-environment-variables)
+- [Running the Application](#-running-the-application)
+- [Build & Deployment](#️-build--deployment)
+- [Project Structure](#-project-structure)
+- [API Documentation](#-api-documentation)
+- [Screenshots](#-screenshots)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## ✨ Features
+
+### 🎯 Core Functionality
+
+- **Campaign Management** - Create, manage, and track WhatsApp campaigns with detailed analytics
+- **Credit System** - Flexible credit management for campaign operations and user balance tracking
+- **Role-Based Access Control** - Three-tier system (Admin, Reseller, User) with granular permissions
+- **Real-time Reports** - Comprehensive WhatsApp campaign analytics with exportable data
+- **User Management** - Complete user and reseller administration dashboard
+- **Complaint System** - Built-in ticketing for complaint handling and resolution
+- **Business Profiles** - Account and business profile management capabilities
+- **News & Reviews** - Integrated news feed and user review system
+
+### 🔒 Technical Features
+
+- ✅ JWT-based authentication with secure HTTP-only cookies
+- ✅ File upload support with Cloudinary CDN integration
+- ✅ Excel export functionality for comprehensive reports
+- ✅ API rate limiting for DDoS protection
+- ✅ Fully responsive UI with Tailwind CSS
+- ✅ Type-safe development with TypeScript
+- ✅ RESTful API architecture
+- ✅ MongoDB database with Mongoose ODM
+- ✅ Automated tasks with node-cron scheduler
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19.1.1 | UI Framework |
+| TypeScript | 5.9.3 | Type Safety |
+| Tailwind CSS | 4.1.14 | Styling |
+| React Router DOM | 7.9.4 | Routing |
+| Recharts | 3.2.1 | Data Visualization |
+| React Quill | 3.6.0 | Rich Text Editor |
+| Lucide React | 0.545.0 | Icons |
+| Vite | Latest | Build Tool |
+| date-fns | 4.1.0 | Date Utilities |
+| jwt-decode | 4.0.0 | JWT Handling |
+
+### Backend
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Node.js | 20.15.0 | Runtime |
+| Express | 5.1.0 | Web Framework |
+| TypeScript | 5.9.3 | Type Safety |
+| MongoDB | Latest | Database |
+| Mongoose | 8.19.0 | ODM |
+| jsonwebtoken | 9.0.2 | Authentication |
+| bcrypt | 6.0.0 | Password Hashing |
+| Multer | 2.0.2 | File Upload |
+| Cloudinary | 2.7.0 | Cloud Storage |
+| ExcelJS | 4.4.0 | Excel Generation |
+| node-cron | 4.2.1 | Task Scheduling |
+| express-rate-limit | 8.1.0 | Rate Limiting |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       CLIENT LAYER                           │
+│         (React + TypeScript + Tailwind CSS)                  │
+│                   Hosted on Vercel                           │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     │ HTTPS/REST API
+                     │
+┌────────────────────▼────────────────────────────────────────┐
+│                   API GATEWAY LAYER                          │
+│          (Express + Rate Limiting + CORS)                    │
+│                   Hosted on Render                           │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+┌───────▼──────┐ ┌──▼─────────┐ ┌▼──────────────┐
+│ Auth Service │ │  Campaign  │ │ File Service  │
+│ (JWT/bcrypt) │ │  Service   │ │ (Cloudinary)  │
+└──────────────┘ └────────────┘ └───────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────┐
+│                     DATABASE LAYER                           │
+│                (MongoDB + Mongoose)                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Database Schema
 
-Project Type
-Full-stack MERN application for WhatsApp marketing campaign management with role-based access control
+**Collections:**
+- `users` - User accounts with role-based permissions
+- `campaigns` - WhatsApp campaign data and metadata
+- `complaints` - Support tickets and resolutions
+- `transactions` - Credit transactions and history
+- `businesses` - Business profiles and settings
+- `news` - Platform announcements
+- `reviews` - User feedback and ratings
 
-Core Purpose
-A comprehensive platform that allows businesses to:
+---
 
-Create and manage WhatsApp marketing campaigns
+## 📋 Prerequisites
 
-Send bulk WhatsApp messages with media attachments
+Ensure you have the following installed before proceeding:
 
-Track campaign performance and analytics
+### Required Software
 
-Manage user complaints and support tickets
-
-Handle transactions and campaign exports
-
-Provide role-based access for admins, resellers, and regular users
-
-🛠️ Technology Stack
-Frontend
-Framework: React 18+ with TypeScript
-
-Styling: Tailwind CSS (custom glassmorphism effects)
-
-Routing: React Router DOM
-
-Date Handling: date-fns
-
-Icons: Lucide React
-
-HTTP Client: Fetch API with credentials
+```bash
+# Node.js (v20.15.0 or higher, but below v21.0.0)
+node --version  # Should output v20.x.x
 
-Build Tool: Vite
+# npm (v9.0.0 or higher)
+npm --version
 
-State Management: React Hooks (useState, useEffect, useCallback)
+# MongoDB (v6.0 or higher - local or Atlas)
+mongod --version
 
-Backend
-Runtime: Node.js
+# Git
+git --version
+```
 
-Framework: Express.js with TypeScript
+### Recommended Tools
 
-Database: MongoDB
+- **Code Editor**: VS Code with ESLint and TypeScript extensions
+- **API Testing**: Postman or Thunder Client
+- **Database GUI**: MongoDB Compass
+- **Terminal**: iTerm2 (Mac) or Windows Terminal
 
-ODM: Mongoose
+---
 
-Authentication: JWT (JSON Web Tokens)
+## 🚀 Installation
 
-File Upload: Multer
+### Step 1: Clone the Repository
 
-File Storage: Cloudinary (for campaign media)
+```bash
+git clone https://github.com/M0rs-Ruki/WhatsApp-Campaigner.git
+cd WhatsApp-Campaigner
+```
 
-Excel Generation: ExcelJS
+### Step 2: Backend Setup
 
-Environment Variables: dotenv
-
-Development Environment
-Backend Port: 8080 (localhost:8080)
-
-Frontend: Vite dev server
-
-API Base URL: Configured via VITE_API_URL environment variable
-
-🗄️ Database Architecture
-Collections (Models)
-1. User Model
-typescript
-{
-  companyName: String (required)
-  email: String (required, unique)
-  number: String (required)
-  password: String (required, hashed)
-  role: String (enum: ['admin', 'reseller', 'user'])
-  status: String (enum: ['active', 'inactive', 'deleted'])
-  allCampaign: [ObjectId] (references Campaign)
-  allComplaint: [ObjectId] (references Complaint)
-  createdAt: Date
-  updatedAt: Date
-}
-2. Campaign Model
-typescript
-{
-  campaignName: String (required)
-  message: String (required)
-  media: String (Cloudinary URL or file path)
-  mobileNumbers: [String] (array of phone numbers)
-  countryCode: String (e.g., "+91")
-  phoneButton: {
-    text: String
-    number: String
-  }
-  linkButton: {
-    text: String
-    url: String
-  }
-  createdBy: ObjectId (references User)
-  createdAt: Date
-  updatedAt: Date
-}
-3. Complaint Model
-typescript
-{
-  userId: ObjectId (references User, required)
-  subject: String (required)
-  description: String (required)
-  status: String (enum: ['pending', 'resolved', 'in-progress'])
-  adminResponse: String
-  createdAt: Date
-  updatedAt: Date
-}
-4. Transaction Model (Inferred)
-typescript
-{
-  userId: ObjectId (references User)
-  amount: Number
-  type: String (e.g., 'credit', 'debit')
-  description: String
-  createdAt: Date
-}
-🔐 Authentication & Authorization
-Authentication Flow
-Login: User credentials validated → JWT token generated
-
-Token Storage: JWT stored in HTTP-only cookies (credentials: 'include')
-
-Middleware: isLoggedIn middleware validates JWT on protected routes
-
-User Context: Decoded user data attached to req.user
-
-Authorization Levels
-Admin: Full system access, can view all campaigns, manage all users
-
-Reseller: Can create campaigns, manage their clients, view their own data
+```bash
+# Navigate to backend directory
+cd backend
 
-User: Basic access, can create campaigns, view own campaigns
+# Install dependencies
+npm install
 
-JWT Implementation
-Token stored in cookies with credentials: 'include'
+# Create environment file
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-Token contains: user ID, email, role
+### Step 3: Frontend Setup
 
-Token validated on every protected API request
+```bash
+# Navigate to frontend directory (from root)
+cd ../frontend
 
-🚀 API Endpoints
-Authentication Routes
-text
-POST /api/auth/login
-POST /api/auth/register
-POST /api/auth/logout
-GET  /api/auth/verify-token
-Dashboard Routes
-text
-GET  /api/dashboard/whatsapp-reports
-  - Returns: User's own campaigns
-  - Access: Authenticated users
-  - Response: {campaigns, userData, totalCampaigns}
+# Install dependencies
+npm install
 
-GET  /api/dashboard/all-campaigns
-  - Returns: Latest 50 campaigns from all users
-  - Access: Admin only
-  - Response: {campaigns with userData embedded}
+# Create environment file
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-GET  /api/dashboard/export-campaign/:campaignId
-  - Returns: Excel file download
-  - Access: Campaign owner or Admin
-  - File Format: .xlsx with campaign details
-Campaign Routes (Inferred)
-text
-POST /api/campaign/create
-  - Body: campaignName, message, media, mobileNumbers, etc.
-  - Access: Authenticated users
-  - File Upload: Multer middleware for media
+### Step 4: Database Setup
 
-GET  /api/campaign/:id
-  - Returns: Campaign details
-  - Access: Campaign owner or Admin
+**Option A: Local MongoDB**
+```bash
+# Start MongoDB service
+sudo systemctl start mongod  # Linux
+brew services start mongodb-community  # Mac
+```
 
-DELETE /api/campaign/:id
-  - Access: Campaign owner or Admin
-Complaint Routes (Inferred)
-text
-POST /api/complaint/create
-  - Body: subject, description
-  - Access: Authenticated users
+**Option B: MongoDB Atlas**
+1. Create account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a new cluster
+3. Get connection string
+4. Add to backend `.env` as `MONGODB_URI`
 
-GET  /api/complaint/user
-  - Returns: User's complaints
-  - Access: Authenticated users
+---
 
-PUT  /api/complaint/:id/response
-  - Body: adminResponse, status
-  - Access: Admin only
-💻 Frontend Architecture
-Page Structure
-1. WhatsApp Reports Page (/whatsapp-reports)
-Purpose: User's personal campaign dashboard
+## 🔐 Environment Variables
 
-Features:
+### Backend Configuration
 
-View all campaigns created by logged-in user
+Create `backend/.env`:
 
-Campaign table with pagination (10/25/50 entries)
-
-Date range filter (start date - end date)
-
-View campaign details modal
-
-Download individual campaign as Excel
-
-Real-time download status with loading spinner
-
-Error handling with auto-dismiss notifications
-
-Components:
-
-Campaign table (ID, Name, Message, Created By, Mobile Count, Date, Actions)
-
-Date filter section with Calendar icon
-
-Pagination controls (Previous/Next + page numbers)
-
-Details modal (user info + campaign info + statistics)
-
-Download button (table row + modal)
-
-2. All Campaigns Page (/all-campaigns)
-Purpose: Admin-only view of all system campaigns
-
-Features:
-
-View latest 50 campaigns from all users (sorted by date desc)
-
-Same UI as WhatsApp Reports
-
-Shows campaign creator information
-
-Excel export per campaign
-
-Date filtering (filters within 50 campaigns)
-
-No "Add Campaign" button
-
-Access Control: Admin role only (403 error if not admin)
-
-3. Send WhatsApp Page (/send-whatsapp) (Inferred)
-Purpose: Create new WhatsApp campaigns
-
-Features:
-
-Campaign name input
-
-Message text area
-
-Media upload (image/video)
-
-Mobile numbers input (bulk or individual)
-
-Country code selector
-
-Phone button configuration (text + number)
-
-Link button configuration (text + URL)
-
-Form validation
-
-Cloudinary upload integration
-
-🎨 UI/UX Design System
-Design Language
-Theme: Glassmorphism with backdrop blur effects
-
-Color Palette
-Primary Green: bg-green-500/80 - Success, primary actions
-
-Blue: bg-blue-500/60 - Secondary actions, badges
-
-Red: bg-red-500 - Errors, inactive status
-
-Gray: bg-gray-500 - Deleted status, disabled
-
-White/Transparent: bg-white/40 - Glassmorphism cards
-
-Purple: bg-purple-500 - Statistics sections
-
-Component Patterns
-Cards
-css
-bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl
-Buttons (Primary)
-css
-bg-green-500/80 backdrop-blur-md text-white font-bold rounded-xl 
-border border-white/30 shadow-lg hover:bg-green-600/80
-Buttons (Secondary)
-css
-bg-blue-500/60 backdrop-blur-md text-white font-semibold rounded-xl 
-border border-white/30 hover:bg-blue-600/60
-Tables
-Header: border-b-2 border-white/60, uppercase font-bold text
-
-Rows: border-b border-white/30 hover:bg-white/20
-
-Alternating row colors for better readability
-
-Modals
-css
-Fixed overlay: bg-black/50 backdrop-blur-sm
-Modal content: bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-green-500
-Typography
-Headers: text-3xl font-bold text-black
-
-Subheaders: text-xl font-bold
-
-Body: text-sm font-semibold text-black
-
-Labels: text-xs font-bold uppercase
-
-Responsive Design
-Mobile-first approach
-
-Flexbox layouts with flex-wrap
-
-Grid layouts: grid-cols-1 md:grid-cols-2/3
-
-Overflow handling: overflow-x-auto for tables
-
-Max-width constraints on text columns
-
-📊 Features Deep Dive
-1. Campaign Management
-Campaign Creation
-User fills form with campaign details
-
-Optional media upload to Cloudinary
-
-Mobile numbers validated (bulk import or manual entry)
-
-Campaign saved to database
-
-Campaign ID added to user's allCampaign array
-
-Campaign Viewing
-Personal View: Users see only their campaigns
-
-Admin View: Admins see all campaigns (latest 50)
-
-Sorting: Most recent first (createdAt DESC)
-
-Filtering: Date range filter (client-side for performance)
-
-Campaign Details Modal
-Structure:
-
-User Information Section (Blue gradient card)
-
-Company Name, Email, Phone, Role, Status, Member Since
-
-Campaign Information Section (Green gradient card)
-
-Campaign ID, Name, Created By, Recipients Count, Created Date
-
-Campaign Media (image preview with URL)
-
-Campaign Message (full text, whitespace preserved)
-
-Campaign Statistics Section (Purple gradient card)
-
-Total Recipients (large number display)
-
-Character Count
-
-SMS Parts (message length / 160)
-
-2. Excel Export System
-Export Functionality
-Endpoint: GET /api/dashboard/export-campaign/:campaignId
-
-Excel File Structure:
-
-Columns: Campaign Name, Message, Phone Button Text, Phone Button Number, Link Button Text, Link Button URL, Created By, Phone Number, Country Code, Media URL, Created Date
-
-Rows: One row per mobile number (campaign details repeated)
-
-Styling:
-
-Header row: Green background, bold text, centered
-
-Alternating row colors (light gray)
-
-All cells bordered
-
-Auto-column width
-
-File Naming: {CampaignName}_{YYYY-MM-DD}.xlsx
-
-Download Flow:
-
-User clicks Download button
-
-Loading state activated (spinner shown)
-
-Fetch request to export endpoint
-
-Blob created from response
-
-Temporary link element created
-
-File download triggered
-
-Cleanup (link removed, URL revoked)
-
-Loading state cleared
-
-Error Handling:
-
-Permission check (403 if not owner/admin)
-
-Campaign validation (404 if not found)
-
-Error notification with auto-dismiss (5 seconds)
-
-Download button disabled during active download
-
-3. Date Filtering
-Filter Implementation
-Type: Client-side filtering
-
-UI Components:
-
-Two date inputs (start date, end date)
-
-Reset button to clear filters
-
-Results counter ("Showing X to Y of Z campaigns")
-
-Logic:
-
-typescript
-- Filter campaigns where:
-  - campaignDate >= startDate (00:00:00)
-  - campaignDate <= endDate (23:59:59)
-- Reset pagination to page 1 on filter change
-4. Pagination System
-Configuration
-Items per page: Selectable (10, 25, 50)
-
-Page numbers: Shows up to 5 page buttons
-
-Navigation: Previous/Next buttons + direct page selection
-
-Smart Page Display Logic
-typescript
-if (totalPages <= 5) {
-  show pages 1-5
-} else if (currentPage <= 3) {
-  show pages 1-5
-} else if (currentPage >= totalPages - 2) {
-  show last 5 pages
-} else {
-  show currentPage - 2 to currentPage + 2
-}
-Pagination Reset
-Automatically resets to page 1 when:
-
-Items per page changed
-
-Date filter applied
-
-Date filter cleared
-
-5. Complaint Management System
-User Complaints
-Users can create complaints with subject + description
-
-View complaint status (pending/in-progress/resolved)
-
-View admin responses
-
-Track complaint history
-
-Admin Complaint Management
-View all complaints
-
-Respond to complaints
-
-Update complaint status
-
-Track resolution time
-
-🔧 Technical Implementation Details
-File Upload with Multer & Cloudinary
-Process Flow
-Client: File selected via file input
-
-Multer Middleware: Processes multipart/form-data
-
-Upload to Cloudinary: File uploaded to cloud storage
-
-URL Storage: Cloudinary URL saved in database
-
-Campaign Reference: Media URL included in campaign document
-
-Configuration
-typescript
-- File size limit: (configurable)
-- Allowed file types: images (jpg, png), videos
-- Storage: Cloudinary (not local)
-- Field name: 'media' or 'image'
-TypeScript Integration
-Type Definitions
-Frontend:
-
-Campaign interface with all properties
-
-UserData interface for user information
-
-ReportsData interface for API responses
-
-Set<string> for tracking download states
-
-Backend:
-
-Request/Response types from Express
-
-Mongoose schema types
-
-Custom type guards for user roles
-
-Error handling with proper typing
-
-Benefits
-Type safety in API calls
-
-Autocomplete in IDE
-
-Early error detection
-
-Better refactoring support
-
-State Management Patterns
-Local State (useState)
-Form inputs
-
-Loading states
-
-Error messages
-
-Modal visibility
-
-Selected items
-
-Download tracking
-
-Derived State
-Filtered campaigns (computed from date filters)
-
-Paginated data (computed from current page)
-
-Total pages (computed from filtered length)
-
-Callbacks (useCallback)
-API fetch functions to prevent unnecessary re-renders
-
-Memoized for performance optimization
-
-Effects (useEffect)
-Data fetching on component mount
-
-Pagination reset on filter changes
-
-Auto-dismiss error notifications
-
-Cleanup functions for timers
-
-🔒 Security Implementation
-Authentication Security
-Password Hashing: Bcrypt for password encryption
-
-JWT Secrets: Environment variable configuration
-
-HTTP-Only Cookies: Prevents XSS attacks
-
-Credentials Include: Secure cookie transmission
-
-Authorization Checks
-Middleware Level: isLoggedIn validates token
-
-Route Level: Role-based access control
-
-Resource Level: Ownership verification for campaigns
-
-Data Validation
-Backend Validation: Mongoose schema validation
-
-Frontend Validation: Form validation before submission
-
-Type Checking: TypeScript compile-time validation
-
-Error Handling
-Try-Catch Blocks: All async operations wrapped
-
-Consistent Error Responses: Standard JSON error format
-
-No Sensitive Data: Error messages sanitized
-
-Logging: Console errors for debugging (server-side)
-
-📱 Responsive Design Strategy
-Breakpoints
-Mobile: Default (< 768px)
-
-Tablet: md: prefix (>= 768px)
-
-Desktop: Implicit large screens
-
-Mobile-First Approach
-typescript
-Default: Single column, stacked layout
-md: breakpoint: Multi-column grids, side-by-side elements
-Responsive Components
-Tables
-Horizontal scroll on mobile (overflow-x-auto)
-
-Full width container
-
-Min-width on columns to prevent squishing
-
-Modal
-Full screen on mobile (with padding)
-
-Max-width constrained on desktop (5xl)
-
-Scrollable content (max-h-[90vh] overflow-y-auto)
-
-Buttons
-Full width on mobile (flexbox wrap)
-
-Inline on desktop
-
-Grid Layouts
-typescript
-grid-cols-1        // Mobile: 1 column
-md:grid-cols-2     // Tablet: 2 columns
-md:grid-cols-3     // Desktop: 3 columns
-🚦 User Flows
-1. Campaign Creation Flow
-text
-1. User navigates to /send-whatsapp
-2. Fills campaign form:
-   - Campaign name
-   - Message text
-   - Upload media (optional)
-   - Add mobile numbers
-   - Configure buttons (optional)
-3. Submits form
-4. Backend validation
-5. Media uploaded to Cloudinary
-6. Campaign saved to database
-7. Campaign ID added to user's allCampaign array
-8. Success notification
-9. Redirect to /whatsapp-reports
-2. View Campaign Details Flow
-text
-1. User on /whatsapp-reports or /all-campaigns
-2. Clicks Eye icon on campaign row
-3. Modal opens with loading state
-4. Campaign data populated in modal
-5. Three sections displayed:
-   - User Information
-   - Campaign Information
-   - Campaign Statistics
-6. User can download Excel from modal
-7. User closes modal
-3. Excel Export Flow
-text
-1. User clicks Download button (table or modal)
-2. Button shows loading spinner
-3. Fetch request to /api/dashboard/export-campaign/:id
-4. Backend:
-   - Validates user permission
-   - Fetches campaign data
-   - Generates Excel with ExcelJS
-   - Sends file as blob
-5. Frontend:
-   - Receives blob
-   - Creates download link
-   - Triggers browser download
-   - Cleans up resources
-6. Success: File downloaded
-   Error: Notification displayed
-4. Admin All Campaigns Flow
-text
-1. Admin logs in
-2. Navigates to /all-campaigns
-3. System checks role (403 if not admin)
-4. Fetches latest 50 campaigns
-5. Displays campaigns with creator info
-6. Admin can:
-   - View any campaign details
-   - Download any campaign Excel
-   - Filter by date
-   - Paginate through results
-🎯 Performance Optimizations
-Frontend Optimizations
-useCallback: Memoized fetch functions
-
-Client-side Filtering: No API calls for date filters
-
-Pagination: Limited data rendering (10-50 items)
-
-Lazy Loading: Modal content only when opened
-
-Debouncing: (Could be added for search inputs)
-
-Backend Optimizations
-Lean Queries: .lean() for faster MongoDB queries
-
-Selective Population: Only populate needed fields
-
-Indexing: (Should be added on createdAt, userId fields)
-
-Limit Queries: .limit(50) for all-campaigns
-
-Sorting in Database: .sort() on indexed fields
-
-Database Optimizations
-References: ObjectId references vs embedded documents
-
-Array of IDs: User's allCampaign array for quick lookup
-
-Timestamps: Automatic createdAt/updatedAt
-
-Lean Documents: No unnecessary Mongoose hydration
-
-🐛 Error Handling Strategy
-Frontend Error Handling
-Network Errors
-typescript
-try {
-  const response = await fetch(...)
-  if (!response.ok) throw new Error(...)
-} catch (err) {
-  setError('Network error. Please try again.')
-  console.error(err)
-}
-Display Errors
-Error state in component
-
-Red notification banner
-
-Auto-dismiss after 5 seconds
-
-Manual dismiss with X button
-
-Download Errors
-Separate downloadError state
-
-Specific error messages
-
-Button remains functional after error
-
-No page reload required
-
-Backend Error Handling
-Standard Error Response
-typescript
-{
-  success: false,
-  message: 'Descriptive error message'
-}
-HTTP Status Codes
-401: Unauthorized (no token)
-
-403: Forbidden (wrong role)
-
-404: Not found (campaign/user)
-
-500: Internal server error
-
-Error Logging
-typescript
-console.error('Error in {controllerName}:', error)
-🧪 Testing Considerations
-API Testing
-Tool: Postman
-
-Endpoints: All routes tested with various scenarios
-
-Authentication: JWT token in cookies
-
-File Uploads: Multipart form data testing
-
-Frontend Testing (Recommended)
-Component rendering tests
-
-User interaction tests (button clicks, form submissions)
-
-API integration tests (mocked responses)
-
-Responsive design tests
-
-Backend Testing (Recommended)
-Unit tests for controllers
-
-Integration tests for API routes
-
-Database operation tests
-
-Authentication/authorization tests
-
-📦 Project Structure
-Frontend Structure
-text
-src/
-├── components/
-│   ├── WhatsAppReports.tsx
-│   ├── AllCampaigns.tsx
-│   ├── SendWhatsApp.tsx (inferred)
-│   └── ...other components
-├── interfaces/
-│   └── types.ts (Campaign, UserData, etc.)
-├── utils/
-│   └── api.ts (API helper functions)
-├── App.tsx
-└── main.tsx
-Backend Structure
-text
-src/
-├── controllers/
-│   ├── auth.controller.ts
-│   ├── campaign.controller.ts
-│   ├── dashboard.controller.ts
-│   └── complaint.controller.ts
-├── models/
-│   ├── User.model.ts
-│   ├── Campaign.model.ts
-│   ├── Complaint.model.ts
-│   └── Transaction.model.ts
-├── middleware/
-│   ├── auth.middleware.ts (isLoggedIn)
-│   └── multer.config.ts
-├── routes/
-│   ├── auth.routes.ts
-│   ├── campaign.routes.ts
-│   ├── dashboard.routes.ts
-│   └── complaint.routes.ts
-├── utils/
-│   ├── cloudinary.config.ts
-│   └── jwt.utils.ts
-└── server.ts
-🔄 Data Flow Architecture
-Campaign Creation Data Flow
-text
-User Input (Frontend)
-    ↓
-Form Submission
-    ↓
-Multer Middleware (File Processing)
-    ↓
-Cloudinary Upload (Media Storage)
-    ↓
-Campaign Controller
-    ↓
-Mongoose Model (Validation)
-    ↓
-MongoDB Database
-    ↓
-User Model Update (allCampaign array)
-    ↓
-Success Response
-    ↓
-Frontend Update (Redirect/Notification)
-Campaign Retrieval Data Flow
-text
-User Request (Frontend)
-    ↓
-Auth Middleware (JWT Validation)
-    ↓
-Dashboard Controller
-    ↓
-MongoDB Query (with populate)
-    ↓
-Data Formatting
-    ↓
-JSON Response
-    ↓
-Frontend State Update
-    ↓
-UI Render
-Excel Export Data Flow
-text
-Download Button Click
-    ↓
-Auth Check (Middleware)
-    ↓
-Permission Check (Controller)
-    ↓
-Campaign Fetch (with user data)
-    ↓
-ExcelJS Workbook Creation
-    ↓
-Worksheet Population
-    ↓
-Styling Application
-    ↓
-Binary Buffer Generation
-    ↓
-Stream to Response
-    ↓
-Browser Download
-🌟 Key Features Summary
-User Features
-✅ Create WhatsApp campaigns with media
-✅ View personal campaign history
-✅ Download campaign data as Excel
-✅ Filter campaigns by date range
-✅ Paginate through campaigns
-✅ View detailed campaign statistics
-✅ Submit and track complaints
-✅ Responsive mobile interface
-
-Admin Features
-✅ View all system campaigns (latest 50)
-✅ Access any user's campaign details
-✅ Export any campaign data
-✅ Manage user complaints
-✅ View user information
-✅ Role-based access control
-
-Technical Features
-✅ JWT-based authentication
-✅ Role-based authorization
-✅ File upload to Cloudinary
-✅ Excel generation and download
-✅ TypeScript for type safety
-✅ Glassmorphism UI design
-✅ Client-side filtering and pagination
-✅ Error handling with notifications
-✅ Responsive design for all devices
-
-🚀 Deployment Considerations
-Environment Variables
-Frontend (.env):
-
-text
-VITE_API_URL=http://localhost:8080
-Backend (.env):
-
-text
+```env
+# Server Configuration
 PORT=8080
-MONGODB_URI=mongodb://...
-JWT_SECRET=your-secret-key
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-Build Commands
-Frontend:
+NODE_ENV=development
 
-bash
+# Database
+MONGODB_URI=mongodb://localhost:27017/whatsapp-campaigner
+# For MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/whatsapp-campaigner
+
+# JWT Configuration
+JWT_SECRET=your_super_secret_jwt_key_here_minimum_32_characters_long
+JWT_EXPIRE=7d
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# CORS
+FRONTEND_URL=http://localhost:5173
+# For production: https://whats-app-campaigner.vercel.app
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Cookie Configuration
+COOKIE_EXPIRE=7
+```
+
+### Frontend Configuration
+
+Create `frontend/.env`:
+
+```env
+# API Configuration
+VITE_API_URL=http://localhost:8080/api
+# For production: https://your-backend-url.onrender.com/api
+
+# Application
+VITE_APP_NAME=WhatsApp Campaigner
+VITE_APP_VERSION=1.0.0
+
+# Feature Flags (optional)
+VITE_ENABLE_ANALYTICS=false
+VITE_ENABLE_DEBUG=true
+```
+
+---
+
+## 💻 Running the Application
+
+### Development Mode
+
+#### Option 1: Run Separately (Recommended)
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+npm run dev
+# Server starts at http://localhost:8080
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+# Application starts at http://localhost:5173
+```
+
+#### Option 2: Run Concurrently
+
+Create `package.json` in root:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install-all": "cd backend && npm install && cd ../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
+```
+
+Then run:
+```bash
+npm install
+npm run dev
+```
+
+### Accessing the Application
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8080/api
+- **API Health Check**: http://localhost:8080/api/health
+
+---
+
+## 🏗️ Build & Deployment
+
+### Building for Production
+
+#### Backend Build
+
+```bash
+cd backend
+
+# Clean previous build
+npm run clean
+
+# Compile TypeScript to JavaScript
 npm run build
-# Outputs to dist/
-Backend:
 
-bash
+# Test production build locally
+npm start
+```
+
+#### Frontend Build
+
+```bash
+cd frontend
+
+# Run linter
+npm run lint
+
+# Build for production
 npm run build
-# TypeScript compiled to JavaScript
-Production Checklist
- Environment variables configured
 
- MongoDB connection secured
-
- JWT secret rotated
-
- Cloudinary credentials set
-
- CORS configured properly
-
- Rate limiting enabled
-
- Error logging setup
-
- HTTPS enabled
-
- Cookie security flags set
-
-📈 Future Enhancements (Potential)
-Features You Might Add
-Search Functionality: Search campaigns by name/message
-
-Bulk Actions: Delete/export multiple campaigns
-
-Campaign Templates: Save and reuse message templates
-
-Scheduling: Schedule campaigns for future sending
-
-Analytics Dashboard: Charts and graphs for campaign performance
-
-User Management: Admin panel to manage users
-
-Transaction History: View credits/debits
-
-Notification System: Real-time notifications for complaints
-
-API Rate Limiting: Prevent abuse
-
-Audit Logs: Track all system actions
-
-Technical Improvements
-Redis Caching: Cache frequently accessed data
-
-WebSocket: Real-time updates
-
-Queue System: Background job processing for campaigns
-
-Database Indexing: Optimize query performance
-
-Unit Tests: Comprehensive test coverage
-
-CI/CD Pipeline: Automated deployment
-
-Monitoring: Application performance monitoring
-
-Backup System: Automated database backups
-
-📝 Code Quality & Best Practices
-Naming Conventions
-Components: PascalCase (WhatsAppReports)
-
-Functions: camelCase (handleDownloadExcel)
-
-Constants: UPPER_SNAKE_CASE (API_URL)
-
-Interfaces: PascalCase (Campaign, UserData)
-
-Files: kebab-case or PascalCase
-
-Code Organization
-Logical component grouping
-
-Separation of concerns (UI vs logic)
-
-Reusable utility functions
-
-Type definitions in separate file/section
-
-Consistent file structure
-
-TypeScript Usage
-Strict type checking enabled
-
-No any types (minimal usage)
-
-Interface definitions for all data structures
-
-Type guards for runtime checks
-
-Proper async/await typing
-
-Error Handling
-Try-catch for all async operations
-
-Descriptive error messages
-
-Consistent error response format
-
-User-friendly error display
-
-Server-side error logging
-
-🎓 Learning & Development Notes
-Your Development Approach
-Learning Style: Trial and error, building by doing
-
-Problem-Solving: Iterative debugging with testing
-
-Preference: Backend-focused (but full-stack capable)
-
-Tool: Postman for API testing
-
-Workflow: Code → Test → Fix → Repeat
-
-Project Evolution
-Started with basic MERN structure
-
-Added authentication with JWT
-
-Implemented campaign management
-
-Built complaint system
-
-Added Excel export functionality
-
-Created admin dashboard views
-
-Refined UI with glassmorphism
-
-Mobile responsive optimization
-
-Skills Demonstrated
-✅ Full-stack MERN development
-✅ TypeScript integration (frontend + backend)
-✅ Database modeling with Mongoose
-✅ JWT authentication implementation
-✅ File upload and cloud storage
-✅ Excel file generation
-✅ Responsive UI design
-✅ State management in React
-✅ API design and documentation
-✅ Role-based access control
-
-📊 System Metrics & Scale
-Current Capacity
-Campaigns per User: Unlimited (array reference)
-
-Latest Campaigns View: 50 campaigns
-
-Mobile Numbers per Campaign: Unlimited (array)
-
-File Upload Size: Configurable via Multer
-
-Pagination Options: 10/25/50 items
-
-Database Relationships
-User → Campaigns: One-to-Many (via allCampaign array)
-
-User → Complaints: One-to-Many (via allComplaint array)
-
-Campaign → User: Many-to-One (via createdBy reference)
-
-Complaint → User: Many-to-One (via userId reference)
+# Preview production build
+npm run preview
+```
+
+---
+
+## 🌐 Deployment Guide
+
+### Backend Deployment (Render)
+
+1. **Create Web Service**
+   - Go to [Render Dashboard](https://dashboard.render.com/)
+   - Click "New +" → "Web Service"
+   - Connect GitHub repository
+
+2. **Configure Settings**
+   ```
+   Build Command: cd backend && npm install && npm run build
+   Start Command: cd backend && npm start
+   ```
+
+3. **Environment Variables**
+   - Add all variables from backend `.env`
+   - Set `NODE_ENV=production`
+   - Update `FRONTEND_URL` to Vercel domain
+
+4. **Deploy**
+   - Auto-deploys on push to main
+   - Note your URL: `https://your-app.onrender.com`
+
+### Frontend Deployment (Vercel)
+
+1. **Via Vercel Dashboard**
+   - Go to [Vercel](https://vercel.com/dashboard)
+   - Import GitHub repository
+   - Configure:
+     ```
+     Framework: Vite
+     Root Directory: frontend
+     Build Command: npm run build
+     Output Directory: dist
+     ```
+
+2. **Environment Variables**
+   - Add frontend `.env` variables
+   - Update `VITE_API_URL` to Render backend URL
+
+3. **Deploy**
+   - Click "Deploy"
+   - Live at `https://your-app.vercel.app`
+
+**OR via CLI:**
+```bash
+cd frontend
+vercel --prod
+```
+
+### Post-Deployment Checklist
+
+- [ ] Update CORS settings with production URLs
+- [ ] Test authentication flow
+- [ ] Verify database connections
+- [ ] Check API endpoints
+- [ ] Monitor error logs
+- [ ] Test file uploads
+- [ ] Verify email notifications (if any)
+
+---
+
+## 📁 Project Structure
+
+```
+WhatsApp-Campaigner/
+├── backend/
+│   ├── src/
+│   │   ├── app.ts                    # Application entry point
+│   │   ├── config/
+│   │   │   ├── db.ts                 # Database configuration
+│   │   │   └── cloudinary.ts         # Cloudinary setup
+│   │   ├── models/
+│   │   │   ├── User.ts               # User model & schema
+│   │   │   ├── Campaign.ts           # Campaign model
+│   │   │   ├── Complaint.ts          # Complaint model
+│   │   │   ├── Transaction.ts        # Transaction model
+│   │   │   └── Business.ts           # Business model
+│   │   ├── controllers/
+│   │   │   ├── authController.ts     # Authentication logic
+│   │   │   ├── campaignController.ts # Campaign CRUD
+│   │   │   ├── userController.ts     # User management
+│   │   │   ├── complaintController.ts# Complaint handling
+│   │   │   └── dashboardController.ts# Dashboard data
+│   │   ├── routes/
+│   │   │   ├── authRoutes.ts         # Auth endpoints
+│   │   │   ├── campaignRoutes.ts     # Campaign endpoints
+│   │   │   ├── userRoutes.ts         # User endpoints
+│   │   │   └── complaintRoutes.ts    # Complaint endpoints
+│   │   ├── middleware/
+│   │   │   ├── auth.ts               # JWT verification
+│   │   │   ├── roleCheck.ts          # Role-based access
+│   │   │   └── errorHandler.ts       # Global error handler
+│   │   └── utils/
+│   │       ├── generateToken.ts      # JWT generation
+│   │       └── validators.ts         # Input validation
+│   ├── dist/                         # Compiled output
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env
+│
+├── frontend/
+│   ├── src/
+│   │   ├── main.tsx                  # App entry point
+│   │   ├── App.tsx                   # Root component
+│   │   ├── pages/
+│   │   │   ├── Dashboard.tsx         # Main dashboard
+│   │   │   ├── SendWhatsApp.tsx      # Campaign creation
+│   │   │   ├── Credit.tsx            # Credit management
+│   │   │   ├── ManageReseller.tsx    # Reseller admin
+│   │   │   ├── ManageUser.tsx        # User admin
+│   │   │   ├── WhatsAppReport.tsx    # Campaign reports
+│   │   │   ├── AllCampaign.tsx       # Campaign list
+│   │   │   ├── News.tsx              # News feed
+│   │   │   ├── Review.tsx            # Reviews page
+│   │   │   ├── Complaints.tsx        # Complaints system
+│   │   │   └── ManageBusiness.tsx    # Business settings
+│   │   ├── components/
+│   │   │   ├── Navbar.tsx            # Top navigation
+│   │   │   ├── Sidebar.tsx           # Side navigation
+│   │   │   ├── ProtectedRoute.tsx    # Auth guard
+│   │   │   └── common/               # Reusable components
+│   │   ├── context/
+│   │   │   └── AuthContext.tsx       # Auth state management
+│   │   ├── hooks/
+│   │   │   └── useAuth.ts            # Auth custom hook
+│   │   ├── services/
+│   │   │   └── api.ts                # API client
+│   │   ├── types/
+│   │   │   └── index.ts              # TypeScript definitions
+│   │   └── styles/
+│   │       └── index.css             # Global styles
+│   ├── public/                       # Static assets
+│   ├── dist/                         # Production build
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   └── .env
+│
+├── screenshots/                      # Application screenshots
+├── README.md
+├── LICENSE
+└── .gitignore
+```
+
+---
+
+## 📡 API Documentation
+
+### Authentication Endpoints
+
+```
+POST   /api/auth/register        Register new user
+POST   /api/auth/login           User login
+POST   /api/auth/logout          User logout
+GET    /api/auth/profile         Get user profile
+PUT    /api/auth/profile         Update user profile
+```
+
+### Campaign Endpoints
+
+```
+GET    /api/campaigns            Get all campaigns
+POST   /api/campaigns            Create new campaign
+GET    /api/campaigns/:id        Get campaign by ID
+PUT    /api/campaigns/:id        Update campaign
+DELETE /api/campaigns/:id        Delete campaign
+GET    /api/campaigns/reports    Get campaign reports
+```
+
+### User Management Endpoints
+
+```
+GET    /api/users                Get all users (Admin)
+GET    /api/users/:id            Get user by ID
+PUT    /api/users/:id            Update user
+DELETE /api/users/:id            Delete user
+POST   /api/users/credits        Add credits
+```
+
+### Complaint Endpoints
+
+```
+GET    /api/complaints           Get all complaints
+POST   /api/complaints           Create complaint
+PUT    /api/complaints/:id       Update complaint status
+GET    /api/complaints/:id       Get complaint details
+```
+
+---
+
+## 📸 Screenshots
+
+### Dashboard
+*Main dashboard with campaign analytics and statistics*
+
+### Send WhatsApp Campaign
+*Create and send WhatsApp campaigns to targeted users*
+
+### Credit Management
+*Manage user credits and transaction history*
+
+### User Management
+*Admin panel for user and reseller oversight*
+
+### Campaign Reports
+*Detailed analytics with delivery status and metrics*
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues & Solutions
+
+#### MongoDB Connection Error
+```
+Error: connect ECONNREFUSED 127.0.0.1:27017
+```
+**Solution:**
+```bash
+# Check if MongoDB is running
+sudo systemctl status mongod
+
+# Start MongoDB
+sudo systemctl start mongod
+```
+
+#### Port Already in Use
+```
+Error: listen EADDRINUSE: address already in use :::8080
+```
+**Solution:**
+```bash
+# Find and kill process
+lsof -i :8080
+kill -9 <PID>
+
+# Or use different port in .env
+PORT=8081
+```
+
+#### TypeScript Compilation Errors
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Rebuild
+rm -rf dist
+npm run build
+```
+
+#### CORS Errors
+- Verify `FRONTEND_URL` in backend `.env`
+- Check CORS middleware allows your origin
+- Ensure `credentials: true` in frontend API calls
+
+#### Environment Variables Not Loading
+- Restart dev server after changing `.env`
+- Check variable names (case-sensitive)
+- Verify `.env` file location
+- Don't commit `.env` to version control
+
+---
+
+## 🧪 Testing
+
+### Manual Testing
+
+```bash
+# Backend health check
+curl http://localhost:8080/api/health
+
+# Test authentication
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+### Type Checking
+
+```bash
+# Frontend
+cd frontend
+npx tsc --noEmit
+
+# Backend
+cd backend
+npx tsc --noEmit
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit your changes**
+   ```bash
+   git commit -m "Add: amazing new feature"
+   ```
+4. **Push to branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. **Open a Pull Request**
+
+### Code Style Guidelines
+
+- ✅ Use TypeScript for all code
+- ✅ Follow ESLint configuration
+- ✅ Write meaningful commit messages
+- ✅ Add comments for complex logic
+- ✅ Keep components small and focused
+- ✅ Write unit tests for new features
+
+### Commit Message Format
+
+```
+Type: Brief description
+
+Types: Add, Update, Fix, Remove, Refactor, Docs, Style, Test
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👨‍💻 Author
+
+**M0rs-Ruki**
+
+- GitHub: [@M0rs-Ruki](https://github.com/M0rs-Ruki)
+- Project: [WhatsApp Campaigner](https://github.com/M0rs-Ruki/WhatsApp-Campaigner)
+- Live Demo: [whats-app-campaigner.vercel.app](https://whats-app-campaigner.vercel.app/)
+
+---
+
+## 🙏 Acknowledgments
+
+- React Team for the powerful UI framework
+- MongoDB for the flexible database solution
+- Vercel and Render for excellent hosting services
+- Open source community for amazing libraries
+- All contributors and users of this project
+
+---
+
+## 📞 Support
+
+Need help? Here's how to get support:
+
+- 📖 Check the [Documentation](#-table-of-contents)
+- 🐛 [Open an Issue](https://github.com/M0rs-Ruki/WhatsApp-Campaigner/issues)
+- 💬 Use the in-app support page
+- 📧 Contact the development team
+
+---
+
+## 🗺️ Roadmap
+
+### Upcoming Features
+
+- [ ] Email notifications for campaigns
+- [ ] Multi-language support
+- [ ] Advanced analytics dashboard
+- [ ] Bulk operations for campaigns
+- [ ] API rate limiting per user
+- [ ] Two-factor authentication
+- [ ] Mobile app (React Native)
+- [ ] Webhook integrations
+
+---
+
+## 📊 Project Stats
+
+![GitHub Stars](https://img.shields.io/github/stars/M0rs-Ruki/WhatsApp-Campaigner?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/M0rs-Ruki/WhatsApp-Campaigner?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/M0rs-Ruki/WhatsApp-Campaigner)
+![GitHub Pull Requests](https://img.shields.io/github/issues-pr/M0rs-Ruki/WhatsApp-Campaigner)
+
+---
+
+**Made with ❤️ by M0rs-Ruki**
+
+*Last Updated: October 2025*
