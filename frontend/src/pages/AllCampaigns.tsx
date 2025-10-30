@@ -182,6 +182,24 @@ const AllCampaigns = () => {
       return dateString;
     }
   };
+  const handleDownloadImage = async (imageUrl: string): Promise<void> => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'campaign-image.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
 
   // Truncate message
   const truncateMessage = (message: string, maxLength: number = 100) => {
@@ -597,8 +615,39 @@ return (
                       <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Member Since</span>
                       <p className="text-black font-semibold text-xs sm:text-sm mt-1">{formatDate(selectedCampaign.userData.createdAt)}</p>
                     </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Campaign ID</span>
+                      <p className="text-black font-semibold text-xs sm:text-sm break-all mt-1">{selectedCampaign.campaignId}</p>
+                    </div>
                   </div>
                 </div>
+                {/* CAMPAIGN IMAGE SECTION - Mobile Responsive */}
+                {selectedCampaign.image && (
+                  <div className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl sm:rounded-2xl border sm:border-2 border-purple-400 shadow-lg">
+                    <h4 className="text-base sm:text-lg md:text-xl font-bold text-purple-800 mb-3 sm:mb-4 flex items-center gap-2">
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-600 animate-pulse"></div>
+                      Campaign Media
+                    </h4>
+                    <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border sm:border-2 border-purple-300 shadow-md">
+                      <img
+                        src={selectedCampaign.image}
+                        alt="Campaign media"
+                        className="w-full max-h-[250px] sm:max-h-[350px] md:max-h-[400px] object-contain rounded-lg shadow-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Available";
+                        }}
+                      />
+                      <div className="mt-3 sm:mt-4">
+                        <button
+                          onClick={() => handleDownloadImage(selectedCampaign.image)}
+                          className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-purple-500/80 backdrop-blur-md text-white font-bold text-sm sm:text-base rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-purple-600/80 hover:shadow-xl transition-all text-center active:scale-95"
+                        >
+                          📥 Download Campaign Image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* CAMPAIGN DETAILS & STATS - Same structure as before but with mobile responsive classes */}
                 {/* (Continue with the same pattern as WhatsApp Reports modal) */}
