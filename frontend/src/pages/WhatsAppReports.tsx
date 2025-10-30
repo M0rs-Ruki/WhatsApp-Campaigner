@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ca } from "date-fns/locale";
 
 interface Campaign {
   campaignId: string;
@@ -96,10 +97,30 @@ const WhatsAppReports = () => {
     }
   }, [API_URL]);
 
-
   useEffect(() => {
     fetchReportsData();
   }, [fetchReportsData]);
+
+  const handleDownloadImage = async (imageUrl: string): Promise<void> => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${
+        selectedCampaign?.campaignName || "campaign"
+      }_image.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
 
   // Handle Excel Download
   const handleDownloadExcel = async (campaignId: string) => {
@@ -209,10 +230,9 @@ const WhatsAppReports = () => {
   };
 
   const stripHtmlTags = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]*>/g, '');
+    if (!html) return "";
+    return html.replace(/<[^>]*>/g, "");
   };
-
 
   // Truncate message
   const truncateMessage = (message: string, maxLength: number = 100) => {
@@ -623,11 +643,15 @@ const WhatsAppReports = () => {
                 <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
                   Campaign Details
                 </h3>
-                
+
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => handleDownloadExcel(selectedCampaign.campaignId)}
-                    disabled={downloadingCampaigns.has(selectedCampaign.campaignId)}
+                    onClick={() =>
+                      handleDownloadExcel(selectedCampaign.campaignId)
+                    }
+                    disabled={downloadingCampaigns.has(
+                      selectedCampaign.campaignId
+                    )}
                     className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-500/80 backdrop-blur-md text-white font-bold text-xs sm:text-sm rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                     title="Download Excel"
                   >
@@ -644,7 +668,7 @@ const WhatsAppReports = () => {
                       </>
                     )}
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       setShowDetailsModal(false);
@@ -656,8 +680,6 @@ const WhatsAppReports = () => {
                   </button>
                 </div>
               </div>
-
-
 
               <div className="space-y-4 sm:space-y-5">
                 {/* USER DETAILS SECTION */}
@@ -791,11 +813,15 @@ const WhatsAppReports = () => {
                               "https://via.placeholder.com/600x400?text=Image+Not+Available";
                           }}
                         />
-                        <div className="mt-2 sm:mt-3 p-2 bg-gray-50 rounded-lg">
-                          <p className="text-[10px] sm:text-xs text-gray-600 break-all">
-                            <span className="font-bold">📎 URL:</span>{" "}
-                            {selectedCampaign.image}
-                          </p>
+                        <div className="mt-2 sm:mt-3">
+                          <button
+                            onClick={() =>
+                              handleDownloadImage(selectedCampaign.image)
+                            }
+                            className="block w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-green-500/80 backdrop-blur-md text-white font-bold text-sm sm:text-base rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 hover:shadow-xl transition-all text-center active:scale-95"
+                          >
+                            📥 Download Image
+                          </button>
                         </div>
                       </div>
                     </div>
