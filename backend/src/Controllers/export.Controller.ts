@@ -54,16 +54,16 @@ export const exportCampaignToExcel = async (req: Request, res: Response) => {
         // Define columns (without Entry Type)
         worksheet.columns = [
             { header: 'Campaign Name', key: 'campaignName', width: 30 },
-            { header: 'Message', key: 'message', width: 50 },
+            { header: 'Message', key: 'message', width: 100 },
             { header: 'Phone Button Text', key: 'phoneButtonText', width: 20 },
             { header: 'Phone Button Number', key: 'phoneButtonNumber', width: 20 },
             { header: 'Link Button Text', key: 'linkButtonText', width: 20 },
             { header: 'Link Button URL', key: 'linkButtonUrl', width: 40 },
-            { header: 'Created By', key: 'createdBy', width: 25 },
             { header: 'Country Code', key: 'countryCode', width: 15 },
             { header: 'Phone Number', key: 'phoneNumber', width: 20 },
-            { header: 'Media URL', key: 'mediaUrl', width: 50 },
             { header: 'Created Date', key: 'createdDate', width: 15 },
+            { header: 'Media URL', key: 'mediaUrl', width: 80 },
+            { header: 'Created By', key: 'createdBy', width: 25 },
         ];
 
         // Style header row
@@ -97,11 +97,11 @@ export const exportCampaignToExcel = async (req: Request, res: Response) => {
                 phoneButtonNumber: campaign.phoneButton?.number || '',
                 linkButtonText: campaign.linkButton?.text || '',
                 linkButtonUrl: campaign.linkButton?.url || '',
-                createdBy: createdByName,
                 countryCode: campaign.countryCode,
                 phoneNumber: phoneNumber,
-                mediaUrl: campaign.media || '',
                 createdDate: createdDate,
+                mediaUrl: "Please check the All Campaigns or WhatsApp Report section to download media.",
+                createdBy: createdByName,
             });
         });
 

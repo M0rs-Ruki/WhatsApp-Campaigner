@@ -382,7 +382,7 @@ const SendWhatsapp = () => {
                     {phoneNumberError}
                   </p>
                   <button
-                    onClick={() => {}}
+                    onClick={() => {setPhoneNumberError('');}}
                     className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
                   >
                     <svg
@@ -484,9 +484,10 @@ const SendWhatsapp = () => {
                 type="file"
                 accept="video/*"
                 onChange={(e) => handleFileUpload(e, "video")}
-                disabled={
-                  loading || (selectedFile !== null && fileType !== "video")
-                }
+                // disabled={
+                //   loading || (selectedFile !== null && fileType !== "video")
+                // }
+                disabled={true}
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
@@ -500,9 +501,10 @@ const SendWhatsapp = () => {
                 type="file"
                 accept="application/pdf"
                 onChange={(e) => handleFileUpload(e, "pdf")}
-                disabled={
-                  loading || (selectedFile !== null && fileType !== "pdf")
-                }
+                // disabled={
+                //   loading || (selectedFile !== null && fileType !== "pdf")
+                // }
+                disabled={true}
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-500/60 file:text-white file:text-xs sm:file:text-sm file:font-semibold hover:file:bg-green-600/60 focus:outline-none disabled:opacity-50"
               />
             </div>
@@ -517,7 +519,7 @@ const SendWhatsapp = () => {
                     {fileUploadError}
                   </p>
                   <button
-                    onClick={() => {}}
+                    onClick={() => { setFileUploadError(''); }}
                     className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
                   >
                     <svg
@@ -578,7 +580,7 @@ const SendWhatsapp = () => {
                     {mobileNumberError}
                   </p>
                   <button
-                    onClick={() => {}}
+                    onClick={() => {setMobileNumberError('');}}
                     className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
                   >
                     <svg
