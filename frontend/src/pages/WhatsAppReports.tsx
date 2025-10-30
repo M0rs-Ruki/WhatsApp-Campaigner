@@ -11,7 +11,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ca } from "date-fns/locale";
 
 interface Campaign {
   campaignId: string;
