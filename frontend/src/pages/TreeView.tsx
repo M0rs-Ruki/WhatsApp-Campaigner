@@ -134,11 +134,7 @@ const TreeView = () => {
 
   // Render tree node recursively - Mobile Optimized
   // Render tree node recursively - COMPACT VERSION
-  const renderTreeNode = (
-    node: TreeNode,
-    isLast: boolean = false,
-    depth: number = 0
-  ) => {
+  const renderTreeNode = (node: TreeNode, depth: number = 0) => {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children && node.children.length > 0;
     const roleStyle = getRoleStyle(node.role);
@@ -249,12 +245,8 @@ const TreeView = () => {
                   </p>
                 </div>
                 <div className="space-y-1 sm:space-y-1.5">
-                  {userChildren.map((child, index) =>
-                    renderTreeNode(
-                      child,
-                      index === userChildren.length - 1,
-                      depth + 1
-                    )
+                  {userChildren.map((child) =>
+                    renderTreeNode(child, depth + 1)
                   )}
                 </div>
               </div>
@@ -269,12 +261,8 @@ const TreeView = () => {
                   </p>
                 </div>
                 <div className="space-y-1 sm:space-y-1.5">
-                  {resellerChildren.map((child, index) =>
-                    renderTreeNode(
-                      child,
-                      index === resellerChildren.length - 1,
-                      depth + 1
-                    )
+                  {resellerChildren.map((child) =>
+                    renderTreeNode(child, depth + 1)
                   )}
                 </div>
               </div>
