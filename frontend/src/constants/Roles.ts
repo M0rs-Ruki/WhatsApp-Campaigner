@@ -67,7 +67,7 @@ export enum UserRole {
         {
           label: 'All Campaign',
           path: '/all-campaign',
-          allowedRoles: [UserRole.ADMIN]
+          allowedRoles: [UserRole.ADMIN, UserRole.RESELLER]
         }
       ]
     },
