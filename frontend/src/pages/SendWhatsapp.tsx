@@ -308,7 +308,7 @@ const SendWhatsapp = () => {
       {/* Page Header - Mobile Responsive */}
       <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
-          SEND NEW Campaign
+          SEND NEW CAMPAIGN
         </h2>
       </div>
 
