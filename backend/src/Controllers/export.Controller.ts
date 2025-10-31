@@ -61,10 +61,12 @@ export const exportCampaignToExcel = async (req: Request, res: Response) => {
             { header: 'Link Button URL', key: 'linkButtonUrl', width: 40 },
             { header: 'Country Code', key: 'countryCode', width: 15 },
             { header: 'Phone Number', key: 'phoneNumber', width: 20 },
+            { header: 'Created By', key: 'createdBy', width: 25 },
             { header: 'Created Date', key: 'createdDate', width: 15 },
             { header: 'Media URL', key: 'mediaUrl', width: 80 },
-            { header: 'Created By', key: 'createdBy', width: 25 },
         ];
+
+
 
         // Style header row
         worksheet.getRow(1).font = { bold: true, size: 12 };
