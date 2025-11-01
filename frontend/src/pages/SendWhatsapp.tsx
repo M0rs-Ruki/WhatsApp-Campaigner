@@ -109,7 +109,9 @@ const SendWhatsapp = () => {
     const validPattern = /^[0-9+,\s\n\r]*$/;
 
     if (!validPattern.test(value)) {
-      setMobileNumberError("Only numbers, +, commas, spaces, and line breaks are allowed");
+      setMobileNumberError(
+        "Only numbers, +, commas, spaces, and line breaks are allowed"
+      );
     } else {
       setMobileNumberError("");
     }
@@ -119,7 +121,6 @@ const SendWhatsapp = () => {
       mobileNumbers: value,
     }));
   };
-
 
   const countMobileNumbers = (): number => {
     if (!formData.mobileNumbers.trim()) return 0;
@@ -131,7 +132,6 @@ const SendWhatsapp = () => {
 
     return numbers.length;
   };
-
 
   // Handle phone number input with validation (only numbers and spaces)
   const handlePhoneNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -382,7 +382,9 @@ const SendWhatsapp = () => {
                     {phoneNumberError}
                   </p>
                   <button
-                    onClick={() => {setPhoneNumberError('');}}
+                    onClick={() => {
+                      setPhoneNumberError("");
+                    }}
                     className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
                   >
                     <svg
@@ -519,7 +521,9 @@ const SendWhatsapp = () => {
                     {fileUploadError}
                   </p>
                   <button
-                    onClick={() => { setFileUploadError(''); }}
+                    onClick={() => {
+                      setFileUploadError("");
+                    }}
                     className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
                   >
                     <svg
@@ -580,7 +584,9 @@ const SendWhatsapp = () => {
                     {mobileNumberError}
                   </p>
                   <button
-                    onClick={() => {setMobileNumberError('');}}
+                    onClick={() => {
+                      setMobileNumberError("");
+                    }}
                     className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
                   >
                     <svg
@@ -607,7 +613,8 @@ const SendWhatsapp = () => {
             Number Count
           </label>
           <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black font-semibold">
-            {countMobileNumbers()} {countMobileNumbers() === 1 ? 'number' : 'numbers'}
+            {countMobileNumbers()}{" "}
+            {countMobileNumbers() === 1 ? "number" : "numbers"}
           </div>
         </div>
 
@@ -639,21 +646,105 @@ const SendWhatsapp = () => {
         </div>
       </form>
 
-      <style>{`
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+      {/* Loading Screen - Clean Center Popup */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="w-full max-w-sm sm:max-w-md p-6 sm:p-8 bg-white rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col items-center gap-6 sm:gap-8">
+            {/* Loading Spinner */}
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+              <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 border-r-blue-500 animate-spin"></div>
+            </div>
 
-.animate-slideIn {
-  animation: slideIn 0.3s ease-out forwards;
-}
+            {/* Loading Text */}
+            <div className="text-center">
+              <p className="text-lg sm:text-xl font-bold text-black">
+                Creating Campaign
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
+                Please wait...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal - Clean Center Popup */}
+      {success && !loading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-sm sm:max-w-md p-6 sm:p-8 bg-white rounded-2xl sm:rounded-3xl shadow-2xl">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-green-500/20 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 sm:w-10 sm:h-10 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Success Title */}
+            <h3 className="text-xl sm:text-2xl font-bold text-black text-center mb-2">
+              Success!
+            </h3>
+
+            {/* Success Message */}
+            <p className="text-sm sm:text-base text-gray-600 text-center mb-6 sm:mb-8">
+              {success}
+            </p>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setSuccess("")}
+              className="w-full px-6 py-3 bg-green-500 text-white font-bold text-base rounded-lg hover:bg-green-600 transition-all active:scale-95"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+              @keyframes slideIn {
+                from {
+                  transform: translateX(100%);
+                  opacity: 0;
+                }
+                to {
+                  transform: translateX(0);
+                  opacity: 1;
+                }
+              }
+
+              .animate-slideIn {
+                animation: slideIn 0.3s ease-out forwards;
+              }
+      `}</style>
+
+      <style>{`
+              @keyframes slideIn {
+                from {
+                  transform: translateX(100%);
+                  opacity: 0;
+                }
+                to {
+                  transform: translateX(0);
+                  opacity: 1;
+                }
+              }
+
+              .animate-slideIn {
+                animation: slideIn 0.3s ease-out forwards;
+              }
       `}</style>
     </div>
   );
