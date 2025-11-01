@@ -3,16 +3,21 @@ import { format } from "date-fns";
 import {
   X,
   Eye,
+  Edit2,
   Calendar,
   ChevronLeft,
   ChevronRight,
   Download,
   Loader2,
+  Check,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Campaign {
   campaignId: string;
   campaignName: string;
+  status: string;
+  statusMessage: string;
   message: string;
   createdBy: string;
   mobileNumberCount: number;
@@ -59,6 +64,13 @@ const AllCampaigns = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
     null
   );
+
+  const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
+  const [selectedCampaignForUpdate, setSelectedCampaignForUpdate] =
+    useState<Campaign | null>(null);
+  const [updateStatus, setUpdateStatus] = useState("pending");
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -156,6 +168,51 @@ const AllCampaigns = () => {
       });
     }
   };
+  const handleUpdateCampaignStatus = async () => {
+    if (!selectedCampaignForUpdate) return;
+
+    try {
+      setUpdatingStatus(true);
+      const response = await fetch(
+        `${API_URL}/api/campaigns/stats/${selectedCampaignForUpdate.campaignId}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: updateStatus,
+            statusMessage: updateMessage,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast.success("Campaign status updated successfully!");
+        setShowUpdateStatusModal(false);
+        // Refresh campaigns
+        fetchReportsData();
+      } else {
+        toast.error(result.message || "Failed to update status");
+      }
+    } catch (error) {
+      toast.error("Error updating campaign status");
+      console.error("Update status error:", error);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  // Function to open modal
+  const openUpdateStatusModal = (campaign: Campaign) => {
+    setSelectedCampaignForUpdate(campaign);
+    setUpdateStatus(campaign.status || "pending");
+    setUpdateMessage("");
+    setShowUpdateStatusModal(true);
+  };
 
   // Filter campaigns by date range
   const getFilteredCampaigns = () => {
@@ -190,7 +247,7 @@ const AllCampaigns = () => {
   // Format date
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), "dd-MMM-yyyy hh:mm a");
+      return format(new Date(dateString), "dd-MMM");
     } catch {
       return dateString;
     }
@@ -420,11 +477,19 @@ const AllCampaigns = () => {
                     {campaign.status ? campaign.status.toUpperCase() : "N/A"}
                   </span>
                 </div>
+                <div>Created By: {campaign.createdBy}</div>
                 <div>Date: {formatDate(campaign.createdAt)}</div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 justify-end">
+                <button
+                  onClick={() => openUpdateStatusModal(campaign)}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                >
+                  <Edit2 className="w-3 h-3" />
+                  Edit
+                </button>
                 <button
                   onClick={() => openDetailsModal(campaign)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-green-500 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all text-white text-xs font-semibold active:scale-95"
@@ -469,6 +534,9 @@ const AllCampaigns = () => {
                 </th>
                 <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
                   Mobile Numbers
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Status
                 </th>
                 <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
                   Created At
@@ -526,11 +594,29 @@ const AllCampaigns = () => {
                         {campaign.mobileNumberCount}
                       </span>
                     </td>
+                    <td>
+                      <span
+                        className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs font-bold rounded-full ${getCampaignStatusBadge(
+                          campaign.status
+                        )}`}
+                      >
+                        {campaign.status
+                          ? campaign.status.toUpperCase()
+                          : "N/A"}
+                      </span>
+                    </td>
                     <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold whitespace-nowrap">
                       {formatDate(campaign.createdAt)}
                     </td>
                     <td className="py-3 sm:py-4 px-3 sm:px-4">
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openUpdateStatusModal(campaign)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          Edit
+                        </button>
                         <button
                           onClick={() => openDetailsModal(campaign)}
                           className="p-2 bg-green-500/60 backdrop-blur-sm rounded-lg hover:bg-green-600/80 transition-all"
@@ -741,6 +827,43 @@ const AllCampaigns = () => {
                     </div>
                   </div>
                 </div>
+                {/* CAMPAIGN DETAILS SECTION - Status & Message */}
+                <div className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl border sm:border-2 border-orange-400 shadow-lg">
+                  <h4 className="text-base sm:text-lg md:text-xl font-bold text-orange-800 mb-3 sm:mb-4 flex items-center gap-2">
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-orange-600 animate-pulse"></div>
+                    Campaign Details
+                  </h4>
+                  <div className="space-y-3 sm:space-y-4">
+                    {/* Campaign Status */}
+                    <div>
+                      <span className="text-[10px] sm:text-xs font-bold text-orange-700 uppercase">
+                        Campaign Status
+                      </span>
+                      <p className="mt-1.5">
+                        <span
+                          className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs font-bold rounded-full ${getCampaignStatusBadge(
+                            selectedCampaign.status
+                          )}`}
+                        >
+                          {selectedCampaign.status
+                            ? selectedCampaign.status.toUpperCase()
+                            : "N/A"}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* Status Message */}
+                    <div>
+                      <span className="text-[10px] sm:text-xs font-bold text-orange-700 uppercase">
+                        Admin Message
+                      </span>
+                      <p className="text-black font-semibold text-xs sm:text-sm mt-1.5 p-2.5 sm:p-3 bg-white rounded-lg border border-orange-300">
+                        {selectedCampaign.statusMessage || "No message added"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* CAMPAIGN IMAGE SECTION - Mobile Responsive */}
                 {selectedCampaign.image && (
                   <div className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl sm:rounded-2xl border sm:border-2 border-purple-400 shadow-lg">
@@ -788,6 +911,114 @@ const AllCampaigns = () => {
                   className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg active:scale-95"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showUpdateStatusModal && selectedCampaignForUpdate && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white/95 backdrop-blur-xl rounded-xl sm:rounded-2xl border sm:border-2 border-blue-400 shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 flex items-center justify-between p-4 sm:p-5 md:p-6 border-b border-gray-200 bg-white/80 backdrop-blur-lg rounded-t-xl sm:rounded-t-2xl">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
+                Update Campaign Status
+              </h3>
+              <button
+                onClick={() => setShowUpdateStatusModal(false)}
+                className="p-1.5 sm:p-2 hover:bg-gray-200 rounded-lg transition-all flex-shrink-0"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5">
+              {/* Campaign Info Display */}
+              <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200">
+                <div>
+                  <span className="text-xs sm:text-sm font-bold text-gray-600">
+                    Campaign Name:
+                  </span>
+                  <p className="text-sm sm:text-base font-semibold text-black mt-0.5">
+                    {selectedCampaignForUpdate.campaignName}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs sm:text-sm font-bold text-gray-600">
+                    Current Status:
+                  </span>
+                  <p
+                    className={`text-sm sm:text-base font-semibold mt-0.5 uppercase px-2 py-1 rounded-full text-white w-fit ${getCampaignStatusBadge(
+                      selectedCampaignForUpdate.status
+                    )}`}
+                  >
+                    {selectedCampaignForUpdate.status || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Dropdown */}
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={updateStatus}
+                  onChange={(e) => setUpdateStatus(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-2 border-gray-300 rounded-lg sm:rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-all"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="failed">Failed</option>
+                  <option value="processed">Processed</option>
+                </select>
+              </div>
+
+              {/* Status Message Textarea */}
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-black mb-2">
+                  Status Message
+                </label>
+                <textarea
+                  value={updateMessage}
+                  onChange={(e) => setUpdateMessage(e.target.value)}
+                  placeholder={`message: ${
+                    selectedCampaignForUpdate.statusMessage ||
+                    "No message available"
+                  }`}
+                  rows={4}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-2 border-gray-300 rounded-lg sm:rounded-xl text-xs sm:text-sm text-black placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all resize-none"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 sm:gap-4 pt-3 sm:pt-4">
+                <button
+                  onClick={handleUpdateCampaignStatus}
+                  disabled={updatingStatus}
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-sm sm:text-base rounded-lg sm:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {updatingStatus ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Update Status</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowUpdateStatusModal(false)}
+                  disabled={updatingStatus}
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-300/60 text-black font-bold text-sm sm:text-base rounded-lg sm:rounded-xl hover:bg-gray-400/60 transition-all disabled:opacity-50 active:scale-95"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
