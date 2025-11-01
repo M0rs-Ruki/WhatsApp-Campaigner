@@ -257,7 +257,7 @@ const WhatsAppReports = () => {
       pending: "bg-yellow-500",
       delivered: "bg-green-500",
       failed: "bg-red-500",
-      processed: "bg-blue-500",
+      processing: "bg-blue-500",
     };
     return badges[status.toLowerCase() as keyof typeof badges] || "bg-gray-500";
   };

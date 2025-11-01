@@ -10,7 +10,7 @@ export enum CampaignStats {
   PENDING = "pending",
   DELIVERED = "delivered",
   FAILED = "failed",
-  PROCESSED = "processed",
+  PROCESSING = "processing",
 }
 
 export enum MobileNumberEntryType {

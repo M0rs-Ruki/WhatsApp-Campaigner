@@ -288,7 +288,7 @@ const AllCampaigns = () => {
       pending: "bg-yellow-500",
       delivered: "bg-green-500",
       failed: "bg-red-500",
-      processed: "bg-blue-500",
+      processing: "bg-blue-500",
     };
     return badges[status.toLowerCase() as keyof typeof badges] || "bg-gray-500";
   };
@@ -973,7 +973,7 @@ const AllCampaigns = () => {
                   <option value="pending">Pending</option>
                   <option value="delivered">Delivered</option>
                   <option value="failed">Failed</option>
-                  <option value="processed">Processed</option>
+                  <option value="processing">Processing</option>
                 </select>
               </div>
 
