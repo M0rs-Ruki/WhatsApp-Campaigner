@@ -12,6 +12,10 @@ import {
   Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { UserRole } from "../constants/Roles";
+import { getUserRole } from "../utils/Auth";
+const userRole = getUserRole();
+
 
 interface Campaign {
   campaignId: string;
@@ -483,13 +487,16 @@ const AllCampaigns = () => {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 justify-end">
-                <button
-                  onClick={() => openUpdateStatusModal(campaign)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all text-white text-xs font-semibold active:scale-95"
-                >
-                  <Edit2 className="w-3 h-3" />
-                  Edit
-                </button>
+                {userRole === UserRole.ADMIN && (
+                  <button
+                    onClick={() => openUpdateStatusModal(campaign)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    Edit
+                  </button>
+                )}
+
                 <button
                   onClick={() => openDetailsModal(campaign)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-green-500 backdrop-blur-sm rounded-lg hover:bg-green-600/60 transition-all text-white text-xs font-semibold active:scale-95"
@@ -610,13 +617,16 @@ const AllCampaigns = () => {
                     </td>
                     <td className="py-3 sm:py-4 px-3 sm:px-4">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openUpdateStatusModal(campaign)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all text-white text-xs font-semibold active:scale-95"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                          Edit
-                        </button>
+                        {userRole === UserRole.ADMIN && (
+                          <button
+                            onClick={() => openUpdateStatusModal(campaign)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 backdrop-blur-sm rounded-lg hover:bg-blue-600/60 transition-all text-white text-xs font-semibold active:scale-95"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            Edit
+                          </button>
+                        )}
+
                         <button
                           onClick={() => openDetailsModal(campaign)}
                           className="p-2 bg-green-500/60 backdrop-blur-sm rounded-lg hover:bg-green-600/80 transition-all"
