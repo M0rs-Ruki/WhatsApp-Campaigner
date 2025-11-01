@@ -1,6 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
-import { X, Eye, Calendar, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
+import {
+  X,
+  Eye,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Loader2,
+} from "lucide-react";
 
 interface Campaign {
   campaignId: string;
@@ -30,24 +38,28 @@ interface ReportsData {
 const AllCampaigns = () => {
   const [reportsData, setReportsData] = useState<ReportsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   // Download state
-  const [downloadingCampaigns, setDownloadingCampaigns] = useState<Set<string>>(new Set());
+  const [downloadingCampaigns, setDownloadingCampaigns] = useState<Set<string>>(
+    new Set()
+  );
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+
   // Filters
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   // Modal
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
-  
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Fetch all campaigns data
@@ -55,10 +67,10 @@ const AllCampaigns = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_URL}/api/dashboard/all-campaigns`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -67,11 +79,11 @@ const AllCampaigns = () => {
       if (response.ok && result.success) {
         setReportsData(result.data);
       } else {
-        setError(result.message || 'Failed to load campaigns data');
+        setError(result.message || "Failed to load campaigns data");
       }
     } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('All campaigns fetch error:', err);
+      setError("Network error. Please try again.");
+      console.error("All campaigns fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -86,26 +98,28 @@ const AllCampaigns = () => {
     if (downloadingCampaigns.has(campaignId)) return;
 
     try {
-      setDownloadingCampaigns(prev => new Set(prev).add(campaignId));
+      setDownloadingCampaigns((prev) => new Set(prev).add(campaignId));
       setDownloadError(null);
 
       const response = await fetch(
         `${API_URL}/api/dashboard/export-campaign/${campaignId}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          method: "GET",
+          credentials: "include",
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to download campaign data');
+        throw new Error(
+          errorData.message || "Failed to download campaign data"
+        );
       }
 
       // Get filename from Content-Disposition header or create default
-      const contentDisposition = response.headers.get('Content-Disposition');
+      const contentDisposition = response.headers.get("Content-Disposition");
       let filename = `Campaign_${campaignId}.xlsx`;
-      
+
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
         if (filenameMatch && filenameMatch[1]) {
@@ -116,27 +130,26 @@ const AllCampaigns = () => {
       // Create blob and trigger download
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
     } catch (err: unknown) {
-      console.error('Download error:', err);
+      console.error("Download error:", err);
       const message = err instanceof Error ? err.message : String(err);
-      setDownloadError(message || 'Failed to download campaign data');
-      
+      setDownloadError(message || "Failed to download campaign data");
+
       // Auto-dismiss error after 5 seconds
       setTimeout(() => {
         setDownloadError(null);
       }, 5000);
     } finally {
-      setDownloadingCampaigns(prev => {
+      setDownloadingCampaigns((prev) => {
         const newSet = new Set(prev);
         newSet.delete(campaignId);
         return newSet;
@@ -147,11 +160,11 @@ const AllCampaigns = () => {
   // Filter campaigns by date range
   const getFilteredCampaigns = () => {
     if (!reportsData) return [];
-    
+
     let filtered = reportsData.campaigns;
-    
+
     if (startDate && endDate) {
-      filtered = filtered.filter(campaign => {
+      filtered = filtered.filter((campaign) => {
         const campaignDate = new Date(campaign.createdAt);
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -159,7 +172,7 @@ const AllCampaigns = () => {
         return campaignDate >= start && campaignDate <= end;
       });
     }
-    
+
     return filtered;
   };
 
@@ -177,7 +190,7 @@ const AllCampaigns = () => {
   // Format date
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd-MMM-yyyy hh:mm a');
+      return format(new Date(dateString), "dd-MMM-yyyy hh:mm a");
     } catch {
       return dateString;
     }
@@ -187,40 +200,50 @@ const AllCampaigns = () => {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
+
+      const link = document.createElement("a");
       link.href = url;
-      link.download = 'campaign-image.jpg';
+      link.download = "campaign-image.jpg";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed:", error);
     }
   };
 
   // Truncate message
   const truncateMessage = (message: string, maxLength: number = 100) => {
     if (message.length <= maxLength) return message;
-    return message.substring(0, maxLength) + '...';
+    return message.substring(0, maxLength) + "...";
   };
 
-
   const stripHtmlTags = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]*>/g, '');
+    if (!html) return "";
+    return html.replace(/<[^>]*>/g, "");
+  };
+
+  const getCampaignStatusBadge = (status: string | undefined) => {
+    if (!status) return "bg-gray-500";
+    const badges = {
+      pending: "bg-yellow-500",
+      delivered: "bg-green-500",
+      failed: "bg-red-500",
+      processed: "bg-blue-500",
+    };
+    return badges[status.toLowerCase() as keyof typeof badges] || "bg-gray-500";
   };
 
   // Get status badge
   const getStatusBadge = (status: string) => {
     const badges = {
-      active: 'bg-green-500',
-      inactive: 'bg-red-500',
-      deleted: 'bg-gray-500'
+      active: "bg-green-500",
+      inactive: "bg-red-500",
+      deleted: "bg-gray-500",
     };
-    return badges[status.toLowerCase() as keyof typeof badges] || 'bg-gray-500';
+    return badges[status.toLowerCase() as keyof typeof badges] || "bg-gray-500";
   };
 
   // Open details modal
@@ -233,25 +256,32 @@ const AllCampaigns = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="p-8 bg-white/40 backdrop-blur-lg rounded-2xl border border-white/60 shadow-xl">
-          <p className="text-xl font-semibold text-black">Loading Campaigns...</p>
+          <p className="text-xl font-semibold text-black">
+            Loading Campaigns...
+          </p>
         </div>
       </div>
     );
   }
 
-return (
+  return (
     <div className="space-y-4 sm:space-y-6">
-      
       {/* Page Header - Mobile Optimized */}
       <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">All Campaigns</h2>
-        <p className="text-xs sm:text-sm text-gray-600 mt-1">View latest 50 campaigns from all users</p>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
+          All Campaigns
+        </h2>
+        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+          View latest 50 campaigns from all users
+        </p>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg">
-          <p className="text-red-700 font-semibold text-sm sm:text-base">{error}</p>
+          <p className="text-red-700 font-semibold text-sm sm:text-base">
+            {error}
+          </p>
         </div>
       )}
 
@@ -259,7 +289,9 @@ return (
       {downloadError && (
         <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-md rounded-lg sm:rounded-xl border border-red-300 shadow-lg animate-pulse">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-red-700 font-semibold text-sm sm:text-base flex-1">{downloadError}</p>
+            <p className="text-red-700 font-semibold text-sm sm:text-base flex-1">
+              {downloadError}
+            </p>
             <button
               onClick={() => setDownloadError(null)}
               className="text-red-700 hover:text-red-900 flex-shrink-0"
@@ -275,12 +307,16 @@ return (
         <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-black flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-bold text-black">Filter by Date:</span>
+            <span className="text-xs sm:text-sm font-bold text-black">
+              Filter by Date:
+            </span>
           </div>
-          
+
           <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border sm:border-2 border-white/80">
             <div className="flex flex-col">
-              <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">From</label>
+              <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">
+                From
+              </label>
               <input
                 type="date"
                 value={startDate}
@@ -290,7 +326,9 @@ return (
             </div>
             <span className="text-black font-bold mt-3">-</span>
             <div className="flex flex-col">
-              <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">To</label>
+              <label className="text-[9px] text-black opacity-60 font-bold mb-0.5">
+                To
+              </label>
               <input
                 type="date"
                 value={endDate}
@@ -302,8 +340,8 @@ return (
 
           <button
             onClick={() => {
-              setStartDate('');
-              setEndDate('');
+              setStartDate("");
+              setEndDate("");
             }}
             className="px-3 sm:px-4 py-2 bg-blue-500/60 backdrop-blur-md text-white text-sm font-semibold rounded-lg sm:rounded-xl border border-white/30 hover:bg-blue-600/60 transition-all active:scale-95"
           >
@@ -311,7 +349,9 @@ return (
           </button>
 
           <div className="sm:ml-auto text-xs sm:text-sm text-black font-semibold">
-            Showing {startIndex + 1} to {Math.min(endIndex, filteredCampaigns.length)} of {filteredCampaigns.length}
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredCampaigns.length)} of{" "}
+            {filteredCampaigns.length}
           </div>
         </div>
       </div>
@@ -335,8 +375,12 @@ return (
       <div className="md:hidden space-y-3">
         {currentCampaigns.length === 0 ? (
           <div className="p-6 bg-white/40 backdrop-blur-lg rounded-xl border border-white/60 shadow-xl text-center">
-            <p className="text-base font-semibold text-black opacity-70">No campaigns found</p>
-            <p className="text-sm text-black opacity-60 mt-2">Try adjusting your date filters</p>
+            <p className="text-base font-semibold text-black opacity-70">
+              No campaigns found
+            </p>
+            <p className="text-sm text-black opacity-60 mt-2">
+              Try adjusting your date filters
+            </p>
           </div>
         ) : (
           currentCampaigns.map((campaign, index) => (
@@ -346,14 +390,18 @@ return (
             >
               {/* Header Row */}
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-black opacity-70">#{startIndex + index + 1}</span>
+                <span className="text-xs font-bold text-black opacity-70">
+                  #{startIndex + index + 1}
+                </span>
                 <span className="px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full">
                   {campaign.mobileNumberCount} Numbers
                 </span>
               </div>
 
               {/* Campaign Name */}
-              <p className="text-sm font-bold text-black mb-1.5 line-clamp-1">{campaign.campaignName}</p>
+              <p className="text-sm font-bold text-black mb-1.5 line-clamp-1">
+                {campaign.campaignName}
+              </p>
 
               {/* Message Preview */}
               <p className="text-xs text-black opacity-80 line-clamp-2 mb-2">
@@ -362,7 +410,16 @@ return (
 
               {/* Creator + Date */}
               <div className="text-[10px] text-black opacity-60 mb-2 pb-2 border-b border-white/30">
-                <div>By: {campaign.createdBy}</div>
+                <div className="mb-1">
+                  <p className="mb-1">Status:</p>
+                  <span
+                    className={`px-2 py-0.5 text-white text-[10px] font-bold rounded-full ${getCampaignStatusBadge(
+                      campaign.status
+                    )}`}
+                  >
+                    {campaign.status ? campaign.status.toUpperCase() : "N/A"}
+                  </span>
+                </div>
                 <div>Date: {formatDate(campaign.createdAt)}</div>
               </div>
 
@@ -398,27 +455,48 @@ return (
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-white/60">
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">ID</th>
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">Campaign Name</th>
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">Message</th>
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">Created By</th>
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">Mobile Numbers</th>
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">Created At</th>
-                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">Actions</th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  ID
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Campaign Name
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Message
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Created By
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Mobile Numbers
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Created At
+                </th>
+                <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {currentCampaigns.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 sm:py-12 text-center text-black opacity-70">
-                    <p className="text-base sm:text-lg font-semibold">No campaigns found</p>
-                    <p className="text-xs sm:text-sm mt-2">Try adjusting your date filters</p>
+                  <td
+                    colSpan={7}
+                    className="py-8 sm:py-12 text-center text-black opacity-70"
+                  >
+                    <p className="text-base sm:text-lg font-semibold">
+                      No campaigns found
+                    </p>
+                    <p className="text-xs sm:text-sm mt-2">
+                      Try adjusting your date filters
+                    </p>
                   </td>
                 </tr>
               ) : (
                 currentCampaigns.map((campaign, index) => (
-                  <tr 
-                    key={campaign.campaignId} 
+                  <tr
+                    key={campaign.campaignId}
                     className="border-b border-white/30 hover:bg-white/20 transition-all"
                   >
                     <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold">
@@ -461,8 +539,12 @@ return (
                           <Eye className="w-4 h-4 text-white" />
                         </button>
                         <button
-                          onClick={() => handleDownloadExcel(campaign.campaignId)}
-                          disabled={downloadingCampaigns.has(campaign.campaignId)}
+                          onClick={() =>
+                            handleDownloadExcel(campaign.campaignId)
+                          }
+                          disabled={downloadingCampaigns.has(
+                            campaign.campaignId
+                          )}
                           className="p-2 bg-blue-500/60 backdrop-blur-sm rounded-lg hover:bg-blue-600/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Download Excel"
                         >
@@ -486,13 +568,15 @@ return (
       {filteredCampaigns.length > 0 && (
         <>
           <div className="text-xs sm:text-sm text-black font-semibold p-3 sm:p-4 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
-            Showing {startIndex + 1} to {Math.min(endIndex, filteredCampaigns.length)} of {filteredCampaigns.length} entries
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredCampaigns.length)} of{" "}
+            {filteredCampaigns.length} entries
           </div>
 
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-4 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="p-1.5 sm:p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 font-semibold text-black hover:bg-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
@@ -517,8 +601,8 @@ return (
                     onClick={() => setCurrentPage(pageNum)}
                     className={`px-2.5 sm:px-4 py-1.5 sm:py-2 text-sm font-bold rounded-lg border-2 transition-all ${
                       currentPage === pageNum
-                        ? 'bg-green-500 text-white border-green-600 shadow-lg'
-                        : 'bg-white/60 text-black border-white/80 hover:bg-white/80'
+                        ? "bg-green-500 text-white border-green-600 shadow-lg"
+                        : "bg-white/60 text-black border-white/80 hover:bg-white/80"
                     }`}
                   >
                     {pageNum}
@@ -527,7 +611,9 @@ return (
               })}
 
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
                 className="p-1.5 sm:p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 font-semibold text-black hover:bg-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
@@ -550,8 +636,12 @@ return (
                 </h3>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => handleDownloadExcel(selectedCampaign.campaignId)}
-                    disabled={downloadingCampaigns.has(selectedCampaign.campaignId)}
+                    onClick={() =>
+                      handleDownloadExcel(selectedCampaign.campaignId)
+                    }
+                    disabled={downloadingCampaigns.has(
+                      selectedCampaign.campaignId
+                    )}
                     className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-500/80 backdrop-blur-md text-white font-bold text-xs sm:text-sm rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-green-600/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                     title="Download Excel"
                   >
@@ -588,36 +678,66 @@ return (
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Company Name</span>
-                      <p className="text-black font-bold text-sm sm:text-base md:text-lg mt-1">{selectedCampaign.userData.companyName}</p>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Company Name
+                      </span>
+                      <p className="text-black font-bold text-sm sm:text-base md:text-lg mt-1">
+                        {selectedCampaign.userData.companyName}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Email</span>
-                      <p className="text-black font-semibold text-xs sm:text-sm break-all mt-1">{selectedCampaign.userData.email}</p>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Email
+                      </span>
+                      <p className="text-black font-semibold text-xs sm:text-sm break-all mt-1">
+                        {selectedCampaign.userData.email}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Phone</span>
-                      <p className="text-black font-semibold text-xs sm:text-sm mt-1">{selectedCampaign.userData.number}</p>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Phone
+                      </span>
+                      <p className="text-black font-semibold text-xs sm:text-sm mt-1">
+                        {selectedCampaign.userData.number}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Role</span>
-                      <p className="text-black font-semibold uppercase text-xs sm:text-sm mt-1">{selectedCampaign.userData.role}</p>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Role
+                      </span>
+                      <p className="text-black font-semibold uppercase text-xs sm:text-sm mt-1">
+                        {selectedCampaign.userData.role}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Status</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Status
+                      </span>
                       <p className="mt-1">
-                        <span className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs font-bold rounded-full ${getStatusBadge(selectedCampaign.userData.status)}`}>
+                        <span
+                          className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs font-bold rounded-full ${getStatusBadge(
+                            selectedCampaign.userData.status
+                          )}`}
+                        >
                           {selectedCampaign.userData.status.toUpperCase()}
                         </span>
                       </p>
                     </div>
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Member Since</span>
-                      <p className="text-black font-semibold text-xs sm:text-sm mt-1">{formatDate(selectedCampaign.userData.createdAt)}</p>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Member Since
+                      </span>
+                      <p className="text-black font-semibold text-xs sm:text-sm mt-1">
+                        {formatDate(selectedCampaign.userData.createdAt)}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">Campaign ID</span>
-                      <p className="text-black font-semibold text-xs sm:text-sm break-all mt-1">{selectedCampaign.campaignId}</p>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase">
+                        Campaign ID
+                      </span>
+                      <p className="text-black font-semibold text-xs sm:text-sm break-all mt-1">
+                        {selectedCampaign.campaignId}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -634,12 +754,15 @@ return (
                         alt="Campaign media"
                         className="w-full max-h-[250px] sm:max-h-[350px] md:max-h-[400px] object-contain rounded-lg shadow-lg"
                         onError={(e) => {
-                          e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Available";
+                          e.currentTarget.src =
+                            "https://via.placeholder.com/600x400?text=Image+Not+Available";
                         }}
                       />
                       <div className="mt-3 sm:mt-4">
                         <button
-                          onClick={() => handleDownloadImage(selectedCampaign.image)}
+                          onClick={() =>
+                            handleDownloadImage(selectedCampaign.image)
+                          }
                           className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-purple-500/80 backdrop-blur-md text-white font-bold text-sm sm:text-base rounded-lg sm:rounded-xl border border-white/30 shadow-lg hover:bg-purple-600/80 hover:shadow-xl transition-all text-center active:scale-95"
                         >
                           📥 Download Campaign Image
