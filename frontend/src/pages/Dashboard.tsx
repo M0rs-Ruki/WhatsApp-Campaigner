@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,7 +15,6 @@ import {
   Users,
   Settings,
   TrendingUp,
-  Calendar,
   ZoomIn,
   ZoomOut,
   Maximize2,
@@ -32,10 +31,10 @@ interface DashboardData {
   totalUsers: number;
   totalCampaigns: number;
   totalMessages: number;
-  monthlyStats: Array<{
-    month: string;
+  weeklyStats: Array<{
+    weekRange: string;
+    totalCampaigns: number;
     totalMessages: number;
-    cumulativeMessages: number;
   }>;
   topFiveCampaigns: Array<{
     _id: string;
@@ -58,8 +57,6 @@ const Dashboard = () => {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
   const [chartHeight, setChartHeight] = useState(400);
 
@@ -118,34 +115,37 @@ const Dashboard = () => {
   // Filter data by date range
   const getFilteredChartData = () => {
     if (!dashboardData) return [];
-
-    let data = dashboardData.monthlyStats;
-
-    if (startDate && endDate) {
-      data = data.filter((item) => {
-        const itemDate = new Date(item.month);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        return itemDate >= start && itemDate <= end;
-      });
-    }
-
-    return data;
+    return dashboardData.weeklyStats;
   };
 
   // Custom tooltip for chart
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{
+      payload: {
+        weekRange: string;
+        totalCampaigns: number;
+        totalMessages: number;
+      };
+      value: number;
+      dataKey: string;
+    }>;
+  }) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
-        <div className="bg-white/90 backdrop-blur-md p-3 sm:p-4 rounded-lg sm:rounded-xl border border-green-500 sm:border-2 shadow-xl">
-          <p className="font-bold text-black text-xs sm:text-sm">
-            {payload[0].payload.month}
+        <div className="bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 border-blue-500 shadow-xl">
+          <p className="font-bold text-black text-xs sm:text-sm mb-2">
+            📅 {data.weekRange}
+          </p>
+          <p className="text-blue-600 font-semibold text-xs sm:text-sm">
+            📊 Campaigns: {data.totalCampaigns}
           </p>
           <p className="text-green-600 font-semibold text-xs sm:text-sm">
-            Campaigns: {payload[0].value}
-          </p>
-          <p className="text-black font-semibold text-xs sm:text-sm">
-            People: {payload[0].payload.cumulativeMessages}
+            💬 Messages: {data.totalMessages}
           </p>
         </div>
       );
@@ -288,66 +288,43 @@ const Dashboard = () => {
 
       {/* Main Content Grid - Chart + Table */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Chart Section - Mobile Optimized */}
+        {/* Chart Section - Bar Chart (Histogram) */}
         <div className="lg:col-span-2 p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl">
-          {/* Chart Header with Controls */}
+          {/* Chart Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
-              Day Wise Usage Graph
+              📊 Weekly Campaign Activity (Last 2 Months)
             </h3>
 
-            {/* Control Buttons - Stacked on mobile */}
-            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 sm:gap-3">
-              {/* Date Range Inputs - Full width on mobile */}
-              <div className="flex items-center gap-1 sm:gap-2 bg-white/60 backdrop-blur-sm px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl border border-white/80">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-black flex-shrink-0" />
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="bg-transparent text-black text-xs sm:text-sm focus:outline-none w-full min-w-0"
-                />
-                <span className="text-black text-xs sm:text-sm">-</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="bg-transparent text-black text-xs sm:text-sm focus:outline-none w-full min-w-0"
-                />
-              </div>
-
-              {/* Zoom Controls - Horizontal on mobile */}
-              <div className="flex items-center gap-2 justify-center xs:justify-start">
-                <button
-                  onClick={() =>
-                    setZoomLevel((prev) => Math.min(prev + 0.2, 2))
-                  }
-                  className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 hover:bg-white/80 active:scale-95 transition-all"
-                  title="Zoom In"
-                >
-                  <ZoomIn className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
-                </button>
-                <button
-                  onClick={() =>
-                    setZoomLevel((prev) => Math.max(prev - 0.2, 0.5))
-                  }
-                  className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 hover:bg-white/80 active:scale-95 transition-all"
-                  title="Zoom Out"
-                >
-                  <ZoomOut className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
-                </button>
-                <button
-                  onClick={() => setZoomLevel(1)}
-                  className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 hover:bg-white/80 active:scale-95 transition-all"
-                  title="Reset"
-                >
-                  <Maximize2 className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
-                </button>
-              </div>
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-2 justify-center xs:justify-start">
+              <button
+                onClick={() => setZoomLevel((prev) => Math.min(prev + 0.2, 2))}
+                className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 hover:bg-white/80 active:scale-95 transition-all"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
+              </button>
+              <button
+                onClick={() =>
+                  setZoomLevel((prev) => Math.max(prev - 0.2, 0.5))
+                }
+                className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 hover:bg-white/80 active:scale-95 transition-all"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
+              </button>
+              <button
+                onClick={() => setZoomLevel(1)}
+                className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/80 hover:bg-white/80 active:scale-95 transition-all"
+                title="Reset"
+              >
+                <Maximize2 className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
+              </button>
             </div>
           </div>
 
-          {/* Recharts Line Chart - Fully Responsive */}
+          {/* Responsive Bar Chart - Histogram */}
           <div className="w-full overflow-x-auto -mx-2 sm:mx-0">
             <div
               className="min-w-[300px]"
@@ -358,13 +335,13 @@ const Dashboard = () => {
               }}
             >
               <ResponsiveContainer width="100%" height={chartHeight}>
-                <LineChart
+                <BarChart
                   data={filteredData}
                   margin={{
                     top: 5,
                     right: window.innerWidth < 640 ? 10 : 30,
                     left: window.innerWidth < 640 ? -10 : 20,
-                    bottom: 5,
+                    bottom: window.innerWidth < 640 ? 60 : 5,
                   }}
                 >
                   <CartesianGrid
@@ -372,15 +349,15 @@ const Dashboard = () => {
                     stroke="rgba(0,0,0,0.1)"
                   />
                   <XAxis
-                    dataKey="month"
+                    dataKey="weekRange"
                     stroke="#000"
                     style={{
-                      fontSize: window.innerWidth < 640 ? "10px" : "12px",
+                      fontSize: window.innerWidth < 640 ? "9px" : "12px",
                       fontWeight: "600",
                     }}
                     angle={window.innerWidth < 640 ? -45 : 0}
                     textAnchor={window.innerWidth < 640 ? "end" : "middle"}
-                    height={window.innerWidth < 640 ? 60 : 30}
+                    height={window.innerWidth < 640 ? 80 : 30}
                   />
                   <YAxis
                     stroke="#000"
@@ -389,25 +366,29 @@ const Dashboard = () => {
                       fontWeight: "600",
                     }}
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ fill: "rgba(34, 197, 94, 0.1)" }}
+                  />
                   <Legend
                     wrapperStyle={{
-                      fontSize: window.innerWidth < 640 ? "10px" : "12px",
+                      fontSize: window.innerWidth < 640 ? "11px" : "12px",
+                      paddingTop: "15px",
                     }}
                   />
-                  <Line
-                    type="monotone"
+                  <Bar
+                    dataKey="totalCampaigns"
+                    fill="#3b82f6"
+                    radius={[8, 8, 0, 0]}
+                    name="Total Campaigns"
+                  />
+                  <Bar
                     dataKey="totalMessages"
-                    stroke="#22c55e"
-                    strokeWidth={window.innerWidth < 640 ? 2 : 3}
-                    dot={{
-                      fill: "#22c55e",
-                      r: window.innerWidth < 640 ? 3 : 5,
-                    }}
-                    activeDot={{ r: window.innerWidth < 640 ? 5 : 8 }}
+                    fill="#22c55e"
+                    radius={[8, 8, 0, 0]}
                     name="Total Messages"
                   />
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>

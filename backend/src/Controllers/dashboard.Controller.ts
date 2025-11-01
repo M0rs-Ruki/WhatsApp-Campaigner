@@ -86,70 +86,121 @@ const dashboard = async (req: Request, res: Response) => {
     ]);
     const totalMessages = totalMessagesAgg[0]?.totalMessages || 0;
 
-    const monthlyAgg = await Campaign.aggregate([
-      { $match: { createdBy: userId } },
+    // -------------------- Last 2 months weekly stats --------------------
+    const now = new Date();
+    const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+
+    // Get all weeks for last 2 months
+    const weeks: Array<{
+      weekStart: Date;
+      weekRange: string;
+      startDate: Date;
+      endDate: Date;
+    }> = [];
+
+    let currentDate = new Date(twoMonthsAgo);
+
+    // Start from Monday of the first week
+    const dayOfWeek = currentDate.getUTCDay();
+    const diff =
+      currentDate.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    currentDate.setUTCDate(diff);
+
+    while (currentDate <= now) {
+      const weekStart = new Date(currentDate);
+      const weekEnd = new Date(currentDate);
+      weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+
+      const startMonth = weekStart.toLocaleString("en-US", { month: "short" });
+      const endMonth = weekEnd.toLocaleString("en-US", { month: "short" });
+      const startDay = weekStart.getUTCDate();
+      const endDay = weekEnd.getUTCDate();
+
+      const weekRange =
+        startMonth === endMonth
+          ? `${startMonth} ${startDay}-${endDay}`
+          : `${startMonth} ${startDay}-${endMonth} ${endDay}`;
+
+      weeks.push({
+        weekStart: new Date(weekStart),
+        weekRange: weekRange,
+        startDate: new Date(weekStart),
+        endDate: new Date(weekEnd),
+      });
+
+      currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+    }
+
+    // Get weekly campaigns and messages - FIXED with UTC dates
+    const weeklyAgg = await Campaign.aggregate([
+      {
+        $match: {
+          createdBy: userId,
+          createdAt: {
+            $gte: weeks[0]?.startDate || twoMonthsAgo,
+            $lte: now,
+          },
+        },
+      },
       {
         $group: {
           _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
+            year: { $year: { $toDate: "$createdAt" } },
+            month: { $month: { $toDate: "$createdAt" } },
+            week: {
+              $week: { $toDate: "$createdAt" },
+            },
           },
+          totalCampaigns: { $sum: 1 },
           totalMessages: { $sum: "$numberCount" },
-        },
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } },
-      {
-        $project: {
-          _id: 0,
-          month: {
-            $concat: [
-              { $toString: "$_id.year" },
-              "-",
-              {
-                $cond: [
-                  { $lt: ["$_id.month", 10] },
-                  { $concat: ["0", { $toString: "$_id.month" }] },
-                  { $toString: "$_id.month" },
-                ],
-              },
-            ],
-          },
-          totalMessages: 1,
+          minDate: { $min: "$createdAt" },
         },
       },
     ]);
 
-    let cumulative = 0;
-    const monthlyStatsWithCumulative = monthlyAgg.map((m) => ({
-      month: m.month,
-      totalMessages: m.totalMessages,
-      cumulativeMessages: (cumulative += m.totalMessages),
-    }));
+    // Map to weeks with better matching
+    const weeklyStatsWithRange = weeks.map((week) => {
+      let totalCampaigns = 0;
+      let totalMessages = 0;
+
+      // Sum all campaigns that fall within this week's date range
+      weeklyAgg.forEach((w) => {
+        const minDate = new Date(w.minDate);
+        if (minDate >= week.startDate && minDate <= week.endDate) {
+          totalCampaigns += w.totalCampaigns;
+          totalMessages += w.totalMessages;
+        }
+      });
+
+      return {
+        weekRange: week.weekRange,
+        totalCampaigns: totalCampaigns,
+        totalMessages: totalMessages,
+      };
+    });
 
     // -------------------- Top 5 campaigns in the current year --------------------
-  const topFiveCampaigns = await Campaign.find({
-    createdBy: userId,
-    createdAt: {
-      $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
-      $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`),
-    },
-  })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .select("campaignName numberCount createdAt status")
-    .lean();
-
-
-    // ✅ LATEST NEWS (active preferred, fallback to any latest)
-    let latestNews = await News.findOne({
-      status: { $regex: /^active$/i }, // case-insensitive match: ACTIVE, Active, active
+    const topFiveCampaigns = await Campaign.find({
+      createdBy: userId,
+      createdAt: {
+        $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
+        $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`),
+      },
     })
-      .sort({ createdAt: -1 }) // newest first
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("campaignName numberCount createdAt status")
+      .lean();
+
+    // ✅ LATEST NEWS
+    let latestNews = await News.findOne({
+      status: { $regex: /^active$/i },
+    })
+      .sort({ createdAt: -1 })
       .populate("createdBy", "companyName")
       .select("title description status createdAt createdBy")
       .lean();
 
-    // Fallback: if no ACTIVE news exists, take the newest item regardless of status
     if (!latestNews) {
       latestNews = await News.findOne({})
         .sort({ createdAt: -1 })
@@ -179,7 +230,7 @@ const dashboard = async (req: Request, res: Response) => {
         totalUsers: user.allUsers.length,
         totalCampaigns: user.totalCampaigns,
         totalMessages: totalMessages,
-        monthlyStats: monthlyStatsWithCumulative,
+        weeklyStats: weeklyStatsWithRange,
         topFiveCampaigns: topFiveCampaigns,
         latestNews: formattedLatestNews,
       },
@@ -783,10 +834,7 @@ const allCampaigns = async (req: Request, res: Response) => {
 
     // If reseller, fetch campaigns from direct children only
     if (user.role === UserRole.RESELLER) {
-      const directChildrenIds = [
-        ...user.allReseller,
-        ...user.allUsers
-      ];
+      const directChildrenIds = [...user.allReseller, ...user.allUsers];
       filter = { createdBy: { $in: directChildrenIds } };
     }
     // If admin, no filter - get all campaigns
@@ -821,9 +869,10 @@ const allCampaigns = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: user.role === UserRole.ADMIN 
-        ? "All campaigns fetched successfully." 
-        : "Reseller's children campaigns fetched successfully.",
+      message:
+        user.role === UserRole.ADMIN
+          ? "All campaigns fetched successfully."
+          : "Reseller's children campaigns fetched successfully.",
       data: {
         totalCampaigns: formattedCampaigns.length,
         campaigns: formattedCampaigns,
@@ -837,7 +886,6 @@ const allCampaigns = async (req: Request, res: Response) => {
     });
   }
 };
-
 
 const support = async (req: Request, res: Response): Promise<Response> => {
   try {
