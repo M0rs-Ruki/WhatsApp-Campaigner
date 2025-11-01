@@ -18,6 +18,7 @@ interface Campaign {
   message: string;
   createdBy: string;
   status: string;
+  statusMessage: string;
   mobileNumberCount: number;
   createdAt: string;
   image: string;
@@ -838,6 +839,14 @@ const WhatsAppReports = () => {
                             ? selectedCampaign.status.toUpperCase()
                             : "N/A"}
                         </span>
+                      </p>
+                    </div>
+                    <div className="col-span-1 sm:col-span-2">
+                      <span className="text-[10px] sm:text-xs font-bold text-orange-700 uppercase">
+                        Admin Message
+                      </span>
+                      <p className="text-black font-semibold text-xs sm:text-sm mt-1.5 p-2.5 sm:p-3 bg-white rounded-lg border border-orange-300">
+                        {selectedCampaign.statusMessage || "No message added"}
                       </p>
                     </div>
                   </div>
