@@ -80,14 +80,12 @@ const dashboard = async (req: Request, res: Response) => {
     const userId = new mongoose.Types.ObjectId(user._id);
     const currentYear = new Date().getFullYear();
 
-    // -------------------- Total messages across all campaigns --------------------
     const totalMessagesAgg = await Campaign.aggregate([
       { $match: { createdBy: userId } },
       { $group: { _id: null, totalMessages: { $sum: "$numberCount" } } },
     ]);
     const totalMessages = totalMessagesAgg[0]?.totalMessages || 0;
 
-    // -------------------- Monthly messages aggregation --------------------
     const monthlyAgg = await Campaign.aggregate([
       { $match: { createdBy: userId } },
       {
@@ -121,7 +119,6 @@ const dashboard = async (req: Request, res: Response) => {
       },
     ]);
 
-    // -------------------- Cumulative messages --------------------
     let cumulative = 0;
     const monthlyStatsWithCumulative = monthlyAgg.map((m) => ({
       month: m.month,
@@ -130,17 +127,18 @@ const dashboard = async (req: Request, res: Response) => {
     }));
 
     // -------------------- Top 5 campaigns in the current year --------------------
-    const topFiveCampaigns = await Campaign.find({
-      createdBy: userId,
-      createdAt: {
-        $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
-        $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`),
-      },
-    })
-      .sort({ numberCount: -1 }) // highest numberCount first
-      .limit(5)
-      .select("campaignName numberCount createdAt") // only send necessary fields
-      .lean();
+  const topFiveCampaigns = await Campaign.find({
+    createdBy: userId,
+    createdAt: {
+      $gte: new Date(`${currentYear}-01-01T00:00:00.000Z`),
+      $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`),
+    },
+  })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select("campaignName numberCount createdAt status")
+    .lean();
+
 
     // ✅ LATEST NEWS (active preferred, fallback to any latest)
     let latestNews = await News.findOne({
