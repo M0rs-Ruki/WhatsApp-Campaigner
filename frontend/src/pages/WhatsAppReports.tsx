@@ -17,6 +17,7 @@ interface Campaign {
   campaignName: string;
   message: string;
   createdBy: string;
+  status: string;
   mobileNumberCount: number;
   createdAt: string;
   image: string;
@@ -249,6 +250,17 @@ const WhatsAppReports = () => {
     return badges[status.toLowerCase() as keyof typeof badges] || "bg-gray-500";
   };
 
+  const getCampaignStatusBadge = (status: string | undefined) => {
+    if (!status) return "bg-gray-500";
+    const badges = {
+      pending: "bg-yellow-500",
+      delivered: "bg-green-500",
+      failed: "bg-red-500",
+      processed: "bg-blue-500",
+    };
+    return badges[status.toLowerCase() as keyof typeof badges] || "bg-gray-500";
+  };
+
   // Open details modal
   const openDetailsModal = (campaign: Campaign) => {
     setSelectedCampaign(campaign);
@@ -427,7 +439,16 @@ const WhatsAppReports = () => {
 
               {/* Creator + Date */}
               <div className="text-[10px] text-black opacity-60 mb-2 pb-2 border-b border-white/30">
-                <div>By: {campaign.createdBy}</div>
+                <div className="mb-1">
+                  <p className="mb-1">Status:</p>
+                  <span
+                    className={`px-2 py-0.5 text-white text-[10px] font-bold rounded-full ${getCampaignStatusBadge(
+                      campaign.status
+                    )}`}
+                  >
+                    {campaign.status ? campaign.status.toUpperCase() : "N/A"}
+                  </span>
+                </div>
                 <div>Date: {formatDate(campaign.createdAt)}</div>
               </div>
 
@@ -473,7 +494,7 @@ const WhatsAppReports = () => {
                   Message
                 </th>
                 <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
-                  Created By
+                  Status
                 </th>
                 <th className="text-left py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-bold text-black uppercase">
                   Mobile Numbers
@@ -526,9 +547,18 @@ const WhatsAppReports = () => {
                         </button>
                       )}
                     </td>
-                    <td className="py-3 sm:py-4 px-3 sm:px-4 text-black text-sm font-semibold">
-                      {campaign.createdBy}
+                    <td className="py-3 sm:py-4 px-3 sm:px-4">
+                      <span
+                        className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs font-bold rounded-full ${getCampaignStatusBadge(
+                          campaign.status
+                        )}`}
+                      >
+                        {campaign.status
+                          ? campaign.status.toUpperCase()
+                          : "N/A"}
+                      </span>
                     </td>
+
                     <td className="py-3 sm:py-4 px-3 sm:px-4 text-center">
                       <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-full">
                         {campaign.mobileNumberCount}
@@ -792,6 +822,22 @@ const WhatsAppReports = () => {
                       </span>
                       <p className="text-black font-semibold text-xs sm:text-sm mt-1">
                         {formatDate(selectedCampaign.createdAt)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs font-bold text-green-700 uppercase">
+                        Status
+                      </span>
+                      <p className="mt-1">
+                        <span
+                          className={`px-2 sm:px-3 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs font-bold rounded-full ${getCampaignStatusBadge(
+                            selectedCampaign.status
+                          )}`}
+                        >
+                          {selectedCampaign.status
+                            ? selectedCampaign.status.toUpperCase()
+                            : "N/A"}
+                        </span>
                       </p>
                     </div>
                   </div>
