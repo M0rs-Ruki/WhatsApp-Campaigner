@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import createCampaign from '../Controllers/campaign.controller.js';
+import { createCampaign, campaignStats } from '../Controllers/campaign.controller.js';
 import isLoggedIn from '../Middlewares/isLoggedIn.Middleware.js';
 import upload, { multerErrorHandler } from '../Utils/upload.Utils.js';
 import { uploadCampaignFileToCloudinary } from '../Middlewares/uploadToCloudinary.Middleware.js';
@@ -26,5 +26,6 @@ const router = Router();
  */
 
 router.post('/',isLoggedIn, upload.single('image'), uploadCampaignFileToCloudinary,  createCampaign)
+router.put('/stats/:campaignId',upload.none(), isLoggedIn, campaignStats);
 
 export default router;

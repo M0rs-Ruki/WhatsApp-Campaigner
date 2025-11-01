@@ -183,7 +183,7 @@ const dashboard = async (req: Request, res: Response) => {
         totalMessages: totalMessages,
         monthlyStats: monthlyStatsWithCumulative,
         topFiveCampaigns: topFiveCampaigns,
-        latestNews: formattedLatestNews, // ✅ MOVED INSIDE data object!
+        latestNews: formattedLatestNews,
       },
     });
   } catch (error: unknown) {
@@ -733,6 +733,8 @@ const whatsAppReports = async (req: Request, res: Response) => {
       mobileNumberCount: campaign.mobileNumbers?.length || 0,
       createdAt: campaign.createdAt,
       image: campaign.media?.url || campaign.media || null,
+      status: campaign.status,
+      statusMessage: campaign.statusMessage,
     }));
 
     return res.status(200).json({
@@ -807,6 +809,8 @@ const allCampaigns = async (req: Request, res: Response) => {
       mobileNumberCount: campaign.mobileNumbers?.length || 0,
       createdAt: campaign.createdAt,
       image: campaign.media?.url || campaign.media || null,
+      status: campaign.status,
+      statusMessage: campaign.statusMessage,
       userData: {
         companyName: campaign.createdBy?.companyName || "Unknown",
         email: campaign.createdBy?.email || "N/A",

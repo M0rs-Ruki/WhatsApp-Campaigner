@@ -5,6 +5,7 @@ import Campaign, {
   MobileNumberEntryType,
 } from "../Models/Campaign.model.js";
 import User from "../Models/user.Model.js";
+import { CampaignStats } from "../Models/Campaign.model.js";
 
 interface CreateCampaignBody {
   campaignName: string;
@@ -17,6 +18,8 @@ interface CreateCampaignBody {
   mobileNumbers: string | string[];
   countryCode: string;
   fileUrl?: string;
+  status: string;
+  statusMessage?: string;
 }
 
 const createCampaign = async (
@@ -125,6 +128,8 @@ const createCampaign = async (
       countryCode,
       createdBy: creatorId,
       media: media || undefined,
+      status: CampaignStats.PENDING,
+      statusMessage: "Campaign is in the pending state.",
     };
 
     if (phoneButtonText && phoneButtonNumber) {
@@ -237,4 +242,49 @@ const createCampaign = async (
   }
 };
 
-export default createCampaign;
+const campaignStats = async (req: Request, res: Response) => {
+  try {
+    const campaignId = req.params.campaignId;
+
+    const { status, statusMessage } = req.body;
+
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+      res.status(404).json({
+        success: false,
+        message: "Campaign not found.",
+      });
+      return;
+    }
+
+    const updatedStatus = status as CampaignStats;
+    const updatedStatusMessage = statusMessage as string | undefined;
+
+    campaign.status = updatedStatus;
+    if (updatedStatusMessage) {
+      campaign.statusMessage = updatedStatusMessage;
+    }
+    
+    await campaign.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Campaign status updated successfully.",
+      data: {
+        campaignId: campaign._id,
+        status: campaign.status,
+        statusMessage: campaign.statusMessage,
+      },
+    });
+    
+  } catch (error: any) {
+    console.error("Error updating campaign status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating campaign status",
+      error: error.message,
+    });
+  }
+}
+
+export { createCampaign, campaignStats };
