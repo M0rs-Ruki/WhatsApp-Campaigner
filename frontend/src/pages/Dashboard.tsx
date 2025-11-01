@@ -214,17 +214,32 @@ const Dashboard = () => {
       {/* Stats Cards Grid - Fully Responsive */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {/* Available Balance */}
+        {/* Available Balance or Total Messages - Admin sees Messages */}
         <div className="p-4 sm:p-5 md:p-6 bg-white/40 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/60 shadow-xl hover:shadow-2xl transition-all">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-3 sm:p-4 bg-green-500/30 backdrop-blur-sm rounded-lg sm:rounded-xl flex-shrink-0">
-              <Wallet className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-green-600" />
+            <div
+              className={`p-3 sm:p-4 ${
+                userRole === UserRole.ADMIN
+                  ? "bg-red-500/30"
+                  : "bg-green-500/30"
+              } backdrop-blur-sm rounded-lg sm:rounded-xl flex-shrink-0`}
+            >
+              {userRole === UserRole.ADMIN ? (
+                <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-red-600" />
+              ) : (
+                <Wallet className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-green-600" />
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-xs sm:text-sm font-bold text-black uppercase opacity-70 truncate">
-                Available Balance
+                {userRole === UserRole.ADMIN
+                  ? "Total Messages Reached"
+                  : "Available Balance"}
               </p>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-black mt-0.5 sm:mt-1">
-                ₹{dashboardData.balance}
+                {userRole === UserRole.ADMIN
+                  ? dashboardData.totalMessages
+                  : `₹${dashboardData.balance}`}
               </p>
             </div>
           </div>

@@ -86,11 +86,49 @@ const dashboard = async (req: Request, res: Response) => {
     ]);
     const totalMessages = totalMessagesAgg[0]?.totalMessages || 0;
 
-    // -------------------- Last 2 months weekly stats --------------------
+    // -------------------- Last 2 months weekly stats - FIXED --------------------
     const now = new Date();
-    const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 1, 1); // Last 2 months
 
-    // Get all weeks for last 2 months
+    // Get all campaigns for this user in the date range
+    const allCampaigns = await Campaign.find({
+      createdBy: userId,
+      createdAt: {
+        $gte: twoMonthsAgo,
+        $lte: now,
+      },
+    })
+      .select("createdAt numberCount")
+      .lean();
+
+    // Helper function to get Monday of week
+    const getMondayOfWeek = (date: Date) => {
+      const d = new Date(date);
+      const day = d.getUTCDay();
+      const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1);
+      d.setUTCDate(diff);
+      d.setUTCHours(0, 0, 0, 0);
+      return d;
+    };
+
+    // Helper function to format week range
+    const formatWeekRange = (startDate: Date) => {
+      const endDate = new Date(startDate);
+      endDate.setUTCDate(endDate.getUTCDate() + 6);
+
+      const startMonth = startDate.toLocaleString("en-US", { month: "short" });
+      const endMonth = endDate.toLocaleString("en-US", { month: "short" });
+      const startDay = startDate.getUTCDate();
+      const endDay = endDate.getUTCDate();
+
+      if (startMonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}`;
+      } else {
+        return `${startMonth} ${startDay}-${endMonth} ${endDay}`;
+      }
+    };
+
+    // Generate all weeks
     const weeks: Array<{
       weekStart: Date;
       weekRange: string;
@@ -98,77 +136,33 @@ const dashboard = async (req: Request, res: Response) => {
       endDate: Date;
     }> = [];
 
-    let currentDate = new Date(twoMonthsAgo);
+    let currentMonday = getMondayOfWeek(twoMonthsAgo);
 
-    // Start from Monday of the first week
-    const dayOfWeek = currentDate.getUTCDay();
-    const diff =
-      currentDate.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    currentDate.setUTCDate(diff);
-
-    while (currentDate <= now) {
-      const weekStart = new Date(currentDate);
-      const weekEnd = new Date(currentDate);
+    while (currentMonday <= now) {
+      const weekEnd = new Date(currentMonday);
       weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
-
-      const startMonth = weekStart.toLocaleString("en-US", { month: "short" });
-      const endMonth = weekEnd.toLocaleString("en-US", { month: "short" });
-      const startDay = weekStart.getUTCDate();
-      const endDay = weekEnd.getUTCDate();
-
-      const weekRange =
-        startMonth === endMonth
-          ? `${startMonth} ${startDay}-${endDay}`
-          : `${startMonth} ${startDay}-${endMonth} ${endDay}`;
+      weekEnd.setUTCHours(23, 59, 59, 999);
 
       weeks.push({
-        weekStart: new Date(weekStart),
-        weekRange: weekRange,
-        startDate: new Date(weekStart),
+        weekStart: new Date(currentMonday),
+        weekRange: formatWeekRange(new Date(currentMonday)),
+        startDate: new Date(currentMonday),
         endDate: new Date(weekEnd),
       });
 
-      currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+      currentMonday.setUTCDate(currentMonday.getUTCDate() + 7);
     }
 
-    // Get weekly campaigns and messages - FIXED with UTC dates
-    const weeklyAgg = await Campaign.aggregate([
-      {
-        $match: {
-          createdBy: userId,
-          createdAt: {
-            $gte: weeks[0]?.startDate || twoMonthsAgo,
-            $lte: now,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: { $toDate: "$createdAt" } },
-            month: { $month: { $toDate: "$createdAt" } },
-            week: {
-              $week: { $toDate: "$createdAt" },
-            },
-          },
-          totalCampaigns: { $sum: 1 },
-          totalMessages: { $sum: "$numberCount" },
-          minDate: { $min: "$createdAt" },
-        },
-      },
-    ]);
-
-    // Map to weeks with better matching
+    // Calculate weekly stats by directly matching campaigns to weeks
     const weeklyStatsWithRange = weeks.map((week) => {
       let totalCampaigns = 0;
       let totalMessages = 0;
 
-      // Sum all campaigns that fall within this week's date range
-      weeklyAgg.forEach((w) => {
-        const minDate = new Date(w.minDate);
-        if (minDate >= week.startDate && minDate <= week.endDate) {
-          totalCampaigns += w.totalCampaigns;
-          totalMessages += w.totalMessages;
+      allCampaigns.forEach((campaign) => {
+        const campaignDate = new Date(campaign.createdAt);
+        if (campaignDate >= week.startDate && campaignDate <= week.endDate) {
+          totalCampaigns += 1;
+          totalMessages += campaign.numberCount || 0;
         }
       });
 
