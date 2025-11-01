@@ -41,6 +41,7 @@ interface DashboardData {
     _id: string;
     campaignName: string;
     numberCount: number;
+    status: string;
     createdAt: string;
   }>;
   latestNews: {
@@ -454,7 +455,7 @@ const Dashboard = () => {
                     </td>
                     <td className="py-2 sm:py-3 px-1 sm:px-2">
                       <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-green-500 text-white text-xs font-bold rounded-full">
-                        SENT
+                        {campaign.status || "None"}
                       </span>
                     </td>
                   </tr>
