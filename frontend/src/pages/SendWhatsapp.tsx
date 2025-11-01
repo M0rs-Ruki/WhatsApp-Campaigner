@@ -359,7 +359,7 @@ const SendWhatsapp = () => {
               name="phoneButtonText"
               value={formData.phoneButtonText}
               onChange={handleInputChange}
-              placeholder="Call us"
+              placeholder="Call Now Write Button Text"
               className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
@@ -414,7 +414,7 @@ const SendWhatsapp = () => {
               name="linkButtonText"
               value={formData.linkButtonText}
               onChange={handleInputChange}
-              placeholder="Visit us"
+              placeholder="Visit Website Button Text"
               className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/60 backdrop-blur-sm border-2 border-white/80 rounded-lg sm:rounded-xl text-sm sm:text-base text-black placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
               disabled={loading}
             />
